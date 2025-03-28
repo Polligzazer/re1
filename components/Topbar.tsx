@@ -14,7 +14,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { Item } from "./types";
 import ItemPreviewModal from "./ItemPreviewModal";
 import "../css/topbar.css";
-import Profile from "../pages/profile";
 
 import OptionIcon from "../src/assets/OptionIcon.png";
 import FLOLOGObg from "../src/assets/FLOLOGObg.png";
