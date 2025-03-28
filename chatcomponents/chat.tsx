@@ -2,7 +2,7 @@ import '../css/inquiries.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import Input from './input';
-import ChatContainer from '../chatcomponents/ChatContainer';
+import ChatContainer from '../chatcomponents/chatcontainer';
 import { useChatContext } from '../components/ChatContext';
 
 interface ChatProps {
