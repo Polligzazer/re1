@@ -1,0 +1,67 @@
+.form-control {
+    background: none;
+    border: none;
+    border-bottom: 1px solid black;
+    border-radius: 0; 
+    width: 100%;
+    max-width: 300px;
+    height: 25px;
+    font-size: clamp(12px, 1vw, 14px);
+}
+
+.form-control:focus {
+    outline: none;
+    box-shadow: none;
+    background: transparent;
+}
+
+.form-control.is-invalid {
+    outline: none !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid red;
+}
+
+.form-control.is-valid {
+    background-image: none !important;
+    padding-right: 0 !important;
+    border-bottom: 1px solid black;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.inputparent {
+    width: 100%;
+    max-width: 300px;
+    align-self: center;
+    justify-self: center;
+}
+
+.formsignup {
+    padding-top: 20px;
+    padding: 15px;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: center;
+    justify-self: center;
+}
+
+.error {
+    font-size: clamp(10px, 1vw, 12px); 
+    letter-spacing: 1px;
+}
+
+.FLOlogo{
+    background-color: transparent !important;
+
+}
+
+
+@media (max-width: 768px) {
+  
+    .container-signup{
+        border:none !important;
+    }
+}

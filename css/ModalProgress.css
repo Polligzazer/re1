@@ -1,0 +1,22 @@
+.progress-bar-custom {
+  width: 50%;
+  background-color: #e8a627 !important;
+  height: 100%;
+}
+.progress-container {
+  width: 50%;
+  height: 15px;
+  border-radius: 5px;
+}
+
+.modal-content {
+  background-color: #dfe8f5 !important;
+  border-radius: 8px;
+}
+.modal-header .btn-close {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 4px;
+}

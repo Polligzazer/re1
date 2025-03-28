@@ -1,0 +1,608 @@
+import { useState, useContext, useEffect } from "react";
+import { useNavigate, NavLink } from "react-router-dom";
+import { getAuth, signOut } from "firebase/auth";
+import { AuthContext } from "../components/Authcontext";
+import {
+  AppNotification,
+  markNotificationAsRead,
+  fetchNotifications,
+  fetchItemDetails,
+} from "../components/notificationService";
+import React from "react";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import { Item } from "./types";
+import ItemPreviewModal from "./ItemPreviewModal";
+import "../css/topbar.css";
+import Profile from "../pages/profile";
+
+import OptionIcon from "../src/assets/OptionIcon.png";
+import FLOLOGObg from "../src/assets/FLOLOGObg.png";
+import NotifIcon from "../src/assets/NotifIcon.png";
+import NotifPfpIcon from "../src/assets/notifpfpicon.png";
+import HomeIcon from "../src/assets/HomeIcon.png";
+import DashboardIcon from "../src/assets/dashboard.png";
+import ReportIcon from "../src/assets/reportIcon.png";
+import HistoryIcon from "../src/assets/historyIcon.png";
+import IIcon from "../src/assets/IIcon.png";
+import logOuticon from "../src/assets/logOutIcon.png";
+import cspfpicon from "../src/assets/cspfpicon.png";
+
+
+
+const Topbar = () => {
+  const auth = getAuth();
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [hasUnread, setHasUnread] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
+
+  const { isAdmin } = useContext(AuthContext);
+  const userId = auth.currentUser?.uid;
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/login");
+    } catch (error) {
+      alert("Error logging out");
+      console.error(error);
+    }
+  };
+
+  // Updates search input value
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+  };
+
+  // Triggers search only when Enter is pressed
+  const handleSearchSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchInput.trim()) {
+      e.preventDefault();
+      navigate(`/search?query=${encodeURIComponent(searchInput.trim())}`);
+    }
+  };
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const unsubscribe = fetchNotifications((fetchedNotifications) => {
+      setNotifications(fetchedNotifications);
+
+      // ✅ Update badge visibility based on unread status
+      setHasUnread(
+        fetchedNotifications.some(
+          (notif) => notif.readBy && !notif.readBy.includes(userId)
+        )
+      );
+    });
+
+    return () => unsubscribe();
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const unreadExists = notifications.some(
+      (notif) => notif.readBy && !notif.readBy.includes(userId)
+    );
+    setHasUnread(unreadExists);
+  }, [notifications, userId]); // ✅ Runs when `notifications` update
+
+  const handleNotificationClick = async (notif: AppNotification) => {
+    if (!userId) return;
+
+    // ✅ Ensure the modal stays open by setting selectedItem first
+    if (notif.reportId) {
+      const itemDetails = await fetchItemDetails(notif.reportId);
+      if (itemDetails) {
+        setSelectedItem(itemDetails);
+        setShowModal(true);
+      } else {
+        alert("Item details not found.");
+      }
+    }
+
+    // ✅ Mark notification as read
+    await markNotificationAsRead(notif.id, userId);
+
+    // ✅ Update local state immediately to remove unread styling
+    setNotifications((prev) =>
+      prev.map((n) =>
+        n.id === notif.id ? { ...n, readBy: [...(n.readBy || []), userId] } : n
+      )
+    );
+  };
+
+  return (
+    <div>
+      <nav className="navbar ps-lg-4 fixed-top" 
+      style={{
+        height:"14.8vh",
+        backgroundColor:"#fafcff",
+        borderBottom:"1.5px solid #dfe8f5"
+      
+      }}>
+        <div className="container-fluid">
+          <div className=" ps-4 align-items-center d-flex">
+            <button
+              className="btn btn-light me-2"
+              id="sidebah"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+             <img src={OptionIcon} 
+            style={{
+              width: " 2.4vw",
+              minWidth:"20px",
+              height:  "auto",
+              
+          }}/>
+            </button>
+            <img
+            className=" bg-transparent d-none d-md-flex"
+            src={FLOLOGObg}
+            style={{
+              width: "6.5vw",
+              maxWidth: "282px",
+              height: "auto",
+              padding:"0px",
+              marginBottom: "1rem",
+              marginTop: "0.8rem",
+            }}
+            alt="FLO Logo"
+          />
+          </div>
+          {/* Search Box */}
+          <form className="flex-grow-1 ps-md-5 justify-content-center d-flex mx-3">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="form-control ms-md-5"
+              value={searchInput}
+              onChange={handleSearchChange}
+              onKeyDown={handleSearchSubmit} // Listens for Enter k
+              style={{
+                borderRadius:" 38px",
+                height:"32px",
+                width:"25.45vw",
+                border: "0.5px solid #89ccff",
+                backgroundColor:"#fafcff",
+                
+              }}
+            />
+          </form>
+          <div className="d-flex me-4 gap-5 position-relative align-items-center pe-3">
+            <div className="dropdown position-relative">
+              <a className="position-relative" data-bs-toggle="dropdown" style={{ cursor: "pointer" }}>
+                <img src={NotifIcon} alt="Notifications" style={{ width: "30px", height: "30px" }} />
+                {hasUnread && (
+                  <span className="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"></span>
+                )}
+              </a>
+
+              <ul className="dropdown-menu dropdown-menu-end px-2 py-3" style={{ width: "300px", maxHeight: "400px", overflowY: "auto" }}>
+                <li className="dropdown-header text-primary fw-bold fs-5">Notifications</li>
+                {notifications.length === 0 ? (
+                  <li className="dropdown-item text-center">No new notifications</li>
+                ) : (
+                  notifications.map((notif) => (
+                    <li key={notif.id} className={`dropdown-item ${notif.readBy?.includes(userId ?? "") ? "text-muted" : "fw-bold"}`} onClick={() => handleNotificationClick(notif)} style={{ cursor: "pointer" }}>
+                      {notif.description}
+                    </li>
+                  ))
+                )}
+              </ul>
+          </div>
+
+            {/* Profile Icon */}
+            <NavLink
+            to="/profile"
+            >
+              <img src={NotifPfpIcon}  className=""
+                style={{
+                  width: " 2.6vw",
+                  minWidth:"20px",
+                  height:  "auto",
+                }}
+                />
+            </NavLink>
+          </div>
+        </div>
+        
+      </nav>
+
+      <ItemPreviewModal
+                show={showModal}
+                onClose={() => setShowModal(false)}
+                item={selectedItem}
+            />
+
+      {/* SIDEBAR */}
+      <div
+        className={`offcanvas offcanvas-start ${sidebarOpen ? "show" : ""}`}
+        style={{
+          width: "14.4vw",
+          visibility: sidebarOpen ? "visible" : "hidden",
+          backgroundColor:"#f1f7ff",
+        }}
+      >
+        <div className="offcanvas-header text-white justify-content-start d-flex flex-row py-5">
+        <button
+            type="button"
+            className="btn align-self-center ps-lg-4 ps-0"
+            onClick={() => setSidebarOpen(false)}
+          > <img src={OptionIcon} 
+          style={{
+             width: " 2.4vw",
+             minWidth:"20px",
+             height:  "auto",
+             
+
+          }}/></button>
+       
+         
+        </div>
+
+        <div className="offcanvas-body p-0  d-flex flex-column h-100" 
+          style={{
+            overflow:"hidden"
+          }}>
+  <ul className="nav flex-column py-4 mb-lg-3 justify-content-center align-items-center w-100">
+    {isAdmin ? (
+      <>
+        <li className="nav-item text-center w-100">
+          <NavLink
+            to="/home"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active py-4" : "py-4"}`
+            }
+            onClick={() => setSidebarOpen(false)}
+            style={({ isActive }) => ({
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "14.6px",
+              color: "#0E5CC5",
+              backgroundColor: isActive ? "#abdbff" : "transparent",
+              marginLeft: isActive ? "0px" : "0px",
+            })}
+          >
+            <img
+              className=""
+              src={HomeIcon}
+              style={{
+                width: "21.8px",
+                height: "20.3px",
+                marginRight: "10px",
+                marginBottom: "5px",
+              }}
+            />
+            <span className="d-none d-md-inline pe-2">Home</span>
+          </NavLink>
+        </li>
+        <li className="nav-item text-center w-100">
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active py-4" : "py-4"}`
+            }
+            onClick={() => setSidebarOpen(false)}
+            style={({ isActive }) => ({
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "14.6px",
+              color: "#0E5CC5",
+              backgroundColor: isActive ? "#abdbff" : "transparent",
+              marginLeft: isActive ? "0px" : "0px",
+            })}
+          >
+            <img
+              className=""
+              src={DashboardIcon}
+              style={{
+                width: "21.8px",
+                height: "20.3px",
+                marginRight: "10px",
+                marginBottom: "5px",
+              }}
+            />
+            <span className="d-none d-md-inline pe-2">Dashboard</span>
+          </NavLink>
+        </li>
+        <li className="nav-item text-center w-100">
+          <NavLink
+            to="/report"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active py-4" : "py-4"}`
+            }
+            onClick={() => setSidebarOpen(false)}
+            style={({ isActive }) => ({
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "14.6px",
+              color: "#0E5CC5",
+              backgroundColor: isActive ? "#abdbff" : "transparent",
+              marginLeft: isActive ? "0px" : "0px",
+            })}
+          >
+            <img
+              className=""
+              src={ReportIcon}
+              style={{
+                width: "21.8px",
+                height: "20.3px",
+                marginRight: "10px",
+                marginBottom: "5px",
+              }}
+            />
+            <span className="d-none d-md-inline pe-2">Report</span>
+          </NavLink>
+        </li>
+        <li className="nav-item text-center w-100">
+          <NavLink
+            to="/item-history"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active py-4" : "py-4"}`
+            }
+            onClick={() => setSidebarOpen(false)}
+            style={({ isActive }) => ({
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "14.6px",
+              color: "#0E5CC5",
+              backgroundColor: isActive ? "#abdbff" : "transparent",
+              marginLeft: isActive ? "0px" : "0px",
+            })}
+          >
+            <img
+              className=""
+              src={HistoryIcon}
+              style={{
+                width: "21.8px",
+                height: "20.3px",
+                marginRight: "10px",
+                marginBottom: "5px",
+              }}
+            />
+            <span className="d-none d-md-inline pe-2">History</span>
+          </NavLink>
+        </li>
+        <li className="nav-item text-center w-100">
+          <NavLink
+            to="/inquiries"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active py-4" : "py-4"}`
+            }
+            onClick={() => setSidebarOpen(false)}
+            style={({ isActive }) => ({
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "14.6px",
+              color: "#0E5CC5",
+              backgroundColor: isActive ? "#abdbff" : "transparent",
+              marginLeft: isActive ? "0px" : "0px",
+            })}
+          >
+            <img
+              className=""
+              src={IIcon}
+              style={{
+                width: "21.8px",
+                height: "21.8px",
+                marginRight: "10px",
+                marginBottom: "5px",
+              }}
+            />
+            <span className="d-none d-md-inline pe-2">Inquiries</span>
+          </NavLink>
+        </li>
+        <li className="nav-item text-center w-100">
+          <NavLink
+            to="/userlist"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active py-4" : "py-4"}`
+            }
+            onClick={() => setSidebarOpen(false)}
+            style={({ isActive }) => ({
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "14.6px",
+              color: "#0E5CC5",
+              backgroundColor: isActive ? "#abdbff" : "transparent",
+              marginLeft: isActive ? "0px" : "0px",
+            })}
+          >
+            <img
+              className=""
+              src={cspfpicon}
+              style={{
+                width: "21.8px",
+                height: "20.3px",
+                marginRight: "10px",
+                marginBottom: "5px",
+              }}
+            />
+            <span className="d-none d-md-inline pe-2">User List</span>
+          </NavLink>
+        </li>
+      </>
+    ) : (
+      <>
+        <li className="nav-item text-center w-100">
+          <NavLink
+            to="/home"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active py-4" : " py-4"}`
+            }
+            onClick={() => setSidebarOpen(false)}
+            style={({ isActive }) => ({
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "14.6px",
+              color: "#0E5CC5",
+              backgroundColor: isActive ? "#abdbff" : "transparent",
+            })}
+          >
+            <img
+              className=""
+              src={HomeIcon}
+              style={{
+                width: "21.8px",
+                height: "20.3px",
+                marginRight: "10px",
+                marginBottom: "5px",
+              }}
+            />
+            <span className="d-none d-md-inline pe-2">Home</span>
+          </NavLink>
+        </li>
+        <li className="nav-item text-center w-100">
+          <NavLink
+            to="/report"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active py-4" : "py-4"}`
+            }
+            onClick={() => setSidebarOpen(false)}
+            style={({ isActive }) => ({
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "14.6px",
+              color: "#0E5CC5",
+              backgroundColor: isActive ? "#abdbff" : "transparent",
+              marginLeft: isActive ? "0px" : "0px",
+            })}
+          >
+            <img
+              className=""
+              src={ReportIcon}
+              style={{
+                width: "21.8px",
+                height: "20.3px",
+                marginRight: "10px",
+                marginBottom: "5px",
+              }}
+            />
+            <span className="d-none d-md-inline pe-2">Report</span>
+          </NavLink>
+        </li>
+        <li className="nav-item text-center w-100">
+          <NavLink
+            to="/item-history"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active py-4" : "py-4"}`
+            }
+            onClick={() => setSidebarOpen(false)}
+            style={({ isActive }) => ({
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "14.6px",
+              color: "#0E5CC5",
+              backgroundColor: isActive ? "#abdbff" : "transparent",
+              marginLeft: isActive ? "0px" : "0px",
+            })}
+          >
+            <img
+              className=""
+              src={HistoryIcon}
+              style={{
+                width: "21.8px",
+                height: "20.3px",
+                marginRight: "10px",
+                marginBottom: "5px",
+              }}
+            />
+            <span className="d-none d-md-inline pe-2">History</span>
+          </NavLink>
+        </li>
+        <li className="nav-item text-center w-100">
+          <NavLink
+            to="/inquiries"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active py-4" : "py-4"}`
+            }
+            onClick={() => setSidebarOpen(false)}
+            style={({ isActive }) => ({
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "14.6px",
+              color: "#0E5CC5",
+              backgroundColor: isActive ? "#abdbff" : "transparent",
+              marginLeft: isActive ? "0px" : "0px",
+            })}
+          >
+            <img
+              className=""
+              src={IIcon}
+              style={{
+                width: "21.8px",
+                height: "21.8px",
+                marginRight: "10px",
+                marginBottom: "5px",
+              }}
+            />
+            <span className="d-none d-md-inline pe-2">Inquiries</span>
+          </NavLink>
+        </li>
+      </>
+    )}
+  </ul>
+
+  {/* SHOW ONLY IF NOT ADMIN */}
+  {!isAdmin && (
+    <div
+      className="w-75 pt-3 mx-4 d-none d-md-flex"
+      style={{
+        borderTop: "0.5px solid #004097",
+      }}
+    >
+      <p
+        style={{
+          fontFamily: "Work Sans, sans-serif",
+          fontSize: "13px",
+        }}
+      >
+        For more question, inquires and suggestions
+        <a
+          href=""
+          style={{
+            textDecoration: "none",
+            color: "#3998ff",
+          }}
+        >
+          <br />
+          <br /> Message us
+        </a>
+      </p>
+    </div>
+  )}
+
+  {/* LOGOUT DIV WITH BORDER-TOP */}
+  <div
+  className="mt-auto m-lg-2 pt-3"
+  style={{
+    borderTop: isAdmin ? "0.5px solid #004097" : "none",
+  }}
+>
+  <button
+    onClick={handleLogout}
+    className="btn text-start w-100"
+    style={{
+      color: "#3998ff",
+      fontFamily: "Work Sans, sans-serif",
+      fontSize: "14.2px",
+      opacity: "68%",
+    }}
+  >
+    <img
+      src={logOuticon}
+      style={{
+        width: "21.8px",
+        height: "21.8px",
+        marginRight: "10px",
+        marginBottom: "5px",
+      }}
+    />
+    <span className="d-none d-md-inline">Logout</span>
+  </button>
+</div>
+</div>
+
+      </div>
+    </div>
+  );
+};
+
+export default Topbar;

@@ -1,0 +1,462 @@
+import React from "react";
+import { ID } from "appwrite";
+import { apwstorage, APPWRITE_STORAGE_BUCKET_ID } from "../../../src/appwrite";
+import fetchUserUID from "../../../components/fetchUserUID";
+import { useState, useEffect } from "react";
+import { db } from "../../../src/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import ConfirmationModal from "../../../components/ConfirmationModal"; 
+import { useNavigate } from "react-router-dom";
+import { faFileCirclePlus } from '@fortawesome/free-solid-svg-icons';
+import { FaChevronLeft } from "react-icons/fa";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import "../../../css/report.css";
+
+
+const Found: React.FC = () => {
+  const navigate = useNavigate();
+
+  const categories = [
+    "Gadgets",
+    "Personal Belongings",
+    "School Belongings",
+    "Others"
+  ];
+
+  const categoryImages: { [key: string]: string } = {
+    "Gadgets": "../src/assets/cpIcon.png", 
+    "Personal Belongings":  "../src/assets/walletIcon.png",
+    "School Belongings":  "../src/assets/notebook (1).png",
+    "Others":  "../src/assets/othersIcon.png",
+  };
+
+  const [formData, setFormData] = useState({
+    item: "",
+    category: "",
+    description: "",
+    location: "",
+    date: "",
+  });
+
+  const [userUID, setUserUID] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [fileName, setFileName] = useState("");
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getUserUID = async () => {
+      const uid = await fetchUserUID();
+      if (uid) {
+        setUserUID(uid);
+      } else {
+        console.error("❗ Failed to fetch UID.");
+      }
+    };
+
+    getUserUID();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowModal(true);
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      const uploadedFile = await apwstorage.createFile(
+        APPWRITE_STORAGE_BUCKET_ID, // Replace with your Appwrite Storage bucket ID
+        ID.unique(),
+        file
+      );
+  
+      // Get file preview URL
+      const filePreviewUrl = apwstorage.getFilePreview(APPWRITE_STORAGE_BUCKET_ID, uploadedFile.$id);
+  
+      setFileName(file.name);
+      setFileUrl(filePreviewUrl);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("❗ Failed to upload file. Please try again.");
+    }
+  };
+
+  const handleConfirmSubmit = async () => {
+    if (!userUID) {
+      alert("❗ User not authenticated. Please log in again.");
+      return;
+    }
+
+    const reportData = {
+      ...formData,
+      status: "pendingreport",
+      type: "found",
+      userId: userUID,
+      reportId: `FND-${Date.now()}`,
+      timestamp: serverTimestamp(),
+      imageUrl: fileUrl || "",
+    };
+
+    try {
+      await addDoc(collection(db, "lost_items"), reportData);
+      navigate("/home");
+    } catch (error) {
+      console.error("🔥 Error submitting report:", error);
+      alert("❗ Error submitting report. Please try again.");
+    } finally {
+      setShowModal(false); // Hide the modal after submission
+    }
+  };
+
+  return (
+    <div className="container mt-5">
+      {/* Header */}
+      <div className="d-flex align-items-center w-100 justify-content-between mt-5 pt-4 mb-3">
+      <div className="d-flex flex-column">
+        <h1 className="fw-bold" style={{
+             fontFamily: "DM Sans, sans-serif", 
+             color:"#212020",
+             fontSize:"clamp(15px, 5vw, 27px)"
+        }}>Report Found Item</h1>
+        <p style={{
+          fontFamily: "Poppins, sans-serif",
+           color:"#454545",
+           opacity:"85%",
+           fontSize:"clamp(8px, 3vw, 15px)"
+        }}>Report found belongings by completing this form</p>
+        </div>
+        <button 
+          className="btn d-flex align-items-center gap-2" 
+          onClick={() => navigate("/report")}
+          style={{
+            fontSize:'clamp(12px, 3vw, 18px)'
+          }}
+        >
+          <FaChevronLeft /> Return
+        </button>
+      </div>
+
+      {/* Form */}
+      <form 
+        className=" p-4 row g-4" 
+        onSubmit={handleSubmit}
+        style={{
+          background:'transparent'
+        }}
+      >
+        {/* Category Selection */}
+        <div className="d-flex flex-md-row flex-column justify-content-center m-sm-0">
+        <div className="btn-size d-flex flex-row" style={{
+          width:'90%'
+        }}>
+          <div className=" d-flex flex-column" style={{
+            width:'70%'
+          }}>
+          <label className="form-label fw-bold ms-1 mb-3"
+            style={{
+              fontFamily: "DM Sans, sans-serif", 
+              fontSize:'clamp(14px, 5vw, 23px)',
+              color:'#212020'
+            }}
+          >Category</label>
+          
+          <div className=" btn-group gap-3 flex-column flex-sm-row  " role="group"
+            style={{
+              width:'100%'
+            }}
+          >
+            {categories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                style={{
+                  borderRadius:'15px',
+                  border:'none',
+                  backgroundColor: formData.category === category ? '#2169ac': '#dfe8f5',
+                  justifyContent:'center',
+                  outline:'none',
+                  fontFamily:'League Spartan, serif',
+                  boxShadow: formData.category === category 
+                    ? '0px 6px 12px rgba(0, 0, 0, 0.2)' // **Shadow when selected**
+                    : 'none',
+                }}
+                className="cbtn btn d-flex align-items-md-center align-items-start  flex-row flex-sm-column"
+                onClick={() => setFormData({ ...formData, category })}
+              >
+                <div style={{
+                  height:'50%'
+                }}>
+                <div className="p-2 mt-2" style={{
+                  borderRadius:'10px',
+                  backgroundColor: formData.category === category ? '#89ccff' : '#2169ac',
+                  
+                }}>
+                <img 
+                  src={categoryImages[category]} 
+                  alt={category} 
+                  style={{ 
+                    width: 'clamp(36px, 5vw, 46px)', 
+                    backgroundColor:'none', 
+                    height: 'clamp(36px, 5vw, 46px)', 
+                    objectFit: 'contain' }} 
+                />
+                </div>
+                </div>
+                <div className="pt-2" style={{
+                  height:'50%',
+                  width:'100%',
+                  marginTop:'10px',
+                  fontSize:"clamp(12px, 1.8vh, 19px)",
+                  color:formData.category === category ? '#dfe8f5' : '#2169ac',
+                  fontWeight:'bold',
+                  lineHeight:'1.2'
+                }}>
+                {category}
+                </div>
+              </button>
+            ))}
+          </div>
+          </div>
+          <div className=" d-none d-lg-flex flex-row align-self-end" style={{ width: "100%" }}>
+ 
+          <input
+            type="file"
+            id="fileInput"
+            onChange={handleFileChange}
+            style={{
+              width: 0,
+              height: 0,
+              opacity: 0,
+              overflow: "hidden",
+              position: "absolute",
+            }}
+          />
+
+          <label
+            htmlFor="fileInput"
+            className="d-flex flex-column justify-end items-center w-full h-[125.4px] cursor-pointer"
+            style={{
+              padding: "8px 12px",
+              backgroundColor: "transparent",
+              color: "#2169ac",
+              borderRadius: "5px",
+            }}
+          >
+            <FontAwesomeIcon
+              icon={faFileCirclePlus}
+              style={{
+                color: "#2169ac",
+                fontSize: "40px",
+              }}
+            />
+            <p className="text-center p-2 pb-0 mb-0">Choose File</p>
+          </label>
+
+          <div className="w-full align-self-center text-center px-2">
+            {fileName && fileUrl && (
+              <a
+                href={fileUrl}
+                download={fileName}
+                style={{ color: "#2169ac", fontSize:'12px', cursor: "pointer", textDecoration: "underline" }}
+              >
+                {fileName}
+              </a>
+              
+            )}
+          </div>
+          <button
+            onClick={() => {
+              setFileName("");
+              setFileUrl(null);
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "16px",
+              color: "red",
+              fontWeight: "bold",
+            }}
+          >
+            Remove file
+          </button>
+          </div>
+          
+        </div>
+        
+
+        </div>
+        {/* Item Name */}
+        <div className="d-flex  flex-column flex-lg-row w-100 justify-content-center">
+        <div className="inputfile d-flex flex-md-row gap-4" style={{
+          width:'60%',
+          paddingLeft:'5%',
+          paddingRight:'5%'
+        }}>  
+        <div className="d-flex flex-column m-0 mt-2" style={{
+          width:'100%',       
+          rowGap:'40px',
+        }}>
+            <div className="">
+              <label className="form-label fw-bold">Item Name</label>
+              <input
+                type="text"
+                className="form-control"
+                name="item"
+                placeholder="Enter item name"
+                value={formData.item}
+                onChange={(e) => setFormData({ ...formData, item: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="">
+              <label className="form-label fw-bold">Found when</label>
+              <input
+                type="date"
+                className="form-control"
+                name="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                required
+              />
+            </div>
+            </div>
+          
+          <div className="d-flex flex-column" style={{
+            width:'100%',
+            rowGap:'40px',
+          }}>
+            {/* Location */}
+            <div className="m-0 mt-2" style={{
+              width:'100%'
+            }}>
+              <label className="form-label fw-bold">Location</label>
+              <input
+                type="text"
+                className="form-control"
+                name="location"
+                placeholder="Enter location details"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                required
+              />
+            </div>
+            <div className=" d-flex d-lg-none align-self-end" style={{ width: "100%" }}>
+ 
+                <input
+                  type="file"
+                  id="fileInput"
+                  onChange={handleFileChange}
+                  style={{
+                    width: 0,
+                    height: 0,
+                    opacity: 0,
+                    overflow: "hidden",
+                    position: "absolute",
+                  }}
+                />
+
+                <label
+                  htmlFor="fileInput"
+                  className="d-flex flex-row justify-end items-center w-full h-[125.4px] cursor-pointer"
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "transparent",
+                    color: "#2169ac",
+                    borderRadius: "5px",
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={faFileCirclePlus}
+                    style={{
+                      color: "#2169ac",
+                      fontSize: "40px",
+                    }}
+                  />
+                  <p className="text-center p-2 pb-0 mb-0">Choose File</p>
+                </label>
+
+                <div className="w-full text-start px-2">
+                  {fileName && fileUrl && (
+                    <a
+                      href={fileUrl}
+                      download={fileName}
+                      style={{ color: "#2169ac", fontSize:'12px', cursor: "pointer", textDecoration: "underline" }}
+                    >
+                      {fileName}
+                    </a>
+                    
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    setFileName("");
+                    setFileUrl(null);
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                    color: "red",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Remove file
+                </button>
+              </div>
+            </div>
+            </div>
+        
+
+        <div className="itemdesc d-flex flex-column "style={{
+          width:'30%'
+        }}>
+        {/* Description */}
+        <div className="">
+          <label className="form-label fw-bold">Item description</label>
+          <textarea
+            className="form-controldesc"
+            name="description"
+            rows={3}
+            placeholder="Enter a detailed description"
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            required
+          />
+        </div>
+        
+
+        {/* Submit Button */}
+        <div className=" text-end">
+          <button type="submit" className="btn mt-2 w-50 fw-bold py-2"
+            style={{
+              fontFamily:"Poppins, sans-serif",
+              fontSize:'12px',
+              color:'white',
+              backgroundColor:'#2169ac',
+              borderRadius:'15px'
+            }}
+          >
+            Submit
+          </button>
+        </div>
+        </div>
+        </div>
+      </form>
+      <ConfirmationModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        onConfirm={handleConfirmSubmit}
+        title="Confirm Submission"
+        message="Are you sure you want to submit this found item report?"
+      />
+    </div>
+    
+  );
+};
+
+export default Found;

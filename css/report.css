@@ -1,0 +1,124 @@
+input[type="date"]::-webkit-calendar-picker-indicator {
+	filter: invert(40%) sepia(50%) saturate(1000%) hue-rotate(180deg);
+	cursor: pointer;
+	width: 18px; /* Adjust size */
+	height: 18px;
+	padding-bottom: 5px;
+  }
+
+.form-control{
+    width:100%;
+    height: 30px;
+	border-bottom:0.5px solid black;
+	background-color:none;
+	font-family:"Work Sans", sans-serif;
+	font-size:12.6px;
+	color:#212020;
+}
+.form-controldesc{
+    width:100%;
+    height: 100px;
+	font-family:"Poppins", sans-serif;
+	font-size:10.8px;
+	color:#2169ac;
+    background-color:#dfe8f5;
+	border:0.5px solid #2169ac;
+	border-radius:10px;
+	padding:10px;
+    overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: #2169ac #dfe8f5;
+}
+
+.cbtn{
+	width: clamp(101px, 15vw, 160px);
+    height: clamp(80px, 15vw, 130px);
+}
+
+/*queries*/
+
+@media (min-width: 768px ) and (max-width: 991px){
+	.cbtn{
+		min-width: 140px;
+		min-height: 120px;
+	}
+	.itemdesc {
+		display: flex;
+		justify-content: center !important;
+		align-self: center;
+		margin-top: 5px;
+		width:80% !important;
+	  }
+	  .inputfile{
+		display: flex;
+		width:100% !important;
+	  }
+  } 
+  
+  @media (min-width: 576px) and (max-width:767px ){
+	.cbtn{
+		min-width: 100px;
+		min-height: 100px;
+		align-items: center !important;
+	}
+	.itemdesc {
+		margin-top: 5px;
+		width:100% !important;
+	  }
+	  .inputfile{
+		display: flex;
+		width:90% !important;
+	  }
+  }
+
+  @media (min-width: 426px) and (max-width:575.9px ){
+	.cbtn{
+		min-width: 180px;
+		max-width: 220px;
+		min-height: 70px;
+		width: 100%;
+		
+	}
+	.btn-group {
+		display: grid !important;
+		grid-template-columns: repeat(2, 1fr); /* 2 columns */
+		gap: 10px; /* Adjust as needed */
+		justify-content: start;
+	  }
+	  .inputfile{
+		display: flex;
+		flex-direction: column !important;
+		width:100% !important;
+	  }
+	  .itemdesc {
+		margin-top: 5px;
+		width:100% !important;
+	  }
+  }
+  
+  @media (min-width: 320px) and (max-width: 425.9px){
+	.btn-size{
+		width: 100%;
+	}
+	.cbtn{
+	
+		width: clamp(101px, 35vw, 150px); 
+        height: clamp(80px, 15vw, 130px);
+	}
+	.btn-group {
+		display: grid !important;
+		grid-template-columns: repeat(2, 1fr); /* 2 columns */
+		gap: 10px; /* Adjust as needed */
+		justify-content: start;
+	  }
+
+	  .inputfile{
+		display: flex;
+		flex-direction: column !important;
+		width:100% !important;
+	  }
+	  .itemdesc {
+		margin-top: 5px;
+		width:100% !important;
+	  }
+  }
