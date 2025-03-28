@@ -15,4 +15,9 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      external: ["font-awesome"]
+    }
+  }
 })
