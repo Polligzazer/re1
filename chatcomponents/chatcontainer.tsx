@@ -4,7 +4,7 @@ import '../css/inquiries.css';
 import { useChatContext } from '../components/ChatContext';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../src/firebase';
-import Convo from './Conersation';
+import Convo from './conersation';
 
 interface Message {
     id: string;
