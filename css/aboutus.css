@@ -1,0 +1,486 @@
+.aboutwallet:before {
+    content: '';
+    position: absolute;
+    top: 1;
+    right: 1;
+    width: 60%;
+    height: 25vh;
+    min-height: 25vh;
+    max-height: 25vh;
+    border-right: 28px solid #c1dfee;
+    z-index: 0;
+}
+
+.aboutwallet:after {
+    content: '';
+    position: absolute;
+    top: 1;
+    left: 1;
+    width: 17vw;
+    min-width: 17vw;
+    max-width: 20vw;
+    height: 28px;
+    background-color: #c1dfee;
+
+}
+
+@media(max-width:1550px) {
+    .aboutwallet:after {
+        content: '';
+        position: absolute;
+        top: 1;
+        left: 1;
+        width: 25vw;
+        min-width: 25vw;
+        max-width: 25vw;
+        height: 28px;
+        background-color: #c1dfee;
+    }
+
+    .pic1 {
+        width: 15vw !important;
+        margin-left: -7% !important;
+    }
+
+    .pic2 {
+        width: 15vw !important;
+        margin-right: -3% !important;
+    }
+
+    .dev1 {
+        margin-left: 40% !important;
+        font-size: 160% !important;
+    }
+
+    .dev2 {
+        margin-left: 10% !important;
+        font-size: 160% !important;
+    }
+}
+
+@media(max-width:1250px) {
+    .aboutwallet:after {
+        content: '';
+        position: absolute;
+        top: 1;
+        left: 1;
+        width: 30vw;
+        min-width: 30vw;
+        max-width: 30vw;
+        height: 28px;
+        background-color: #c1dfee;
+    }
+
+    .column1 {
+        height: 10% !important;
+        padding-top: 4% !important;
+        padding-bottom: 4% !important;
+    }
+
+    .pic1 {
+        width: 15vw !important;
+        margin-left: -7% !important;
+    }
+
+    .pic2 {
+        width: 15vw !important;
+        margin-right: -3% !important;
+    }
+
+    .dev1 {
+        margin-left: 36% !important;
+        font-size: 130% !important;
+    }
+
+    .dev2 {
+        margin-left: 5% !important;
+        font-size: 130% !important;
+    }
+}
+
+@media(max-width:992px) {
+    .aboutwallet:before {
+        content: '';
+        position: absolute;
+        top: 1;
+        right: 1;
+        width: 50%;
+        height: 27vh;
+        min-height: 50px;
+        max-height: 27vw;
+        border-right: 28px solid #c1dfee;
+    }
+
+    .aboutwallet:after {
+        content: '';
+        position: absolute;
+        top: 1;
+        left: 1;
+        width: 35vw;
+        min-width: 35vw;
+        max-width: 35vw;
+        height: 28px;
+        background-color: #c1dfee;
+    }
+
+    .column1 {
+        width: 42% !important;
+        margin-top: 0% !important;
+    }
+
+    .pic1 {
+        width: 19vw !important;
+        margin-left: -15% !important;
+    }
+
+    .pic2 {
+        width: 18vw !important;
+        margin-right: -8% !important;
+    }
+
+    .dev1 {
+        margin-left: 36% !important;
+        font-size: 100% !important;
+    }
+
+    .dev2 {
+        margin-left: -6% !important;
+        font-size: 100% !important;
+    }
+
+    .suggest {
+        margin-left: 50px;
+    }
+}
+
+@media(max-width:769px) {
+    .walletabout {
+        width: 39vw !important;
+        margin-top: 0% !important;
+        margin-right: 0px !important;
+    }
+
+    .aboutwallet:before {
+        content: '';
+        position: absolute;
+        top: 1;
+        right: 1;
+        width: 50%;
+        height: 18vh;
+        min-height: 52px;
+        max-height: 18vw;
+        border-right: 18px solid #c1dfee;
+    }
+
+    .aboutwallet:after {
+        content: '';
+        position: absolute;
+        top: 1;
+        left: 1;
+        width: 25vw;
+        min-width: 25vw;
+        max-width: 25vw;
+        height: 18px;
+        background-color: #c1dfee;
+    }
+
+    .column1 {
+        width: 80% !important;
+        margin-top: 5% !important;
+    }
+
+    .pic1 {
+        width: 25vw !important;
+        margin-left: -7% !important;
+    }
+
+    .pic2 {
+        width: 25vw !important;
+        margin-right: 62% !important;
+    }
+
+    .dev1,
+    .dev2 {
+        margin-left: 36% !important;
+        font-size: 140% !important;
+    }
+
+    .footer {
+        flex-direction: column;
+        border: none !important;
+
+    }
+
+    .contactinfo {
+        display: flex;
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .suggest {
+        margin-left: 100px;
+    }
+
+    .forinquiry {
+        display: flex;
+        justify-content: start;
+        width: 80vw !important;
+        height: 12vh !important;
+    }
+
+    .emailflo {
+        width: 50vw !important;
+    }
+}
+
+@media(max-width:576px) {
+    .aboutwallet {
+        position: relative;
+        right: 120px;
+
+    }
+
+    .walletabout {
+        width: 50vw !important;
+        margin-top: 0% !important;
+        margin-right: 0% !important;
+    }
+
+    .aboutwallet:before {
+        content: '';
+        position: absolute;
+        top: 1;
+        right: 1;
+        width: 50%;
+        height: 28vh;
+        min-height: 52px;
+        max-height: 22vw;
+        border-right: 18px solid #c1dfee;
+    }
+
+    .aboutwallet:after {
+        content: '';
+        position: absolute;
+        top: 1;
+        left: 1;
+        width: 35vw;
+        min-width: 35vw;
+        max-width: 35vw;
+        height: 18px;
+        background-color: #c1dfee;
+    }
+
+    .textleft {
+        padding: 0% !important;
+        margin: 0% !important;
+
+    }
+
+    .imgright {
+        padding: 0% !important;
+        margin-right: 0% !important;
+        margin-left: 5% !important;
+    }
+
+    .textright {
+        padding: 0% !important;
+        margin: 0% !important;
+
+    }
+
+    .imgleft {
+        padding: 0% !important;
+        margin-right: 0% !important;
+        margin-left: 5% !important;
+    }
+
+    .imgright2 {
+        padding: 0% !important;
+        margin-right: 0% !important;
+        margin-left: 55% !important;
+    }
+
+
+    .column1 {
+        width: 80% !important;
+        margin-top: 5% !important;
+    }
+
+    .pic1 {
+        width: 25vw !important;
+        margin-left: -13% !important;
+    }
+
+    .pic2 {
+        width: 25vw !important;
+        margin-right: 62% !important;
+    }
+
+    .dev1,
+    .dev2 {
+        margin-left: 36% !important;
+        font-size: 120% !important;
+    }
+
+    .footer {
+        flex-direction: column;
+        border: none !important;
+
+    }
+
+    .forinquiry {
+        width: 80vw !important;
+        height: 12vh !important;
+    }
+}
+
+@media (max-width:480px) {
+    .column1 {
+        width: 80% !important;
+        margin-top: 5% !important;
+    }
+
+    .abouttext {
+        display: flex;
+        flex-direction: column;
+        margin: 0% !important;
+    }
+
+    .imgleft,
+    .imgright,
+    .imgright2,
+    #img1,
+    #img2,
+    #img3,
+    #img4,
+    #img5,
+    #img6 {
+        margin: 0% !important;
+        padding: 0% !important;
+    }
+
+    #text1,
+    #text2,
+    #text3,
+    #text4,
+    #text5,
+    #text6 {
+        margin-bottom: 10% !important;
+    }
+
+    #img1 {
+        order: 1;
+    }
+
+    #text1 {
+        order: 2;
+        position: relative;
+        top: 20px;
+    }
+
+    #img2 {
+        order: 3;
+    }
+
+    #text2 {
+        order: 4;
+        position: relative;
+        top: 20px;
+    }
+
+    #img3 {
+        order: 5;
+        position: relative;
+        left: 10px;
+    }
+
+    #text3 {
+        order: 6;
+        position: relative;
+        top: 20px;
+    }
+
+    #img4 {
+        order: 7;
+        position: relative;
+        left: 10px;
+    }
+
+    #text4 {
+        order: 8;
+        position: relative;
+        top: 20px;
+    }
+
+    #img5 {
+        order: 9;
+        position: relative;
+        left: 10px;
+    }
+
+    #text5 {
+        order: 10;
+        position: relative;
+        top: 20px;
+    }
+
+    #img6 {
+        order: 11;
+        position: relative;
+        left: 10px;
+    }
+
+    #text6 {
+        order: 12;
+        position: relative;
+        top: 20px;
+    }
+
+    .textleft,
+    .textright {
+        position: relative;
+        top: 50px;
+    }
+
+    .pic1 {
+        width: 25vw !important;
+        margin-left: -20% !important;
+    }
+
+    .pic2 {
+        width: 25vw !important;
+        margin-right: 53% !important;
+    }
+
+    .dev1 {
+        margin-left: 15% !important;
+    }
+
+    .dev2 {
+        margin-left: 15 % !important;
+    }
+
+    .footer {
+        justify-content: start;
+        width: 100vw !important;
+        flex-direction: column;
+        border: none !important;
+
+    }
+
+    .contactinfo,
+    .suggest {
+        position: relative;
+        right: 55px;
+        width: 100vw !important;
+    }
+
+    .forinquiry {
+        width: 80vw !important;
+        height: 12vh !important;
+    }
+
+    .emailflo {
+        width: 100vw !important;
+    }
+}
