@@ -20,6 +20,7 @@ import { AuthContext } from "../components/Authcontext";
 import { ReactNode, useContext } from "react";
 import Loading from "../components/Loading";
 import Profile from "../pages/profile";
+import Aboutus from "../pages/aboutUs";
 
 function App() {
   const { currentUser, loading } = useContext(AuthContext);
@@ -40,6 +41,7 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/email-verified" element={<EmailVerified />} />
         <Route path="/complete-registration" element={<CompleteRegistration />} />
+        <Route path="/aboutus" element= {<Aboutus />}/>
         <Route path="/testload" element={<Loading />} />
 
         {/* Protected Routes */}
