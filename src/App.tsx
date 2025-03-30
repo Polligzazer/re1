@@ -7,7 +7,6 @@ import VerifyEmail from "../components/veifyemail";
 import EmailVerified from "../components/emailverified";
 import CompleteRegistration from "../components/completeregistration";
 import Home from "../pages/home";
-import AdminHome from "../pages/adminhome";
 import Report from "../pages/report";
 import UserList from "../pages/UserList";
 import Dashboard from "../pages/admindashboard";
@@ -21,6 +20,9 @@ import { ReactNode, useContext } from "react";
 import Loading from "../components/Loading";
 import Profile from "../pages/profile";
 import Aboutus from "../pages/aboutUs";
+import ClaimApproval from "../pages/dashcomps/PendingClaimPage"
+import ReportApproval from "../pages/dashcomps/AdminApproval";
+import Claimed from "../pages/dashcomps/ClaimsPage"
 
 function App() {
   const { currentUser, loading } = useContext(AuthContext);
@@ -60,12 +62,17 @@ function App() {
           <Route path="/item-history" element={<ItemHistory />} />
           <Route path="/inquiries" element={<Inquiries />} />
           <Route path="/profile" element={<Profile />} />
+
+          {/* Admin */}
+
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/userlist" element={<UserList />} />
+          <Route path="/dashboard/claim-approval" element={<ClaimApproval />} />
+          <Route path="/dashboard/report-approval" element={<ReportApproval />} />
+          <Route path="/dashboard/claimed" element={<Claimed />} />
         </Route>
 
         {/* Admin-only Routes */}
-        <Route path="/admin-home" element={<AdminHome />} />
-        <Route path="/dashboard/*" element={<Dashboard />} />
-        <Route path="/userlist" element={<UserList />} />
       </Routes>
     </Router>
   );

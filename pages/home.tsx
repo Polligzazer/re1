@@ -10,6 +10,8 @@ import { AuthContext } from "../components/Authcontext";
 import { useNavigate } from "react-router-dom";
 import categoryImages from "../src/categoryimage";
 import "./home.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleChevronLeft, faCircleChevronRight } from '@fortawesome/free-solid-svg-icons';
 
 interface Report {
   id: string;
@@ -241,29 +243,33 @@ const Home = () => {
                   className="swiper-button prev"
                   style={{
                     color: "white",
-                    padding: "8px 16px",
-                    
                     border: "none",
-                    fontSize: "14px",
+                    fontSize: "16px",
                     cursor: "pointer",
                   }}
                   onClick={() => swiperRefs.current[key]?.slidePrev()}
                 >
-                  Previous
+                    <FontAwesomeIcon 
+                     style={{
+                      fontWeight:'bold'
+                    }}
+                    icon={faCircleChevronLeft}/>
                 </button>
                 <button
                   className="swiper-button next"
                   style={{
                     color: "white",
-                    padding: "8px 16px",
-                   
                     border: "none",
-                    fontSize: "14px",
+                    fontSize: "16px",
                     cursor: "pointer",
                   }}
                   onClick={() => swiperRefs.current[key]?.slideNext()}
                 >
-                  Next
+                  <FontAwesomeIcon
+                  style={{
+                    fontWeight:'bold'
+                  }}
+                  icon={faCircleChevronRight}/>
                 </button>
               </div>
             )}

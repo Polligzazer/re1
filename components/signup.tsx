@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import {
   auth,
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
   fetchSignInMethodsForEmail,
 } from "../src/firebase";
+import { ref, set, serverTimestamp } from "firebase/database";
+import { database } from "../src/firebase";
+import emailjs from "emailjs-com";
 import { useNavigate, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../css/signup.css";
@@ -36,25 +37,53 @@ const Signup: React.FC = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError("");
-
+  
     if (!emailPattern.test(email)) {
       setEmailError("Invalid email format");
       return;
     }
-
+  
     try {
-      const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+      let signInMethods = [];
+      try {
+        signInMethods = await fetchSignInMethodsForEmail(auth, email);
+      } catch (fetchError) {
+        console.warn("Warning: Email check failed, proceeding with signup.", fetchError);
+      }
+  
       if (signInMethods.length > 0) {
         setEmailError("There is already an existing account with this email.");
         return;
       }
-
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await sendEmailVerification(userCredential.user);
+  
+      // Generate a unique verification ID
+      const verificationId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const verificationLink = `${window.location.origin}/verify-email?uid=${verificationId}`;
+  
+      // Store the verification link in Firebase Realtime Database
+      await set(ref(database, `verificationLinks/${verificationId}`), {
+        email: email,
+        password: password, // Store password temporarily
+        expiresAt: Date.now() + 15 * 60 * 1000, // 15 minutes expiration
+        createdAt: serverTimestamp(),
+      });
+  
+      // Send verification email using EmailJS
+      emailjs.send(
+        "service_a9p3n1f",
+        "template_pi72mvc",
+        {
+          to_email: email,
+          verification_link: verificationLink,
+        },
+        "JoMHbOBfIABg9jZ_U"
+      );
+  
       navigate("/verify-email");
+  
     } catch (err: any) {
       console.error("Signup Error:", err.message);
-      setEmailError("Account already registered.");
+      setEmailError("An error occurred. Please try again.");
     }
   };
 
@@ -69,14 +98,13 @@ const Signup: React.FC = () => {
       <div
         className="d-flex flex-row justify-content-center align-items-center"
         style={{
-          width: "1100px", // Fixed width for the card container
-          height: "700px", // Fixed height for the card container
+          width: "1100px", 
+          height: "700px",
           borderRadius: "20px",
           backgroundColor: "transparent",
           overflow: "hidden",
         }}
       >
-        {/* LEFT: Logo and Tagline */}
         <div
           className="d-none d-md-flex flex-column justify-content-center align-items-center ps-5"
           style={{
@@ -114,7 +142,7 @@ const Signup: React.FC = () => {
           style={{
             width: "500px",
             height: "100%",
-            borderLeft: "1px solid #e0e0e0",
+            
             backgroundColor: "transparent",
           }}
         >
@@ -123,6 +151,7 @@ const Signup: React.FC = () => {
             style={{
               background: "transparent",
               width: "100%",
+              borderLeft: "1px solid black",
             }}
           >
             <div
@@ -132,7 +161,7 @@ const Signup: React.FC = () => {
               }}
             >
               <h2
-                className="fw-bold w-75 ms-lg-4"
+                className="fw-bold w-100 text-center"
                 style={{
                   fontFamily: "League Spartan, serif",
                   fontSize: "clamp(1.5rem, 2.1vw, 2.5rem)",
@@ -147,7 +176,7 @@ const Signup: React.FC = () => {
             <div className="justify-content-center align-items-center">
               <form className="formsignup" onSubmit={handleSignup}>
                 {/* Email */}
-                <div className="mb-4 pb-3 inputparent">
+                <div className="mb-3 pb-1 inputparent">
                   <input
                     type="email"
                     className={`form-control ${emailError ? "is-invalid" : email ? "is-valid" : ""}`}
@@ -165,7 +194,7 @@ const Signup: React.FC = () => {
                 </div>
 
                 {/* Password */}
-                <div className="mb-4 pb-3 pt-1 inputparent">
+                <div className="mb-3 pb-1 pt-1 inputparent">
                   <input
                     type="password"
                     className={`form-control ${passwordError ? "is-invalid" : password ? "is-valid" : ""}`}
@@ -183,7 +212,7 @@ const Signup: React.FC = () => {
                 </div>
 
                 {/* Confirm Password */}
-                <div className="mb-4 pt-1 inputparent">
+                <div className="mb-3 pt-1 inputparent">
                   <input
                     type="password"
                     className={`form-control ${confirmPasswordError ? "is-invalid" : confirmPassword ? "is-valid" : ""}`}

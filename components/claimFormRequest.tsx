@@ -5,10 +5,16 @@ import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useContext } from "react";
 import { AuthContext } from "../components/Authcontext";
+import { FaChevronLeft } from "react-icons/fa";
+import "../css/report.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileCirclePlus } from '@fortawesome/free-solid-svg-icons';
+import ConfirmationModal from "./ConfirmationModal";
 
 const ClaimFormRequest: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser } = useContext(AuthContext);
+  const [showModal, setShowModal] = useState(false);
 
   const categories = [
     "Gadgets",
@@ -26,13 +32,13 @@ const ClaimFormRequest: React.FC = () => {
 
   const [formData, setFormData] = useState({
     claimantName: "",
-    userId: currentUser?.uid,
+    userId: currentUser?.uid || "",
     referencePostId: "",
     itemName: "",
     description: "",
     location: "",
     category: "",
-    date: ""
+    date: "",
   });
 
   useEffect(() => {
@@ -55,9 +61,7 @@ const ClaimFormRequest: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     const claimData = {
       ...formData,
       status: "pendingclaim",
@@ -74,112 +78,223 @@ const ClaimFormRequest: React.FC = () => {
   };
 
   return (
-    <div className="container mx-5">
-      <h1 className="text-center text-primary">Submit Claim Request</h1>
-      <form onSubmit={handleSubmit} className="bg-white rounded-4 shadow-lg p-4">
-      <div className="col-12">
-          <label className="form-label fw-bold">Category</label>
+    <div className="container mt-5">
+
+      {/* Form */}
+      <form 
+        className=" p-4 row g-4" 
+        onSubmit={handleSubmit}
+        style={{
+          background:'transparent'
+        }}
+      >
+        {/* Category Selection */}
+        <div className="d-flex flex-md-row flex-column justify-content-center m-sm-0">
+        <div className="btn-size d-flex flex-row" style={{
+          width:'90%'
+        }}>
+          <div className=" d-flex flex-column" style={{
+            width:'70%'
+          }}>
+          <label className="form-label fw-bold ms-1 mb-3"
+            style={{
+              fontFamily: "DM Sans, sans-serif", 
+              fontSize:'clamp(14px, 5vw, 23px)',
+              color:'#212020'
+            }}
+          >Category</label>
           
-          <div className="btn-group w-100 flex-wrap" role="group">
+          <div className=" btn-group gap-3 flex-column flex-sm-row  " role="group"
+            style={{
+              width:'100%'
+            }}
+          >
             {categories.map((category) => (
               <button
                 key={category}
                 type="button"
-                className={`btn d-flex align-items-center gap-2 ${formData.category === category ? 'btn-primary' : 'btn-outline-primary'}`}
+                style={{
+                  borderRadius:'15px',
+                  border:'none',
+                  backgroundColor: formData.category === category ? '#2169ac': '#dfe8f5',
+                  justifyContent:'center',
+                  outline:'none',
+                  fontFamily:'League Spartan, serif',
+                  boxShadow: formData.category === category 
+                    ? '0px 6px 12px rgba(0, 0, 0, 0.2)' // **Shadow when selected**
+                    : 'none',
+                }}
+                className="cbtn btn d-flex align-items-md-center align-items-start  flex-row flex-sm-column"
                 onClick={() => setFormData({ ...formData, category })}
               >
+                <div style={{
+                  height:'50%'
+                }}>
+                <div className="p-2 mt-2" style={{
+                  borderRadius:'10px',
+                  backgroundColor: formData.category === category ? '#89ccff' : '#2169ac',
+                  
+                }}>
                 <img 
                   src={categoryImages[category]} 
                   alt={category} 
-                  style={{ width: '24px', height: '24px', objectFit: 'contain' }} 
+                  style={{ 
+                    width: 'clamp(36px, 5vw, 46px)', 
+                    backgroundColor:'none', 
+                    height: 'clamp(36px, 5vw, 46px)', 
+                    objectFit: 'contain' }} 
                 />
+                </div>
+                </div>
+                <div className="pt-2" style={{
+                  height:'50%',
+                  width:'100%',
+                  marginTop:'10px',
+                  fontSize:"clamp(12px, 1.8vh, 19px)",
+                  color:formData.category === category ? '#dfe8f5' : '#2169ac',
+                  fontWeight:'bold',
+                  lineHeight:'1.2'
+                }}>
                 {category}
+                </div>
               </button>
             ))}
           </div>
+          </div>
         </div>
+        
 
-        <div className="mb-3">
-          <label className="form-label">Claimant Name</label>
-          <input
-            type="text"
-            className="form-control"
-            name="claimantName"
-            value={formData.claimantName}
-            readOnly
+        </div>
+        {/* Item Name */}
+        <div className="d-flex  flex-column flex-lg-row w-100 justify-content-center">
+        <div className="inputfile d-flex flex-md-row gap-4" style={{
+          width:'60%',
+          paddingLeft:'5%',
+          paddingRight:'5%'
+        }}>  
+        <div className="d-flex flex-column m-0 mt-2" style={{
+          width:'100%',       
+          rowGap:'40px',
+        }}>
+            <div className="">
+              <label className="form-label fw-bold">Claimant Name</label>
+              <input
+                type="text"
+                className="form-control"
+                name="claimantName"
+                placeholder={currentUser?.firstName}
+                value={formData.claimantName}
+                onChange={(e) => setFormData({ ...formData, claimantName: e.target.value })}
+              />
+            </div>
+            <div className="">
+              <label className="form-label fw-bold">Item to Claim</label>
+              <input
+                type="text"
+                className="form-control"
+                name="itemName"
+                placeholder=""
+                value={formData.itemName}
+                onChange={(e) => setFormData({ ...formData, itemName: e.target.value })}
+                required
+              />
+            </div>
+
+            {/* Date Lost */}
+            <div className="">
+              <label className="form-label fw-bold">Date Lost</label>
+              <input
+                type="date"
+                className="form-control"
+                name="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                required
+              />
+            </div>
+            </div>
+          
+          <div className="d-flex flex-column" style={{
+            width:'100%',
+            rowGap:'40px',
+          }}>
+            {/* Location */}
+            <div className="m-0 mt-2" style={{
+              width:'100%'
+            }}>
+              <label className="form-label fw-bold">Location</label>
+              <input
+                type="text"
+                className="form-control"
+                name="location"
+                placeholder="Enter location details"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                required
+              />
+            </div>
+            <div className="m-0 mt-2" style={{
+              width:'100%'
+            }}>
+              <label className="form-label fw-bold">Reference Post ID</label>
+              <input
+                type="text"
+                className="form-control"
+                name="referencePostId"
+                placeholder=""
+                value={formData.referencePostId}
+                onChange={(e) => setFormData({ ...formData, referencePostId: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+        </div>
+        
+
+        <div className="itemdesc d-flex flex-column "style={{
+          width:'30%'
+        }}>
+        {/* Description */}
+        <div className="">
+          <label className="form-label fw-bold">Item description</label>
+          <textarea
+            className="form-controldesc"
+            name="description"
+            rows={3}
+            placeholder="Enter a detailed description"
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            required
           />
         </div>
+        
 
-        <div className="d-flex gap-5">
-          <div className="mb-3 col-md-5">
-          <label className="form-label">Item to claim</label>
-          <input
-            type="text"
-            className="form-control"
-            name="itemName"
-            value={formData.itemName}
-            onChange={handleChange}
-            required
-            />
-          </div>
-
-          <div className="mb-3 col-md-6">
-            <label className="form-label">Location</label>
-            <input
-              type="text"
-              className="form-control"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        </div>
-
-        <div className="d-flex gap-5">
-          <div className="mb-3 col-md-5">
-            <label className="form-label">Date</label>
-            <input
-              type="date"
-              className="form-control"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="mb-3 col-md-6">
-            <label className="form-label">Description</label>
-            <textarea
-              className="form-control"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        </div>
-
-        <div className="mb-5">
-          <label className="form-label">Reference Post ID</label>
-          <input
-            type="text"
-            className="form-control"
-            name="referencePostId"
-            value={formData.referencePostId}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="text-center">
-          <button type="submit" className="btn btn-primary w-50">
-            Submit Claim
+        {/* Submit Button */}
+        <div className=" text-end">
+          <button type="submit" className="btn mt-2 w-50 fw-bold py-2"
+            style={{
+              fontFamily:"Poppins, sans-serif",
+              fontSize:'12px',
+              color:'white',
+              backgroundColor:'#2169ac',
+              borderRadius:'15px'
+            }}
+          >
+            Submit
           </button>
         </div>
+        </div>
+        </div>
       </form>
+      <ConfirmationModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        onConfirm={handleSubmit}
+        title="Confirm Submission"
+        message="Are you sure you want to submit this claim form?"
+      />
     </div>
+    
   );
 };
 

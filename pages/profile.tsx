@@ -30,7 +30,7 @@ const Profile: React.FC = () => {
         const reportSnapshot = await getDocs(reportsQuery);
         setReportCount(reportSnapshot.size);
 
-        const claimsQuery = query(collection(db, "found_items"), where("claimedBy", "==", uid));
+        const claimsQuery = query(collection(db, "claim_items"), where("userId", "==", uid));
         const claimSnapshot = await getDocs(claimsQuery);
         setClaimCount(claimSnapshot.size);
 
@@ -65,7 +65,7 @@ const Profile: React.FC = () => {
   // };
 
   return (
-    <div className="mt-5">
+    <div className="mt-5" style={{paddingTop:"5vw"}}>
 
       <div className="pb-5">
         <img src="../../src/assets/notifpfpicon.png" className="rounded-circle"
@@ -74,18 +74,19 @@ const Profile: React.FC = () => {
           }} />
         <span className="ps-5"
           style={{
-            fontSize: "clamp(27px, 1vw, 30px)",
+            fontSize:"3vw",
             color: "#0e5cc5",
             fontFamily: "Poppins, sans-serif"
           }}>{user.firstName}  {user.middleInitial}  {user.lastName}</span>
       </div>
 
       <div className="d-flex flex-column gap-5">
-        <div className="d-flex flex-row gap-5 pt-3 pb-3"
+        <div className="d-flex flex-row p-3"
           style={{
             color: "#0e5cc5",
-            fontSize: "clamp(25px, 1vw, 33px)",
-            fontFamily: "Work Sans, sans-serif"
+            fontSize: "2vw",
+            fontFamily: "Work Sans, sans-serif",
+            gap: "2vw"
           }}>
           <div className="me-4">
 
@@ -105,8 +106,8 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
-        <div className="d-flex">
-          <div className="d-flex gap-5 w-75">
+        <div className="d-flex" style={{gap: "5vw"}}>
+          <div className="d-flex w-50" style={{gap: "3vw"}}>
             <div
               className="ps-4 pt-1 pb-3"
               style={{
@@ -181,14 +182,13 @@ const Profile: React.FC = () => {
           </div>
 
 
-          <div className="d-flex flex-column w-50 align-items-center">
+          <div className="d-flex flex-column align-items-center" style={{width: "30vw"}}>
             <div className="pb-4">
               <button
                 onClick={() => setShowModal(true)}
                 className="btn text-start"
                 style={{
-                  width: "200px",
-                  minWidth: "100px",
+                  width: "25vw",
                   borderRadius: "20px",
                   fontFamily: "Work Sans, sans-serif",
                   fontSize: "clamp(14px, 1.5vw, 16px)",
@@ -205,8 +205,7 @@ const Profile: React.FC = () => {
                 onClick={() => navigate("/aboutus")}
                 className="btn text-start"
                 style={{
-                  width: "200px",
-                  minWidth: "100px",
+                  width: "25vw",
                   borderRadius: "20px",
                   fontFamily: "Work Sans, sans-serif",
                   fontSize: "clamp(14px, 1.5vw, 16px)",
@@ -223,8 +222,7 @@ const Profile: React.FC = () => {
                 onClick={() => navigate("/reset-password")}
                 className="btn text-start"
                 style={{
-                  width: "200px",
-                  minWidth: "100px",
+                  width: "25vw",
                   borderRadius: "20px",
                   fontFamily: "Work Sans, sans-serif",
                   fontSize: "clamp(14px, 1.5vw, 16px)",

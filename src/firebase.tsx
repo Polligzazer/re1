@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getDatabase, ref, set, onDisconnect } from "firebase/database";
 import { 
   getAuth, 
   createUserWithEmailAndPassword, 
@@ -11,7 +12,8 @@ import {
   confirmPasswordReset,
   updatePassword,
   verifyPasswordResetCode,
-  applyActionCode 
+  applyActionCode,
+  onAuthStateChanged
 } from "firebase/auth";
 import { 
   getFirestore, 
@@ -28,6 +30,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyC_FLCIBWdReqRPmWFZB1L_4rhLntNWuyA",
     authDomain: "message-4138f.firebaseapp.com",
     projectId: "message-4138f",
+    databaseURL: "https://message-4138f-default-rtdb.asia-southeast1.firebasedatabase.app",
     storageBucket: "message-4138f.firebasestorage.app",
     messagingSenderId: "197072020008",
     appId: "1:197072020008:web:e0676251a0d313260dcb1d",
@@ -39,10 +42,25 @@ const auth = getAuth(app);
 const messaging = getMessaging(app);
 export { messaging, getToken, onMessage };
 
+const database = getDatabase(app);
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    const userStatusRef = ref(database, `status/${user.uid}`);
+
+    set(userStatusRef, "online").catch(console.error);
+
+    // Mark user as "offline" when they disconnect
+    onDisconnect(userStatusRef).set("offline").catch(console.error);
+  }
+});
+
+export { auth, database };
+
+
 export const storage = getStorage(app);
 export const db = getFirestore(app);
 export {
-   auth, 
    createUserWithEmailAndPassword, 
    signInWithEmailAndPassword, 
   sendEmailVerification, 

@@ -183,14 +183,61 @@ const Topbar = () => {
                 )}
               </a>
 
-              <ul className="dropdown-menu dropdown-menu-end px-2 py-3" style={{ width: "300px", maxHeight: "400px", overflowY: "auto" }}>
-                <li className="dropdown-header text-primary fw-bold fs-5">Notifications</li>
+              <ul
+                className="notif-box dropdown-menu dropdown-menu-end px-2 py-3 shadow-lg rounded-3"
+                style={{
+                  width: "270px",
+                  maxHeight: "300px",
+                  overflowY: "auto",
+                  backgroundColor: "#fafcff",
+                  border: "1px solid #ddd",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  fontFamily: "Poppins, sans-serif",
+                  
+                }}
+              >
+
+                <li className="dropdown-header fw-bold border-bottom fs-5" style={{ color: "#0e5cc5"}}>Notifications</li>
                 {notifications.length === 0 ? (
                   <li className="dropdown-item text-center">No new notifications</li>
                 ) : (
                   notifications.map((notif) => (
-                    <li key={notif.id} className={`dropdown-item ${notif.readBy?.includes(userId ?? "") ? "text-muted" : "fw-bold"}`} onClick={() => handleNotificationClick(notif)} style={{ cursor: "pointer" }}>
-                      {notif.description}
+                    <li 
+                      key={notif.id} 
+                      className={`dropdown-item fs-6 mb-1 ${notif.readBy?.includes(userId ?? "") ? "" : "fw-bold"}`} 
+                      onClick={() => handleNotificationClick(notif)} 
+                      style={{
+                        cursor: "pointer",
+                        padding: "12px",
+                        transition: "background 0.2s ease-in-out",
+                        wordBreak: "break-word",
+                        whiteSpace: "normal",
+                        overflowWrap: "break-word",
+                        display: "block",
+                        backgroundColor: notif.readBy?.includes(userId ?? "") ? "#fafcff" : "#f1f7ff",
+                        marginBottom:'5px',
+                        
+                        
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#2169ac";
+                        e.currentTarget.style.color = "#fff";
+
+                        
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = notif.readBy?.includes(userId ?? "") ? "#fafcff" : "#f1f7ff";
+                        e.currentTarget.style.color = notif.readBy?.includes(userId ?? "") ? "#6c757d" : "#000";
+                      }}
+                    > 
+                      <span className="custom-color" style={{
+                        fontSize:'13px'
+                      }}>{notif.description}</span>
+                      {!notif.readBy?.includes(userId ?? "") && (
+                        <span className="badge bg-danger text-white ms-2" style={{ fontSize: "10px" }}>New</span>
+                      )}
+
                     </li>
                   ))
                 )}
@@ -203,10 +250,10 @@ const Topbar = () => {
             >
               <img src={NotifPfpIcon}  className=""
                 style={{
-                  width: " 2.6vw",
-                  minWidth:"20px",
-                  height:  "auto",
-                }}
+                  width: "clamp(24px, 2.6vw, 50px)", // Scales from 24px to 50px
+                  height: "auto",  // Maintains aspect ratio
+                  minWidth: "24px", // Prevents shrinking too much
+                }} 
                 />
             </NavLink>
           </div>

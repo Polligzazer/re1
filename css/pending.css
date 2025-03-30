@@ -1,0 +1,186 @@
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+  }
+  .custom-scrollbar{
+      width: 85%;
+      height: 390px;
+      overflow-Y: auto;
+      overflow-X: hidden;
+      gap:20px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent; /* Track color */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #888; 
+    border-radius: 4px; 
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+  }
+  .fcolumn{
+    width: 78%;
+  }
+  .stsdiv{
+    width:30% !important;
+    height:100%;
+
+  }
+  .pending-card{
+    width:70% !important;
+    height:100% !important;
+  }
+
+  .img-cat{
+    width: 100px; 
+    height: 100px; 
+    padding:10px;
+  }
+  .details{
+    width:70%;
+    font-size: clamp(11.8px, 0.7rem, 17px);
+   font-family: "Poppins", sans-serif;
+  }
+  .conimg{
+    width: 30%;
+  }
+  /*queries*/
+
+  @media (min-width: 768px ) and (max-width: 991px){
+    .pending-card{
+        width:98% !important;
+    }
+    .img-cat{
+        width: 80px; 
+        height: 80px; 
+        padding:5px;
+      }
+      .stsdiv{
+        width:100% !important;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 7px; /* Width of the scrollbar */
+      }
+      .custom-scrollba{
+        width:100%;
+      }
+  } 
+  
+  @media (min-width: 576px) and (max-width:767px ){
+    .pending-card{
+        width:99% !important;
+       
+    }
+    .img-cat{
+      width: 70px; 
+      height: 70px; 
+      padding:5px;
+    }
+    .stsdiv{
+      width:100% !important;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px; /* Width of the scrollbar */
+    }
+    .custom-scrollbar{
+      width:100%;
+    }
+    .card-main{
+      flex-direction: column;
+      padding-bottom:0px !important;
+    }
+    .card-button{
+      padding-top: 12px;
+      padding-bottom: 13px;
+    } 
+    .details{
+      width: 80%;
+    }
+    .fcolumn{
+      width:100%;
+    }
+    .conimg{
+      width:20%;
+    }
+  }
+
+  @media (min-width: 426px) and (max-width:575.9px ){
+    .pending-card{
+        width:98% !important;
+    }
+    .img-cat{
+      width: 65px; 
+      height: 65px; 
+      padding:5px;
+    }
+    .stsdiv{
+      width:100% !important;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px; /* Width of the scrollbar */
+    }
+    .custom-scrollbar{
+      width:100%;
+    }
+    .card-main{
+      flex-direction: column;
+      padding-bottom:0px !important;
+    }
+    .card-button{
+      padding-top: 12px;
+      padding-bottom: 13px;
+      margin-right:0px;
+    } 
+    .details{
+      width: 80%;
+    }
+    .fcolumn{
+      width:100%;
+    }
+    .conimg{
+      width:20%;
+    }
+  }
+  
+  @media (max-width: 425.9px){
+    .pending-card{
+        width:98% !important;
+    }
+    .img-cat{
+      width: 50px; 
+      height: 50px; 
+      padding:0px;
+    }
+    .stsdiv{
+      width:100% !important;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px; /* Width of the scrollbar */
+    }
+    .custom-scrollbar{
+      width:100%;
+    }
+    .card-main{
+      flex-direction: column;
+      padding-bottom:0px !important;
+    }
+    .card-button{
+      padding-top: 12px;
+      padding-bottom: 13px;
+      margin-right:0px;
+    } 
+    .details{
+      margin-left: 12px !important;
+      width: 80%;
+      font-size: clamp(8px, 0.6rem, 17px) !important;
+    }
+    .fcolumn{
+      width:100%;
+    }
+    .conimg{
+      width:25%;
+    }
+  }

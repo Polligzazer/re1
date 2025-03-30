@@ -67,17 +67,11 @@ const SearchPage = () => {
         }
 
         // Apply Date Range Filter
-        if (dateFrom || dateTo) {
-          let fromTimestamp = dateFrom ? Timestamp.fromDate(new Date(dateFrom)) : null;
-          let toTimestamp = dateTo ? Timestamp.fromDate(new Date(dateTo)) : null;
-
-          if (fromTimestamp) constraints.push(where("timestamp", ">=", fromTimestamp));
-          if (toTimestamp) constraints.push(where("timestamp", "<=", toTimestamp));
-        }
-
+        
+        
         const q = query(reportsRef, ...constraints);
         const querySnapshot = await getDocs(q);
-
+        
         let fetchedReports = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -164,7 +158,7 @@ const SearchPage = () => {
               <option value="all">All</option>
               <option value="Gadgets">Gadgets</option>
               <option value="School Belongings">School Belongings</option>
-              <option value="Accessories/Personal Belongings">
+              <option value="Personal Belongings">
                 Personal Belongings
               </option>
               <option value="Others">Others</option>

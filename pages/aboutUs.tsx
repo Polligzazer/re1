@@ -1,7 +1,7 @@
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "../css/aboutus.css"
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useNavigate, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 
 const Aboutus = () => {

@@ -19,7 +19,6 @@ const ResetPassword: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [oobCode, setOobCode] = useState<string | null>(null);
 
-  // Check if this page is opened from the reset link with oobCode
   useEffect(() => {
     const code = searchParams.get("oobCode");
     if (code) {
@@ -48,7 +47,7 @@ const ResetPassword: React.FC = () => {
     setLoading(true);
     try {
       await sendPasswordResetEmail(auth, email);
-      setSuccess("Check your email for a reset link. Come back here after you chnage your password");
+      setSuccess("Check your email for a reset link. Come back here after you change your password");
 
       // Clear the email input
       setEmail("");
@@ -103,7 +102,7 @@ const ResetPassword: React.FC = () => {
       className="d-flex container-fluid justify-content-center align-items-center"
       style={{ height: "100vh", background: "transparent" }}
     >
-      <div className="p-4 rounded shadow bg-white" style={{ width: "350px" }}>
+      <div className="p-4 rounded shadow bg-white text-center" style={{ width: "350px" }}>
         {loading && <div className="alert alert-info text-center">Processing...</div>}
         {!loading && error && <div className="alert alert-danger text-center">{error}</div>}
         {!loading && success && <div className="alert alert-success text-center">{success}</div>}
@@ -139,7 +138,10 @@ const ResetPassword: React.FC = () => {
         ) : (
           // Email Input for Reset Link (default view)
           <>
-            <h2 className="fw-bold mb-4 text-center">Forgot Password</h2>
+            <h2 className="fw-bold mb-4 text-center"style={{
+               fontFamily: "League Spartan, serif",
+               color:' #454545',
+            }}>Forgot Password</h2>
             <input
               type="email"
               className="form-control mb-3"
@@ -152,6 +154,10 @@ const ResetPassword: React.FC = () => {
               className="btn btn-primary w-100 fw-bold"
               onClick={handleSendResetEmail}
               disabled={loading}
+              style={{
+                borderRadius:' 10px',
+                fontFamily: "Work Sans, sans-serif",
+              }}
             >
               {loading ? "Sending..." : "Send Reset Link"}
             </button>
@@ -159,6 +165,11 @@ const ResetPassword: React.FC = () => {
             <button
               className="btn btn-link w-100 mt-3"
               onClick={() => navigate("/login")}
+              style={{
+                textDecoration:'none',
+                 fontFamily:"Work Sans, sans-serif",
+                fontSize:' 0.8125rem'
+              }}
             >
               Back to Login
             </button>

@@ -5,7 +5,7 @@
 }
 .progress-container {
   width: 50%;
-  height: 15px;
+  height: 10px;
   border-radius: 5px;
 }
 
@@ -19,4 +19,14 @@
   border-radius: 50%;
   border: 1px solid rgba(0, 0, 0, 0.1);
   padding: 4px;
+}
+
+.custom-modal-content{
+  padding:30px;
+  border:1px solid #2169ac;
+}
+
+.custom-modal{
+  padding:10px;
+  border:1px solid #2169ac;
 }

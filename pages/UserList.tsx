@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
+import "../css/userlist.css";
 import { db } from "../src/firebase";
-import Topbar from "../components/Topbar";
+
 
 const UserList = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -46,47 +47,67 @@ const UserList = () => {
 
   return (
     <div className="container-fluid mt-5">
-      <Topbar />
-      <h2 className="text-center my-5">User List</h2>
-
+      <div className="ms-2 justify-content-start">
+        <h2 className="fw-bold text-start mt-5" style={{
+           fontFamily: "DM Sans, sans-serif", 
+           fontSize:'25px'
+        }}>User List</h2>
+        <p className="mb-5" style={{
+          fontFamily: "Poppins, sans-serif",
+          color:'#454545'
+        }}><small>Track the users in the FLO Application</small></p>
+      </div>
       {/* Search Input */}
-      <input
-        type="text"
-        placeholder="Search by Name, School ID, etc..."
-        className="form-control mb-3"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-
+      <div className="ms-3 mb-4 d-flex flex-row">
+      <p className=" fw-bold align-self-end me-2" style={{
+           fontFamily: "DM Sans, sans-serif", 
+           fontSize:'19px'
+        }}>Filter by:</p>
+        <input
+          type="text"
+          placeholder="Search by Name, School ID, etc..."
+          className="form-control p-3"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            border:'1px solid #89ccff',
+            borderRadius:'30px'
+          }}
+        />
+      </div>
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <table className="table table-striped table-bordered">
+      <div className="pdiv m-0 p-0 mb-4 ">  
+        <table className="table table-striped table-bordered" style={{
+          fontFamily: "DM Sans, sans-serif", 
+          
+        }}>
           <thead>
             <tr className="text-center">
-              <th>Name</th>
-              <th>Email</th>
-              <th>School ID</th>
-              <th>Role & Section</th>
-              <th>Contact</th>
+              <th className="th1">Name</th>
+              <th className="th1">Email</th>
+              <th className="th1">School ID</th>
+              <th className="th1">Role & Section</th>
+              <th className="th1">Contact</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers.length > 0 ? (
               filteredUsers.map((user) => (
                 <tr className="text-center" key={user.id}>
-                  <td>{`${user.firstName} ${user.middleInitial || ""}. ${user.lastName}`}</td>
-                  <td>{user.email}</td>
-                  <td>{user.schoolId}</td>
-                  <td>
+                  <td className="td1" >{`${user.firstName} ${user.middleInitial || ""}. ${user.lastName}`}</td>
+                  <td className="td1" >{user.email}</td>
+                  <td className="td1">{user.schoolId}</td>
+                  <td className="td1">
                     {user.role === "student"
                       ? `${user.role} - ${user.strandOrCourse} - ${user.yearSection}`
                       : user.role}
                   </td>
-                  <td>{user.contact}</td>
+                  <td className="td1">{user.contact}</td>
                 </tr>
               ))
-            ) : (
+            ) : ( 
               <tr>
                 <td colSpan={5} className="text-center">
                   No matching users found.
@@ -95,6 +116,7 @@ const UserList = () => {
             )}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

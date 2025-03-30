@@ -1,172 +1,25 @@
-#sidebah:hover{
-    background-color: transparent;
-    border-color: transparent; 
-}
-
-
-
-/* .navrow {
-    width: 10%;
-}
-.navsidebar{
-    height:60px;
-    width: 80px;
-}
-
-.navFlo {
-    width: 100px;
-    cursor: pointer;
-}
-
-#navsearch {
-    width:100% !important;
-    max-width: 50% !important;
-    border: 2px solid #59b9ff;
-    padding-right: 5% !important;
-}
-
-input[type="search"]:focus {
-    border-color: #2169ac;
-    outline: none;
-    box-shadow: 0 0 8px rgba(23, 117, 204, 0.5);
-}
-
-.navsearchbutton, .nav-sidebar {
-    outline:none;
-    border: none;
-    background-color: transparent;
-}
-.navnotificon, .navusericon {
-    color: #0e5cc5;
-}
-
-::-webkit-search-cancel-button {
-    display: none;
-}
-
-#navsearch:focus {
-    outline: none;
-}
-
-
-@media (max-width:1400px) {
-    #navsearch {
-        padding-right: 7.5% !important;
-    }
-    .navsearchbutton {
-        right:7% !important;
-    }
-}
-
-@media (max-width:850px) {
-    .navsearchbutton {
-        right: 9% !important;
-    }
-}
-
-@media (max-width:700px) {
-    .navFlo {
-        width: 10vw;
-    }
-
-    #navsearch {
-        position: relative;
-        left: 20% !important;
-        padding-right:13% !important ;
-    }
-
-    .navsearchbutton {
-        left: 7% !important;
-    }
-}
-
-@media (max-width:550px) {
-    .navrow {
-        width: 100%;
-    }
-    .navFlo {
-        width: 20vw;
-        position: relative;
-        left:25%;
-    }
-
-    #navsearch {
-        width: 100% !important;
-        max-width: 130% !important;
-        left:130px !important;
-        padding-right: 18% !important;
-    }
-
-    .navsearchbutton {
-        position: absolute;
-        left: 40% !important;
-        padding: 0%;
-    }
-
-    .navnotif {
-        position: absolute;
-        bottom:55px;
-    }
-}
-
-@media (max-width:460px) {
-    .navrow {
-        width: 100%;
-    }
-
-    .navFlo {
-        position: relative;
-        width: 20vw;
-        left: 20%;
-    }
-
-    #navsearch {
-        width: 100% !important;
-        max-width: 130% !important;
-        left: 110px !important;
-        padding-right: 23% !important;
-    }
-
-    .navsearchbutton {
-        position: absolute;
-        left: 40% !important;
-        padding: 0%;
-    }
-
-    .navnotif {
-        position: absolute;
-        bottom: 55px;
-    }
-}
-
-@media (max-width:380px) {
-    .navrow {
-        width: 100%;
-    }
-
-    .navFlo {
-        position: relative;
-        width: 18vw;
-        left: 0%;
-    }
-
-    #navsearch {
-        width: 100% !important;
-        max-width: 130% !important;
-        left: 80px !important;
-        padding-right: 0%;
-    }
-
-    .navsearchbutton {
-        position: absolute;
-        left: 35% !important;
-        padding: 0%;
-    }
-
-    .navnotif {
-        position: absolute;
-        bottom: 50px;
-        left:10px;
-    }
-}
- */
+/* Custom Scrollbar for Webkit Browsers */
+.notif-box::-webkit-scrollbar {
+    width: 6px; /* Thin scrollbar */
+  }
+  
+  .notif-box::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Light gray background */
+    border-radius: 10px;
+  }
+  
+  .notif-box::-webkit-scrollbar-thumb {
+    background: #888; /* Darker scrollbar */
+    border-radius: 10px;
+    transition: background 0.3s;
+  }
+  
+  .notif-box::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Darker on hover */
+  }
+  
+  /* Smooth scrolling effect */
+  .notif-box {
+    scroll-behavior: smooth;
+  }
+  

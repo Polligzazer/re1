@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
+import "../css/ModalProgress.css";
 
 interface ConfirmationModalProps {
   show: boolean;
@@ -13,24 +14,43 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   show,
   onHide,
   onConfirm,
-  title,
   message,
 }) => {
   return (
-    <Modal show={show} onHide={onHide} centered>
+    <Modal contentClassName='custom-modal' show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>{title}</Modal.Title>
+      
       </Modal.Header>
 
       <Modal.Body>
-        <p>{message}</p>
+        <p className="p-2" style={{
+          color:'#2169ac',
+          fontFamily: "Poppins, sans-serif",
+          fontSize:'16.4px',
+        }}>{message}</p>
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
+        <Button onClick={onHide}style={{
+          backgroundColor:' #e86b70',
+          color:'white',
+          fontSize:'13px',
+          outline:'none',
+          border:'none',
+          fontFamily: "Poppins, sans-serif",
+         
+        }}>
           Cancel
         </Button>
-        <Button variant="primary" onClick={onConfirm}>
+        <Button onClick={onConfirm} style={{
+          backgroundColor:'#67d753',
+          color:'white',
+          fontSize:'13px',
+          outline:'none',
+          border:'none',
+          fontFamily: "Poppins, sans-serif",
+         
+        }}>
           Confirm
         </Button>
       </Modal.Footer>
