@@ -13,7 +13,7 @@ const VerifyEmail: React.FC = () => {
 
   useEffect(() => {
     if (!verificationId) {
-      setError("Invalid verification link.");
+      setError("Please check your email for verification");
       return;
     }
 
