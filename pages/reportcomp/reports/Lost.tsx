@@ -321,6 +321,7 @@ const Lost: React.FC = () => {
                 className="form-control"
                 name="date"
                 value={formData.date}
+                max={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 required
               />

@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../src/firebase";
 import Analytics from "../components/Analytics";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleCheck, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 
 const Dashboard = () => {
   const [pendingReports, setPendingReports] = useState(0);
@@ -12,7 +14,6 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Pending Reports
         const pendingQuery = query(
           collection(db, "lost_items"),
           where("status", "==", "pendingreport")
@@ -27,7 +28,6 @@ const Dashboard = () => {
         const pendingSnapshot1 = await getDocs(pendingClaim);
         setPendingClaims(pendingSnapshot1.size);
 
-        // Claimed Items
         const claimedQuery = query(
           collection(db, "claim_items"),
           where("status", "==", "claimed")
@@ -43,22 +43,154 @@ const Dashboard = () => {
   }, [setPendingReports, setPendingClaims, setClaimedItems]);
 
   return (
-    <div className="container mt-5 pt-5">
-      <h1 className="text-center mt-5 mb-4">Admin Dashboard</h1>
-      <div className="row justify-content-between my-4">
-        <Link to="report-approval" className="col-md-3 bg-primary text-white text-center p-3 mx-2">
-          <h3>Pending Reports</h3>
-          <h2>{pendingReports}</h2>
+    <div className="container mt-5 pb-5 pt-2">
+      <div className="d-flex flex-column mb-3 ">
+        <h2 className="text-start fw-bold mt-5"
+          style={{
+            color:'#212020',
+            fontFamily: "DM Sans, sans-serif", 
+             
+          }}
+        >Dashboard</h2>
+        <p className="" style={{color:'#454545',  fontFamily:"Poppins, sans-serif"}}><small>Welcome <span style={{color:'#0e5cc5'}}>Admin,</span> here’s an overview about the items</small></p>
+      </div>
+      <div className="row justify-content-evenly gap-5 mt-4 mb-5">
+        <Link to="report-approval" className="col-md-3 text-center p-0 m-0"
+          style={{
+            textDecoration:'none',
+            border:'1px solid #bfbdbc',
+            borderRadius:'10px 10px 0 0',
+            backgroundColor:'#f1f7ff'
+          }}
+        >
+          <div className="d-flex p-3 flex-column" style={{
+            backgroundColor:'#f1f7ff',
+            borderRadius:'10px 10px 0 0',
+          }}>
+            <div className="d-flex flex-row justify-content-between align-items-center px-4">
+              <p className="mt-3 m-0 mb-1" style={{
+                fontFamily: "DM Sans, sans-serif", 
+                fontSize:'30px',
+                color:'#0e5cc5',
+                padding:'0'
+                
+              }}>{pendingReports}</p>
+              <FontAwesomeIcon 
+                icon={faExclamationTriangle}
+                style={{
+                  position:'relative',
+                  color:'#e86b70',
+                  fontSize:'34px',
+                  top:'-5px'
+                }}/>
+            </div>
+            <h3 className="px-4 text-start" style={{
+              color:'#636363',
+              fontFamily:"Poppins, sans-serif",
+              fontSize:'17.6px'
+            }}>Pending Reports</h3>
+          </div>
+          <p className="p-3 px-4 m-0 text-start" style={{
+            backgroundColor:'#e9eef7',
+            border:'1px solid #bfbdbc',
+            fontFamily: "Work, sans-serif",
+            color:'#2169ac',
+            fontWeight:'bold',
+            fontSize:'12.6px'
+
+          }}>View all request</p>
         </Link>
 
-        <Link to="claim-approval" className="col-md-3 bg-warning text-dark text-center p-3 mx-2">
-          <h3>Pending Claims</h3>
-          <h2>{pendingClaims}</h2>
+        <Link to="claim-approval" className="col-md-3 text-center p-0 m-0"
+          style={{
+            textDecoration:'none',
+            border:'1px solid #bfbdbc',
+            borderRadius:'10px 10px 0 0',
+            backgroundColor:'#f1f7ff'
+          }}
+        >
+          <div className="d-flex p-3 flex-column" style={{
+            backgroundColor:'#f1f7ff',
+            borderRadius:'10px 10px 0 0',
+          }}>
+            <div className="d-flex flex-row justify-content-between align-items-center px-4">
+              <p className="mt-3 m-0 mb-1" style={{
+                fontFamily: "DM Sans, sans-serif", 
+                fontSize:'30px',
+                color:'#0e5cc5',
+                padding:'0'
+                
+              }}>{pendingClaims}</p>
+              <FontAwesomeIcon 
+                icon={faExclamationTriangle}
+                style={{
+                  position:'relative',
+                  color:'#e86b70',
+                  fontSize:'34px',
+                  top:'-5px'
+                }}/>
+            </div>
+            <h3 className="px-4 text-start" style={{
+              color:'#636363',
+              fontFamily:"Poppins, sans-serif",
+              fontSize:'17.6px'
+            }}>Pending Claim</h3>
+          </div>
+          <p className="p-3 px-4 m-0 text-start" style={{
+            backgroundColor:'#e9eef7',
+            border:'1px solid #bfbdbc',
+            fontFamily: "Work, sans-serif",
+            color:'#2169ac',
+            fontWeight:'bold',
+            fontSize:'12.6px'
+
+          }}>View all request</p>
         </Link>
 
-        <Link to="claimed" className="col-md-3 bg-success text-white text-center p-3 mx-2">
-          <h3>Claimed Items</h3>
-          <h2>{claimedItems}</h2>
+        <Link to="claimed" className="col-md-3 text-center p-0 m-0"
+          style={{
+            textDecoration:'none',
+            border:'1px solid #bfbdbc',
+            borderRadius:'10px 10px 0 0',
+            backgroundColor:'#f1f7ff'
+          }}
+        >
+          <div className="d-flex p-3 flex-column" style={{
+            backgroundColor:'#f1f7ff',
+            borderRadius:'10px 10px 0 0',
+          }}>
+            <div className="d-flex flex-row justify-content-between align-items-center px-4">
+              <p className="mt-3 m-0 mb-1" style={{
+                fontFamily: "DM Sans, sans-serif", 
+                fontSize:'30px',
+                color:'#0e5cc5',
+                padding:'0'
+                
+              }}>{claimedItems}</p>
+              <FontAwesomeIcon 
+                icon={faCircleCheck}
+                style={{
+                  position:'relative',
+                  color:'#67d753',
+                  fontSize:'34px',
+                  top:'-5px'
+                }}/>
+            </div>
+            <h3 className="px-4 text-start" style={{
+              color:'#636363',
+              fontFamily:"Poppins, sans-serif",
+              fontSize:'17.6px'
+            }}>Success claims</h3>
+          </div>
+          <p className="p-3 px-4 m-0 text-start" style={{
+            backgroundColor:'#e9eef7',
+            border:'1px solid #bfbdbc',
+            fontFamily: "Work, sans-serif",
+            color:'#2169ac',
+            fontWeight:'bold',
+            fontSize:'12.6px'
+
+          }}>View all items</p>
         </Link>
       </div>
 

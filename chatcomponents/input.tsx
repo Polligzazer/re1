@@ -49,6 +49,7 @@ const Input = () => {
       console.log("✅ File uploaded successfully:", fileUrl);
   
       setText((prev) => prev + `\n${fileUrl}`);
+      setFile(selectedFile);
     } catch (error) {
       console.error("❗ Error uploading file:", error);
       alert("❗ Failed to upload file. Please try again.");

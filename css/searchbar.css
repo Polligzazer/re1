@@ -15,54 +15,145 @@
     filter: invert(1);
 }
 
+.custom-select {
+    padding-right: 35px; 
+    position: relative;
+}
+
+.dropdown-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"%3E%3Cpath fill="%230e5cc5" d="M1.5 6l6 6 6-6H1.5z"/%3E%3C/svg%3E');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
 .inquire-button {
     width: clamp(90px, 10vw, 120px) !important;
 }
 
 @media (max-width:990px) {
-    .search-results {
-        justify-content: start !important;
+    .search-container {
+        flex-direction: column !important;       
+    }
+
+    .filter-container {
+        position: relative;
+        right:150px;
+        width: clamp(100px, 2vw, 200px)  !important;
+    }
+
+    .filter-drop {
+        flex-direction: row !important;
+        width: clamp(400px, 2vw, 300px) !important;   
+        min-width: 300px;
+    }
+
+    .filter-date {
+        flex-direction: row !important;
+        width: clamp(200px, 2vw, 300px) !important;   
+        min-width: 300px;
+    }
+
+    .back-btn {
+        width: 380px;
+        padding-bottom: 20px;
+    }
+
+    .indv-filter {
+        width: clamp(180px, 3vw, 400px) !important;
+        margin-right:5% !important 
+    }
+
+    .indv-filter1 {
+        width: clamp(180px, 3vw, 400px) !important;
+    }
+
+    .indv-filter2 {
+        width: clamp(200px, 3vw, 400px) !important;
+        margin-right:5% !important ;
+    }
+
+    .search-result-container {
+        position: relative;
     }
 
     .report-card-search {
-        width: clamp(300px, 30vw, 420px) !important;
-        max-width: 485px;
-        min-width: 300px;
+        width: clamp(310px, 3vw, 720px) !important;
+        min-width: 100px;
     }
 }
 
 @media (max-width:768px) {
-    .search-results {
-        justify-content: center !important;
+    .filter-container {
+        width: clamp(100px, 3vw, 420px)  !important;
+        left:-148px;
+    }
+
+    .back-btn {
+        width: 90px;
+        padding-bottom: 20px;
+    }
+
+    .indv-filter2 {
+        width: clamp(190px, 3vw, 400px) !important;
+        margin-right:5% !important ;
     }
 
     .report-card-search {
-        width: clamp(500px, 30vw, 420px) !important;
-        max-width: 485px;
+        position: relative;
+        width: clamp(500px, 3vw, 520px) !important;
         min-width: 450px;
     }
 }
 
 @media (max-width:570px) {
+    .filter-container {
+        right:120px;
+        width: clamp(100px, 2vw, 320px)  !important;
+    }
+
+    .indv-filter, .indv-filter1 {
+        width: clamp(177px, 3vw, 400px) !important;
+    }
+
+    .indv-filter2 {
+        width: clamp(190px, 3vw, 400px) !important;
+        margin-right:5% !important ;
+    }
+    
     .report-card-search {
-        width: clamp(300px, 30vw, 420px) !important;
-        max-width: 485px;
-        min-width: 400px;
+        justify-content: center !important;
+        width: clamp(320px, 3vw, 320px) !important;
+        min-width: 250px;
     }
 
     .inquire-button {
-        width: clamp(100px, 30vw, 420px) !important;
+        width: clamp(100px, 3vw, 420px) !important;
     }
 }
 
 
-@media (max-width:420px) {
-    .report-card-search {
-        width: clamp(300px, 30vw, 420px) !important;
-        max-width: 485px;
-        min-width: 310px;
+@media (min-width: 320px) and (max-width: 425px){
+    .filter-container {
+        margin-left: 47%;
+        text-align: center !important;
+    }
+    .filter-drop, .filter-date {
+        width: 20% !important;
+    }
+    .indv-filter, .indv-filter1 {
+        width: clamp(140px, 3vw, 400px) !important;
     }
 
+    .indv-filter2 {
+        width: clamp(140px, 3vw, 400px) !important;
+    }
+    
     .inquire-button {
         width: clamp(100px, 30vw, 420px) !important;
     }

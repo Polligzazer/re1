@@ -83,7 +83,7 @@ const UserList = () => {
           fontFamily: "DM Sans, sans-serif", 
           
         }}>
-          <thead>
+          <thead className="sticky-top">
             <tr className="text-center">
               <th className="th1">Name</th>
               <th className="th1">Email</th>

@@ -12,8 +12,8 @@ import { Bar } from "react-chartjs-2";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { getDocs, collection } from "firebase/firestore";
 import { db } from "../src/firebase";
+import "../css/Analytics.css";
 
-// ✅ Register required Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Analytics = () => {
@@ -23,6 +23,7 @@ const Analytics = () => {
     monthly: null,
     success: null,
   });
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
     const fetchReportData = async () => {
@@ -63,16 +64,59 @@ const Analytics = () => {
 
     fetchReportData();
   }, []);
+  
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const monthLabels = useMemo(() => {
+    return isMobile
+      ? ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+      : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  }, [isMobile]);
+
+  const getFontSize = (min: number, preferredFactor: number, max: number): number => {
+    const calculatedSize = window.innerWidth / preferredFactor;
+    return Math.min(max, Math.max(min, calculatedSize));
+  };
 
   const monthlyReportOptions: ChartOptions<"bar"> = useMemo(
     () => ({
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       scales: {
         y: {
           beginAtZero: true,
           suggestedMax: 30,
-          ticks: { stepSize: 10 },
+          ticks: {
+            stepSize: 10,
+            font: {
+              size: getFontSize(8, 100, 14), 
+          },
+        },
+          grid: {
+            drawBorder: true,  
+            drawOnChartArea: true,
+            drawTicks: false, 
+          },
+        },
+        x: {
+          stacked:true,
+          barPercentage: 0.9, 
+          categoryPercentage: 0.9,
+          grid: {
+            drawBorder: true, 
+            drawOnChartArea: false, 
+            drawTicks: true, 
+          },
+          ticks: {
+            font:{
+              size: getFontSize(8, 100, 14), 
+            },
+           },
+
         },
       },
       plugins: {
@@ -80,22 +124,47 @@ const Analytics = () => {
         tooltip: { enabled: true },
       },
     }),
-    []
+    [window.innerWidth]
   );
+
+
+
 
   const successRateOptions: ChartOptions<"bar"> = useMemo(
     () => ({
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       scales: {
         y: {
           stacked: true,
+          grid: {
+            drawBorder: true,  
+            drawOnChartArea: true,
+            drawTicks: false, 
+          },
           beginAtZero: true,
-          suggestedMax: Math.max(...monthlyReports, 100),
-          ticks: { stepSize: 10 },
-          title: { display: true, text: "Reports & Success Rate" },
+          max: Math.max(...claimsSuccessRate, 100),
+          ticks: {
+            stepSize: 25,
+            font: {
+              size: getFontSize(8, 100, 14), 
+          }
         },
-        x: { stacked: true },
+          title: { display: false},
+        },
+        x: {
+          stacked: true, 
+          grid: {
+            drawBorder: true, 
+            drawOnChartArea: false, 
+            drawTicks: true, 
+          },
+          ticks:{
+            font: {
+              size: getFontSize(8, 100, 14), 
+            }
+          },
+        },
       },
       plugins: {
         legend: { display: true, position: "top" as const },
@@ -114,50 +183,83 @@ const Analytics = () => {
     [monthlyReports]
   );
 
-  // Function to destroy previous chart instance before rendering a new one
-  const onChartUpdate = (chartRefKey: "monthly" | "success", chartInstance: ChartJS | null) => {
+   const onChartUpdate = (chartRefKey: "monthly" | "success", chartInstance: ChartJS | null) => {
     if (chartRefs.current[chartRefKey]) {
-      chartRefs.current[chartRefKey]!.destroy(); // Destroy previous instance
+      chartRefs.current[chartRefKey]!.destroy(); 
     }
     chartRefs.current[chartRefKey] = chartInstance;
   };
 
   return (
-    <div className="container">
+    <div className="container justify-content-evenly pt-4 d-flex flex-lg-row flex-column" style={{
+      width:'100%'
+    }}>
       {/* Monthly Reports */}
-      <div className="mb-4">
-        <h2 className="text-start mb-3">Monthly Item Reports</h2>
-        <Bar
+      <div className="pbar-div mb-5 mt-4 ">
+        <h2 className="text-start mb-3 fw-bold" style={{
+           fontFamily: "DM Sans, sans-serif",
+           fontSize:'clamp(12px, 1.4rem, 30px)',
+           color:'#212020', 
+        }}>Monthly Item Reports</h2>
+      <div className="graph-div mt-2 p-lg-5 p-3">  
+        <Bar className="bar-graph p-0" 
           ref={(chartInstance) => chartInstance && onChartUpdate("monthly", chartInstance)}
           data={{
-            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            labels: monthLabels,
             datasets: [
               {
                 label: "Item Reports",
-                data: monthlyReports,
-                backgroundColor: "rgba(54, 162, 235, 1)",
+                data: monthlyReports.map((value, index) => {
+                  return index === new Date().getMonth() ? 0 : value; // Exclude the current month
+                }),
+                backgroundColor: (context) => {
+                  const chart = context.chart;
+                  const { ctx, chartArea } = chart;
+                  if (!chartArea) return;
+        
+                  const gradient = ctx.createLinearGradient(0, 0, 0, chartArea.bottom);
+                  gradient.addColorStop(0, "#92e9fd");
+                  gradient.addColorStop(1, "#004097");
+        
+                  return gradient;
+                },
+              },
+              {
+                label: "Current Month",
+                data: monthlyReports.map((value, index) => {
+                  return index === new Date().getMonth() ? value : 0; // Show only the current month
+                }),
+                backgroundColor: "#e8a627", // Different color for the current month
               },
             ],
           }}
           options={monthlyReportOptions}
         />
       </div>
+      </div>
 
       {/* Success Rate */}
-      <div className="mb-4">
-        <h2 className="text-start mb-3">Success Rate of Item Claims</h2>
-        <Bar
+      <div className="mb-5 pbar-div mt-4">
+        <h2 className="text-start fw-bold mb-3"
+        style={{
+          fontFamily: "DM Sans, sans-serif",
+          fontSize:'clamp(12px, 1.4rem, 30px)',
+          color:'#212020', 
+       }}
+        >Success Rate of Item Claims</h2>
+        <div className="graph-div mt-2 p-lg-5 p-3">
+        <Bar className="bar-graph p-0"
           ref={(chartInstance) => chartInstance && onChartUpdate("success", chartInstance)}
           data={{
-            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            labels: monthLabels,
             datasets: [
               {
                 label: "Success Rate (%)",
                 data: claimsSuccessRate,
-                backgroundColor: "rgba(75, 192, 192, 1)",
+                backgroundColor: "#67d753",
               },
               {
-                label: "Lost Items (Reports)",
+                label: "Items Reports",
                 data: monthlyReports,
                 backgroundColor: "rgba(54, 162, 235, 1)",
               },
@@ -165,6 +267,7 @@ const Analytics = () => {
           }}
           options={successRateOptions}
         />
+        </div>
       </div>
     </div>
   );

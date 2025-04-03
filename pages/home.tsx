@@ -179,7 +179,7 @@ const Home = () => {
               {reportList.map((report) => (
                 <SwiperSlide key={report.id}>
                   <div className="report-card p-3 d-flex align-items-center">
-                    <div className="imgreport-div d-flex align-items-center p-3 me-4"
+                    <div className="imgreport-div d-flex align-items-center p-2 me-4"
                       style={{
                         borderRight:"1px solid white",
                       }}

@@ -58,6 +58,7 @@ const ClaimedReports: React.FC = () => {
     const filteredReports = reports.filter((report) =>
         report.claimantName.toLowerCase().includes(searchLower) ||
         report.itemName.toLowerCase().includes(searchLower) ||
+        report.description.toLowerCase().includes(searchLower) ||
         report.category.toLowerCase().includes(searchLower) ||
         report.location.toLowerCase().includes(searchLower) ||
         report.referencePostId.toLowerCase().includes(searchLower)

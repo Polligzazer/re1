@@ -1,19 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, useAnimation, useMotionValue } from "framer-motion";
-import { FaSearch, FaWallet, FaKey, FaMobile, FaLaptop, FaHeadphones } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const foundItems = [
-  { id: "wallet", icon: <FaWallet className="text-danger" size={50} />, position: 1 },
-  { id: "key", icon: <FaKey className="text-warning" size={50} />, position: 3 },
-  { id: "mobile", icon: <FaMobile className="text-primary" size={50} />, position: 5 },
-  { id: "laptop", icon: <FaLaptop className="text-secondary" size={50} />, position: 7 },
-  { id: "headphones", icon: <FaHeadphones className="text-info" size={50} />, position: 9 },
-];
 
 const Loading = () => {
   const [dots, setDots] = useState("");
-  const [visibleItems, setVisibleItems] = useState<number[]>([]);
   const controls = useAnimation();
   const x = useMotionValue(0);
 
@@ -32,17 +24,6 @@ const Loading = () => {
     });
   }, [controls]);
 
-  // Watch `x` motion value and update visible items dynamically
-  useEffect(() => {
-    const unsubscribe = x.onChange((latest) => {
-      const index = Math.round((latest + 140) / 40);
-      const itemsToShow = foundItems.filter((item) => item.position === index).map((item) => item.position);
-      setVisibleItems(itemsToShow);
-    });
-
-    return () => unsubscribe(); // Cleanup on unmount
-  }, [x]);
-
   return (
     <div className="d-flex flex-column align-items-center justify-content-center vh-100 position-relative bg-light overflow-hidden">
       {/* Clouds */}
@@ -53,19 +34,6 @@ const Loading = () => {
       {/* Magnifying Glass Animation */}
       <motion.div animate={controls} className="position-relative mb-4" style={{ x, width: 140, height: 140 }}>
         <FaSearch size={140} className="text-primary position-absolute" />
-        {foundItems.map((item) =>
-          visibleItems.includes(item.position) ? (
-            <motion.div
-              key={item.id}
-              className="position-absolute"
-              style={{ top: 33, left: 33 }}
-              animate={{ scale: [0.3, 0.6, 0.3], opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 1, ease: "easeInOut" }}
-            >
-              {item.icon}
-            </motion.div>
-          ) : null
-        )}
       </motion.div>
 
       {/* Loading Text */}

@@ -5,7 +5,26 @@
 .pdiv{
     width: 100%;
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 400px;
 }
+.pdiv::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .pdiv::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+  }
+  
+  .pdiv::-webkit-scrollbar-thumb {
+    background: #888; 
+    border-radius: 10px;
+  }
+  
+  .pdiv::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+  }
 .td1{
     padding:10px !important;
     overflow-wrap: break-word;

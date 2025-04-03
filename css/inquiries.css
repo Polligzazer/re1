@@ -59,6 +59,25 @@
     font-size: 25px;
     color:#212020;
 }
+.messages::-webkit-scrollbar {
+    width: 8px;
+    
+  }
+  
+  .messages::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+  }
+  
+  .messages::-webkit-scrollbar-thumb {
+    background: #2169ac;
+    border-radius: 10px;
+  }
+  
+  .messages::-webkit-scrollbar-thumb:hover {
+    background: #004aad;
+  }
+
 .chat-button.active{
     background-color:#004aad;
     color:white;
@@ -77,11 +96,11 @@
   
     .sidebar {
       width: 100%;
-      flex: none;
+      display: none;
       height: 100%; 
     }
   
     .chat{
-        width: 90%;
+        width: 100%;
     }
 }

@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { requestNotificationPermission, setupForegroundNotifications } from "./firebase"; 
 import Layout from "../components/Layout";
 import Signup from "../components/signup";
 import Login from "../components/login";
@@ -23,16 +25,39 @@ import Aboutus from "../pages/aboutUs";
 import ClaimApproval from "../pages/dashcomps/PendingClaimPage"
 import ReportApproval from "../pages/dashcomps/AdminApproval";
 import Claimed from "../pages/dashcomps/ClaimsPage"
+import useLostItemApprovalListener from "../components/notificationService";
 
 function App() {
   const { currentUser, loading } = useContext(AuthContext);
 
   const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-    if (loading) return <div>Loading...</div>; // spinner here if you want
+    if (loading) return <Loading />;
     if (!currentUser) return <Navigate to="/login" />;
     return <>{children}</>;
   };
 
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/firebase-messaging-sw.js")
+        .then((registration) => {
+          console.log("✅ Service Worker registered:", registration);
+        })
+        .catch((error) => {
+          console.error("❌ Service Worker registration failed:", error);
+        });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      requestNotificationPermission();
+      setupForegroundNotifications();
+    }
+  }, [currentUser]);
+
+  
+  useLostItemApprovalListener();
   return (
     <Router>
       <Routes>

@@ -5,17 +5,17 @@ import { getAuth } from "firebase/auth";
 
 const Claimed = () => {
   const [claimedItems, setClaimedItems] = useState<any[]>([]);
-  const auth = getAuth(); // Firebase Auth for current user
+  const auth = getAuth();
 
   useEffect(() => {
     const fetchClaimedItems = async () => {
-      if (!auth.currentUser) return; // Ensure user is authenticated
+      if (!auth.currentUser) return;
 
       try {
         const q = query(
-          collection(db, "lost_items"),
-          where("userId", "==", auth.currentUser.uid), // User-specific filter
-          where("status", "==", "claimed")             // Claimed status filter
+          collection(db, "claim_items"),
+          where("userId", "==", auth.currentUser.uid),
+          where("status", "==", "claimed")       
         );
 
         const querySnapshot = await getDocs(q);
@@ -27,7 +27,7 @@ const Claimed = () => {
           }));
           setClaimedItems(itemsData);
         } else {
-          setClaimedItems([]); // No claimed items found
+          setClaimedItems([]);
         }
       } catch (error) {
         console.error("Error fetching claimed items:", error);
@@ -35,12 +35,12 @@ const Claimed = () => {
     };
 
     fetchClaimedItems();
-  }, [auth.currentUser]); // Re-fetch if user changes
+  }, [auth.currentUser]);
 
   return (
     <div className="container mt-4">
       {claimedItems.length === 0 ? (
-        <p className="alert alert-warning">No claimed items found.</p>
+        <p>No claimed items found...</p>
       ) : (
         <div className="row">
           {claimedItems.map((item) => (

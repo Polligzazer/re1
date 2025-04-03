@@ -8,7 +8,6 @@ import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import { db } from '../src/firebase';
 import { collection, getDocs } from 'firebase/firestore';
-import { APPWRITE_PROJECT_ID, APPWRITE_STORAGE_BUCKET_ID } from "../src/appwrite";
 
 interface Message {
   id: string;
@@ -18,6 +17,7 @@ interface Message {
   fileType?: string;
   claimFormRequest?: boolean;
   validUntil?: any;
+  img?: string;
 }
 
 interface Report {
@@ -50,13 +50,8 @@ const Convo = ({ message, previousMessage, chatPartner }: ConvoProps) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [isExpired, setIsExpired] = useState(false);
 
-  const appwriteProjectId = APPWRITE_PROJECT_ID;
-  const appwriteBucketId = APPWRITE_STORAGE_BUCKET_ID;
-  const getFileUrl = (fileId: string) => 
-    `https://cloud.appwrite.io/v1/storage/buckets/${appwriteBucketId}/files/${fileId}/view?project=${appwriteProjectId}`;
-
   useEffect(() => {
-    ref.current?.scrollIntoView({ behavior: 'smooth' });
+    ref.current?.scrollIntoView({ behavior: 'instant' });
   }, [message]);
 
   useEffect(() => {
@@ -185,7 +180,7 @@ useEffect(() => {
         color: '#333',
         borderRadius: '12px',
         padding: '10px 15px',
-        maxWidth: '300px',
+        maxWidth: '250px',
         cursor: 'pointer',
         fontFamily: 'Poppins, sans-serif',
         fontSize: '14px',
@@ -241,24 +236,33 @@ useEffect(() => {
             </>
           ) : (
             <>
-              {message.text}
-              {message.fileType && (
-                <a
-                  href={getFileUrl(message.fileType)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'block',
-                    marginTop: '8px',
-                    fontSize: '13px',
-                    color: '#2169ac',
-                    textDecoration: 'underline',
-                  }}
-                >
-                  Attachment file
-                </a>
-              )}
+              {
+                message.img ? (
+                  // If it's an image, display it as an image
+                  <div>
+                    <img
+                      src={message.img}
+                      alt="Attachment"
+                      style={{ maxWidth: '250px', borderRadius: '8px', cursor: 'pointer' }}
+                      onClick={() => window.open(message.img, '_blank')} // Open the image in a new tab when clicked
+                    />
+                    {message.text && <p style={{ margin: 0, padding: 0 }}>{message.text}</p>}  {/* Render message.text only if it exists */}
+                  </div>
+                ) : message.text.includes('https://cloud.appwrite.io/v1/storage/buckets/') ? (
+                  // If it's a URL, render it as a link
+                  <div>
+                    <a href={message.text} target="_blank" rel="noopener noreferrer">
+                      See attached file
+                    </a>
+                  </div>
+                ) : (
+                  // Render regular text
+                  <p style={{ margin: 0, padding: 0 }}>{message.text}</p>
+                )
+              }
+
             </>
+
           )}
         </>
       )}
@@ -280,8 +284,8 @@ useEffect(() => {
   onClose={() => setShowModal(false)} 
   item={selectedReport ? { 
     ...selectedReport, 
-    userId: selectedReport.userId || "", // Default empty string if missing
-    type: "lost" // Set a default type if needed
+    userId: selectedReport.userId || "",
+    type: "lost"
   } : null} 
 />
   </div>

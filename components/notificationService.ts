@@ -7,24 +7,24 @@ import {
   orderBy,
   query,
   updateDoc,
-  arrayUnion,
+  getDocs,
   Unsubscribe,
-  setDoc,
+  writeBatch,
   serverTimestamp,
 } from "firebase/firestore";
+import { useEffect } from "react";
+import { messaging, onMessage } from "../src/firebase";
 import { Item } from "./types";
 
-// Notification Type
 export interface AppNotification {
   id: string;
-  userId: string;
   reportId?: string;
   description: string;
-  readBy?: string[];
+  isRead: boolean;
   timestamp: number;
 }
 
-// Fetch Item Details
+
 export const fetchItemDetails = async (reportId: string): Promise<Item | null> => {
   if (!reportId) return null;
 
@@ -39,9 +39,10 @@ export const fetchItemDetails = async (reportId: string): Promise<Item | null> =
   }
 };
 
-// Fetch Notifications in Real-time
-export const fetchNotifications = (callback?: (notifications: AppNotification[]) => void): Unsubscribe => {
-  const q = query(collection(db, "notifications"), orderBy("timestamp", "desc"));
+export const fetchNotifications = (userId: string, callback: (notifications: AppNotification[]) => void): Unsubscribe => {
+  if (!userId) return () => {};
+
+  const q = query(collection(db, `users/${userId}/notifications`), orderBy("timestamp", "desc"));
 
   return onSnapshot(q, (snapshot) => {
     const notifications = snapshot.docs.map((doc) => ({
@@ -49,47 +50,110 @@ export const fetchNotifications = (callback?: (notifications: AppNotification[])
       ...doc.data(),
     })) as AppNotification[];
 
-    if (callback) {
-      callback(notifications); // ✅ Only call if it's defined
-    } else {
-      console.error("❗ fetchNotifications was called without a valid callback function.");
-    }
+    callback(notifications);
+  }, (error) => {
+    console.error("❗ Error fetching real-time notifications:", error);
   });
 };
 
-// Mark Notification as Read
-export const markNotificationAsRead = async (notificationId: string, userId: string) => {
-  const notificationRef = doc(db, "notifications", notificationId);
+export const markNotificationAsRead = async (userId: string, notificationId: string) => {
+  const notificationRef = doc(db, "users", userId, "notifications", notificationId);
   try {
-    await updateDoc(notificationRef, {
-      readBy: arrayUnion(userId),
-    });
+    await updateDoc(notificationRef, { isRead: true });
+    console.log(`✅ Notification ${notificationId} marked as read.`);
   } catch (error) {
-    console.error("Error marking notification as read:", error);
+    console.error("❗ Error marking notification as read:", error);
   }
 };
 
-// Check if User has Unread Notifications
-export const hasUnreadNotifications = (notifications: AppNotification[], userId: string): boolean => {
-  return notifications.some((notif) => !notif.readBy?.includes(userId));
+export const hasUnreadNotifications = (notifications: AppNotification[]): boolean => {
+  return notifications.some((notif) => !notif.isRead);
 };
 
-// Create a New Notification
-export const createNotification = async (userId: string, description: string, reportId?: string) => {
+export const createNotification = async (description: string, reportId?: string) => {
   try {
-    console.log("📢 Sending notification to:", userId);
-    
-    const notificationRef = doc(collection(db, "notifications")); // Auto-generate ID
-    await setDoc(notificationRef, {
-      userId,
-      reportId: reportId || null,
-      description,
-      readBy: [],
-      timestamp: serverTimestamp(),
+    console.log("📢 Sending notification to all users...");
+
+    const usersSnapshot = await getDocs(collection(db, "users"));
+
+    const batch = writeBatch(db);
+
+    usersSnapshot.forEach((userDoc) => {
+      const userId = userDoc.id;
+      const notificationRef = doc(collection(db, "users", userId, "notifications"));
+
+      batch.set(notificationRef, {
+        reportId: reportId || null,
+        description,
+        isRead: false,
+        timestamp: serverTimestamp(),
+      });
+
+      sendPushNotification(userId, "Lost Item Approved", description);
     });
 
-    console.log("✅ Notification sent successfully!");
+    await batch.commit();
+    console.log("✅ Notifications sent successfully to all users!");
   } catch (error) {
-    console.error("❗ Error creating notification:", error);
+    console.error("❗ Error creating notifications:", error);
   }
 };
+
+export const sendPushNotification = async (userId: string, title: string, body: string) => {
+  try {
+    const userDoc = await getDocs(collection(db, `users/${userId}/fcmTokens`));
+
+    userDoc.forEach(async (tokenDoc) => {
+      const token = tokenDoc.id;
+
+      await fetch("https://fcm.googleapis.com/fcm/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `key=BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w`,
+        },
+        body: JSON.stringify({
+          to: token,
+          notification: { title, body, click_action: "/lost-items" },
+        }),
+      });
+    });
+
+    console.log(`📢 Push notification sent to ${userId}`);
+  } catch (error) {
+    console.error("❗ Error sending push notification:", error);
+  }
+};
+
+export const watchLostItemApprovals = () => {
+  const q = query(collection(db, "lost_items"));
+
+  return onSnapshot(q, (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === "modified") {
+        const item = change.doc.data();
+        
+        if (item.status === "approved") {
+          createNotification(`Lost item "${item.name}" has been approved!`, item.id);
+        }
+      }
+    });
+  }, (error) => {
+    console.error("❗ Error listening for approvals:", error);
+  });
+};
+
+const useFirebaseNotifications = () => {
+  useEffect(() => {
+    const unsubscribe = onMessage(messaging, (payload) => {
+      console.log("Message received: ", payload);
+      alert(`Notification: ${payload.notification?.title}`);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  return null;
+};
+
+export default useFirebaseNotifications;

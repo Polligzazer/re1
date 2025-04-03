@@ -68,34 +68,21 @@ const Topbar = () => {
 
   useEffect(() => {
     if (!userId) return;
-
-    const unsubscribe = fetchNotifications((fetchedNotifications) => {
+  
+    const unsubscribe = fetchNotifications(userId, (fetchedNotifications) => {
       setNotifications(fetchedNotifications);
-
-      // ✅ Update badge visibility based on unread status
+  
       setHasUnread(
-        fetchedNotifications.some(
-          (notif) => notif.readBy && !notif.readBy.includes(userId)
-        )
+        fetchedNotifications.some((notif) => !notif.isRead)
       );
     });
-
+  
     return () => unsubscribe();
   }, [userId]);
-
-  useEffect(() => {
-    if (!userId) return;
-
-    const unreadExists = notifications.some(
-      (notif) => notif.readBy && !notif.readBy.includes(userId)
-    );
-    setHasUnread(unreadExists);
-  }, [notifications, userId]); // ✅ Runs when `notifications` update
-
+  
   const handleNotificationClick = async (notif: AppNotification) => {
     if (!userId) return;
-
-    // ✅ Ensure the modal stays open by setting selectedItem first
+  
     if (notif.reportId) {
       const itemDetails = await fetchItemDetails(notif.reportId);
       if (itemDetails) {
@@ -105,15 +92,11 @@ const Topbar = () => {
         alert("Item details not found.");
       }
     }
-
-    // ✅ Mark notification as read
-    await markNotificationAsRead(notif.id, userId);
-
-    // ✅ Update local state immediately to remove unread styling
+  
+    await markNotificationAsRead(userId, notif.id);
+  
     setNotifications((prev) =>
-      prev.map((n) =>
-        n.id === notif.id ? { ...n, readBy: [...(n.readBy || []), userId] } : n
-      )
+      prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
     );
   };
 
@@ -205,7 +188,7 @@ const Topbar = () => {
                   notifications.map((notif) => (
                     <li 
                       key={notif.id} 
-                      className={`dropdown-item fs-6 mb-1 ${notif.readBy?.includes(userId ?? "") ? "" : "fw-bold"}`} 
+                      className={`dropdown-item fs-6 mb-1 ${notif.isRead ? "" : "fw-bold"}`} 
                       onClick={() => handleNotificationClick(notif)} 
                       style={{
                         cursor: "pointer",
@@ -215,7 +198,7 @@ const Topbar = () => {
                         whiteSpace: "normal",
                         overflowWrap: "break-word",
                         display: "block",
-                        backgroundColor: notif.readBy?.includes(userId ?? "") ? "#fafcff" : "#f1f7ff",
+                        backgroundColor: notif.isRead ? "#fafcff" : "#f1f7ff",
                         marginBottom:'5px',
                         
                         
@@ -227,14 +210,14 @@ const Topbar = () => {
                         
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = notif.readBy?.includes(userId ?? "") ? "#fafcff" : "#f1f7ff";
-                        e.currentTarget.style.color = notif.readBy?.includes(userId ?? "") ? "#6c757d" : "#000";
+                        e.currentTarget.style.backgroundColor = notif.isRead ? "#fafcff" : "#f1f7ff";
+                        e.currentTarget.style.color = notif.isRead ? "#6c757d" : "#000";
                       }}
                     > 
                       <span className="custom-color" style={{
                         fontSize:'13px'
                       }}>{notif.description}</span>
-                      {!notif.readBy?.includes(userId ?? "") && (
+                      {!notif.isRead && (
                         <span className="badge bg-danger text-white ms-2" style={{ fontSize: "10px" }}>New</span>
                       )}
 
@@ -250,9 +233,9 @@ const Topbar = () => {
             >
               <img src={NotifPfpIcon}  className=""
                 style={{
-                  width: "clamp(24px, 2.6vw, 50px)", // Scales from 24px to 50px
-                  height: "auto",  // Maintains aspect ratio
-                  minWidth: "24px", // Prevents shrinking too much
+                  width: "clamp(24px, 2.6vw, 50px)", 
+                  height: "auto",
+                  minWidth: "24px",
                 }} 
                 />
             </NavLink>

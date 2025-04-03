@@ -22,8 +22,9 @@ import {
   updateDoc,
   doc,
   getDocs,
+  setDoc,
   query,
-  where, 
+  where,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -42,6 +43,40 @@ const auth = getAuth(app);
 const messaging = getMessaging(app);
 export { messaging, getToken, onMessage };
 
+export const requestNotificationPermission = async () => {
+  try {
+    const token = await getToken(messaging, {
+      vapidKey: "BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w",
+    });
+    console.log("✅ Notification token:", token);
+    return token;
+  } catch (error) {
+    console.error("❌ Error getting notification token:", error);
+  }
+};
+export const setupForegroundNotifications = () => {
+  if (messaging) {
+    onMessage(messaging, (payload) => {
+      console.log("📩 Foreground notification received:", payload);
+      alert(`Notification: ${payload.notification?.title}`);
+    });
+  } else {
+    console.error("❌ Firebase Messaging is not initialized!");
+  }
+};
+
+export const saveFCMToken = async (userId: string, token: string) => {
+  try {
+    await setDoc(doc(db, "users", userId, "fcmTokens", token), {
+      token,
+      timestamp: new Date(),
+    });
+    console.log("FCM Token saved successfully");
+  } catch (error) {
+    console.error("Error saving FCM token:", error);
+  }
+};
+
 const database = getDatabase(app);
 
 onAuthStateChanged(auth, (user) => {
@@ -50,7 +85,6 @@ onAuthStateChanged(auth, (user) => {
 
     set(userStatusRef, "online").catch(console.error);
 
-    // Mark user as "offline" when they disconnect
     onDisconnect(userStatusRef).set("offline").catch(console.error);
   }
 });

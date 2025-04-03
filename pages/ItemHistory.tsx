@@ -1,42 +1,74 @@
 import { useState, useEffect } from 'react';
 import { db } from '../src/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { Card } from 'react-bootstrap';
 
 interface Item {
   id: string;
+  userId: string;
   username: string;
-  referenceId?: string;
-  schoolId?: string;
-  claimedBy?: string;
-  dateClaimed?: string;
-  role?: string;
-  contact?: string;
-  itemName: string;
-  status: 'none' | 'claimed';
+  referenceId: string;
+  type: string;
+  description: string;
+  item: string;
+  status: 'unclaimed' | 'claimed';
+  timestamp?: Timestamp;
 }
 
 const ItemHistory = () => {
   const [items, setItems] = useState<Item[]>([]);
-  const [filter, setFilter] = useState<'none' | 'claimed'>('none');
+  const [filter, setFilter] = useState<'unclaimed' | 'claimed'>('unclaimed');
 
   useEffect(() => {
     const fetchItems = async () => {
-      const querySnapshot = await getDocs(collection(db, 'lost_items'));
+      const querySnapshot = await getDocs(collection(db, "lost_items"));
       const fetchedItems = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Item[];
-      setItems(fetchedItems);
+    
+      // Fetch user data for each item
+      const updatedItems = await Promise.all(
+        fetchedItems.map(async (item) => {
+          if (!item.userId) return { ...item, username: "Unknown User" }; // Fallback if userId is missing
+    
+          const userDoc = await getDoc(doc(db, "users", item.userId));
+          if (!userDoc.exists()) return { ...item, username: "Unknown User" };
+    
+          const userData = userDoc.data();
+          return {
+            ...item,
+            username: `${userData.firstName} ${userData.lastName}`.trim(), // Merge first & last name
+          };
+        })
+      );
+      setItems(updatedItems);
+
+      const nineMonthsAgo = new Date();
+      nineMonthsAgo.setMonth(nineMonthsAgo.getMonth() - 9);
+
+      const updates = fetchedItems.map(async (item) => {
+        if (item.timestamp) {
+          const reportDate = item.timestamp.toDate();
+
+          // If more than 9 months have passed, mark as "unclaimed"
+          if (reportDate < nineMonthsAgo && item.status !== "unclaimed") {
+            const itemRef = doc(db, "lost_items", item.id);
+            await updateDoc(itemRef, { status: "unclaimed" });
+            item.status = "unclaimed";
+          }
+        }
+      });
+
+      await Promise.all(updates);
+      setItems(updatedItems);
     };
 
     fetchItems();
   }, []);
 
   const filteredItems = items.filter((item) =>
-    filter === 'none'
-      ? item.status === 'none'
-      : item.status === 'claimed'
+    filter === "unclaimed" ? item.status === "unclaimed" : item.status === "claimed"
   );
 
   return (
@@ -45,9 +77,9 @@ const ItemHistory = () => {
         <h2 className="mb-2 fw-bold">Item history</h2>
         <div className="d-flex gap-3 mb-4">
           <div
-            className={`fw-bold ${filter === 'none' ? 'text-primary' : ''}`}
+            className={`fw-bold ${filter === 'unclaimed' ? 'text-primary' : ''}`}
             style={{ cursor: 'pointer' }}
-            onClick={() => setFilter('none')}
+            onClick={() => setFilter('unclaimed')}
           >
             🔹 Unclaimed
           </div>
@@ -70,7 +102,7 @@ const ItemHistory = () => {
             {/* Left Side */}
             <div className="me-3">
               <img
-                src="/wallet-icon.png" // Sample image placeholder
+                src="../src/assets/walletIcon.png"
                 alt="Wallet"
                 style={{ width: '60px', height: '60px' }}
               />
@@ -78,31 +110,21 @@ const ItemHistory = () => {
 
             {/* Right Side */}
             <div className="w-100">
-              <div className="fw-bold">@{item.username}</div>
+              <div className="fw-bold">{item.item}</div>
               {item.referenceId && <p>Reference Id: {item.referenceId}</p>}
-              {item.schoolId && <p>School Id: {item.schoolId}</p>}
 
               {/* Claimed Details */}
               {item.status === 'claimed' && (
                 <div className="mt-2">
                   <p>
-                    <strong>Claimed by:</strong> {item.claimedBy}
-                  </p>
-                  <p>
-                    <strong>Date Claimed:</strong> {item.dateClaimed}
-                  </p>
-                  <p>
-                    <strong>Role:</strong> {item.role}
-                  </p>
-                  <p>
-                    <strong>Contact:</strong> {item.contact}
+                    <strong>Contact:</strong>
                   </p>
                 </div>
               )}
 
               {/* Lost Item Info */}
               <p>
-                <strong>Lost Item:</strong> {item.itemName}
+                <strong>Lost Item:</strong>
               </p>
             </div>
           </Card.Body>

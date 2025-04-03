@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { db } from "../src/firebase";
 import { collection, addDoc, serverTimestamp, getDoc, doc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import { apwstorage, APPWRITE_STORAGE_BUCKET_ID } from "../src/appwrite";
+import { ID } from "appwrite";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useContext } from "react";
 import { AuthContext } from "../components/Authcontext";
-import { FaChevronLeft } from "react-icons/fa";
+import fetchUserUID from "./fetchUserUID";
 import "../css/report.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileCirclePlus } from '@fortawesome/free-solid-svg-icons';
@@ -14,18 +16,17 @@ import ConfirmationModal from "./ConfirmationModal";
 const ClaimFormRequest: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser } = useContext(AuthContext);
-  const [showModal, setShowModal] = useState(false);
 
   const categories = [
     "Gadgets",
-    "Accessories/Personal Belongings",
+    "Personal Belongings",
     "School Belongings",
     "Others"
   ];
 
   const categoryImages: { [key: string]: string } = {
     "Gadgets": "../src/assets/cpIcon.png",
-    "Accessories/Personal Belongings":  "../src/assets/walletIcon.png",
+    "Personal Belongings":  "../src/assets/walletIcon.png",
     "School Belongings":  "../src/assets/noteIcon.png",
     "Others":  "../src/assets/othersIcon.png",
   };
@@ -40,6 +41,60 @@ const ClaimFormRequest: React.FC = () => {
     category: "",
     date: "",
   });
+
+  const [fileName, setFileName] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [userUID, setUserUID] = useState<string | null>(null);
+  const [isValidReference, setIsValidReference] = useState<boolean | null>(null);
+  const [, setErrorMessage] = useState("");
+
+  const validateReferenceId = async (id: string) => {
+    if (!id) {
+      setIsValidReference(null);
+      console.log("🟡 Reference ID is empty. Resetting validation.");
+      setErrorMessage("");
+      return;
+    }
+
+    const lostItemRef = doc(db, "lost_items", id);
+    const lostItemSnap = await getDoc(lostItemRef);
+
+    if (lostItemSnap.exists()) {
+      setIsValidReference(true);
+      setErrorMessage("");
+    } else {
+      setIsValidReference(false);
+      setErrorMessage("No Reference ID");
+    }
+  };
+
+
+  useEffect(() => {
+    const getUserUID = async () => {
+      const uid = await fetchUserUID();
+      if (uid) {
+        setUserUID(uid);
+      } else {
+        console.error("❗ Failed to fetch UID.");
+      }
+    };
+
+    getUserUID();
+  }, []);
+
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    
+    setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+    }));
+
+    if (name === "referencePostId") {
+        await validateReferenceId(value); // Ensure validation completes
+    }
+  };
 
   useEffect(() => {
     const fetchClaimantName = async () => {
@@ -57,15 +112,51 @@ const ClaimFormRequest: React.FC = () => {
     fetchClaimantName();
   }, [currentUser]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isValidReference === false || isValidReference === null) {
+      alert("❗ Please validate the reference ID before submitting.");
+      return;
+    }
+
+    setShowModal(true);
   };
 
-  const handleSubmit = async () => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      const uploadedFile = await apwstorage.createFile(
+        APPWRITE_STORAGE_BUCKET_ID, 
+        ID.unique(),
+        file
+      );
+  
+      const filePreviewUrl = apwstorage.getFilePreview(APPWRITE_STORAGE_BUCKET_ID, uploadedFile.$id);
+  
+      setFileName(file.name);
+      setFileUrl(filePreviewUrl);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("❗ Failed to upload file. Please try again.");
+    }
+  };
+ 
+
+  const handleConfirmSubmit = async () => {
+    if (!isValidReference) {
+      alert("❗ Please enter a valid reference ID.");
+      return;
+    }
+
     const claimData = {
       ...formData,
       status: "pendingclaim",
       timestamp: serverTimestamp(),
+      imageUrl: fileUrl || "",
+      userId: userUID,
+
     };
 
     try {
@@ -161,6 +252,70 @@ const ClaimFormRequest: React.FC = () => {
             ))}
           </div>
           </div>
+          <div className=" d-none d-lg-flex flex-row align-self-end" style={{ width: "100%" }}>
+ 
+          <input
+            type="file"
+            id="fileInput"
+            onChange={handleFileChange}
+            style={{
+              width: 0,
+              height: 0,
+              opacity: 0,
+              overflow: "hidden",
+              position: "absolute",
+            }}
+          />
+
+          <label
+            htmlFor="fileInput"
+            className="d-flex flex-column justify-end items-center w-full h-[125.4px] cursor-pointer"
+            style={{
+              padding: "8px 12px",
+              backgroundColor: "transparent",
+              color: "#2169ac",
+              borderRadius: "5px",
+            }}
+          >
+            <FontAwesomeIcon
+              icon={faFileCirclePlus}
+              style={{
+                color: "#2169ac",
+                fontSize: "40px",
+              }}
+            />
+            <p className="text-center p-2 pb-0 mb-0">Choose File</p>
+          </label>
+
+          <div className="w-full align-self-center text-center px-2">
+            {fileName && fileUrl && (
+              <a
+                href={fileUrl}
+                download={fileName}
+                style={{ color: "#2169ac", fontSize:'12px', cursor: "pointer", textDecoration: "underline" }}
+              >
+                {fileName}
+              </a>
+              
+            )}
+          </div>
+          <button
+            onClick={() => {
+              setFileName("");
+              setFileUrl(null);
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "16px",
+              color: "red",
+              fontWeight: "bold",
+            }}
+          >
+            Remove file
+          </button>
+          </div>
         </div>
         
 
@@ -208,6 +363,7 @@ const ClaimFormRequest: React.FC = () => {
                 className="form-control"
                 name="date"
                 value={formData.date}
+                max={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 required
               />
@@ -233,7 +389,7 @@ const ClaimFormRequest: React.FC = () => {
                 required
               />
             </div>
-            <div className="m-0 mt-2" style={{
+            <div className="m-0" style={{
               width:'100%'
             }}>
               <label className="form-label fw-bold">Reference Post ID</label>
@@ -243,7 +399,7 @@ const ClaimFormRequest: React.FC = () => {
                 name="referencePostId"
                 placeholder=""
                 value={formData.referencePostId}
-                onChange={(e) => setFormData({ ...formData, referencePostId: e.target.value })}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -289,7 +445,7 @@ const ClaimFormRequest: React.FC = () => {
       <ConfirmationModal
         show={showModal}
         onHide={() => setShowModal(false)}
-        onConfirm={handleSubmit}
+        onConfirm={handleConfirmSubmit}
         title="Confirm Submission"
         message="Are you sure you want to submit this claim form?"
       />

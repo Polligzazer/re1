@@ -21,6 +21,7 @@ import { faUser } from '@fortawesome/free-solid-svg-icons';
 interface User {
   uid: string;
   firstName: string;
+  middleInitial: string;
   lastName: string;
   role: string;
   schoolId?: string;
@@ -53,6 +54,7 @@ const SearchBar = ({ onChatSelect }: SearchBarProps) => {
           setAdminUser({
             uid: docData.id,
             firstName: data.firstName || '',
+            middleInitial: data.middleInitial || '',
             lastName: data.lastName || '',
             role: data.role || 'Admin',
             schoolId: data.schoolId || '',
@@ -71,34 +73,57 @@ const SearchBar = ({ onChatSelect }: SearchBarProps) => {
 
   const handleSearch = async () => {
     if (!schoolId.trim()) {
-      setErr("Please enter a valid School ID.");
+      setErr("Please enter a name or School ID.");
       setUser(null);
       return;
     }
-
-    const q = query(collection(db, 'users'), where('schoolId', '==', schoolId.trim()));
-
+  
     try {
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) {
-        setErr('User not found');
-        setUser(null);
-        return;
-      }
+      const usersRef = collection(db, 'users');
+  
+      const firstNameQuery = query(usersRef, where('firstName', '>=', schoolId.trim()), where('firstName', '<=', schoolId.trim() + '\uf8ff'));
+      const middleInitialQuery = query(usersRef, where('middleInitial', '>=', schoolId.trim()), where('middleInitial', '<=', schoolId.trim() + '\uf8ff'));
+      const lastNameQuery = query(usersRef, where('lastName', '>=', schoolId.trim()), where('lastName', '<=', schoolId.trim() + '\uf8ff'));
+      const schoolIdQuery = query(usersRef, where('schoolId', '==', schoolId.trim()));
+  
+      const [firstNameSnapshot, middleInitialSnapshot, lastNameSnapshot, schoolIdSnapshot] = await Promise.all([
+        getDocs(firstNameQuery),
+        getDocs(middleInitialQuery),
+        getDocs(lastNameQuery),
+        getDocs(schoolIdQuery),
+      ]);
+  
+      const usersSet = new Map<string, User>();
 
-      querySnapshot.forEach((doc) => {
-        const userData = doc.data();
-        setUser({
-          uid: doc.id,
-          schoolId: userData.schoolId || "",
-          firstName: userData.firstName || "",
-          lastName: userData.lastName || "",
-          role: userData.role || "",
-          isAdmin: userData.isAdmin || false
+      const processSnapshot = (snapshot: any) => {
+        snapshot.forEach((doc: any) => {
+          const userData = doc.data();
+          usersSet.set(doc.id, {
+            uid: doc.id,
+            schoolId: userData.schoolId || "N/A",
+            firstName: userData.firstName || "",
+            middleInitial: userData.middleInitial || "",
+            lastName: userData.lastName || "",
+            role: userData.role || "",
+            isAdmin: userData.isAdmin || false,
+          });
         });
-      });
-
-      setErr(null);
+      };
+  
+      processSnapshot(firstNameSnapshot);
+      processSnapshot(middleInitialSnapshot);
+      processSnapshot(lastNameSnapshot);
+      processSnapshot(schoolIdSnapshot);
+  
+      const usersArray = Array.from(usersSet.values());
+  
+      if (usersArray.length === 0) {
+        setErr('No users found.');
+        setUser(null);
+      } else {
+        setErr(null);
+        setUser(usersArray[0]); 
+      }
     } catch (error) {
       console.error("Firestore Query Error:", error);
       setErr('An error occurred while searching.');

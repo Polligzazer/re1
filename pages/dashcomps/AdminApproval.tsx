@@ -1,21 +1,28 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { db } from "../../src/firebase";
-import { collection, getDocs, doc, getDoc, updateDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, updateDoc } from "firebase/firestore";
+import { createNotification } from "../../components/notificationService";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 interface Report {
   id: string;
   item: string;
+  category: string;
   description: string;
   location: string;
   date: string;
+  type: string;
   status: string;
+  userId: string;
 }
 
 const AdminApproval: React.FC = () => {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userNames, setUserNames] = useState<{ [key: string]: string }>({});
+  const [showModal, setShowModal] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   
   const approveReport = async (reportId: string) => {
     try {
@@ -29,24 +36,20 @@ const AdminApproval: React.FC = () => {
         return;
       }
   
-      // ✅ Update report status to "approved"
       console.log("✅ Updating report status...");
       await updateDoc(reportRef, { status: "approved" });
-  
-      // ✅ Create ONLY ONE Notification for all users
-      console.log("📢 Creating global notification...");
-      const notificationRef = doc(db, "notifications", reportId); // Use reportId as notificationId to prevent duplicates
-  
-      await setDoc(notificationRef, {
-        reportId: reportId,
-        description: "A lost item report has been approved!",
-        readBy: [],
-        timestamp: serverTimestamp(),
-      });
-  
-      console.log("✅ Notification created for all users!");
+
+      const reportData = reportSnap.data();
+      const type = reportData.type;
+
+      await createNotification(
+        type === "lost" ? "A lost item report has been approved!" : "A found item report has been approved!",
+        reportId
+      );
       alert("✅ Report approved and notification created!");
-  
+
+      setReports((prevReports) => prevReports.filter((r) => r.id !== reportId));
+      setShowModal(false);
     } catch (error) {
       console.error("❗ Error approving report:", error);
       alert("❗ Failed to approve the report.");
@@ -56,6 +59,7 @@ const AdminApproval: React.FC = () => {
     try {
       const reportRefr = doc(db, "lost_items", reportId)
       await updateDoc(reportRefr, {status: "denied"});
+      setReports((prevReports) => prevReports.filter((r) => r.id !== reportId));
     } catch (error) {
       console.error(error);
       alert("Deny error");
@@ -68,10 +72,11 @@ const AdminApproval: React.FC = () => {
         const querySnapshot = await getDocs(collection(db, "lost_items"));
         const reportData = querySnapshot.docs
           .map((doc) => ({ id: doc.id, ...doc.data() } as Report))
-          .filter((report) => report.status === "pendingreport"); // Filter for pending reports
+          .filter((report) => report.status === "pendingreport");
 
         setReports(reportData);
         setLoading(false);
+        fetchUserNames(reportData);
       } catch (error) {
         console.error("❗ Error fetching reports:", error);
         setLoading(false);
@@ -80,6 +85,28 @@ const AdminApproval: React.FC = () => {
 
     fetchReports();
   }, []);
+
+  const fetchUserNames = async (reports: Report[]) => {
+    const userIds = [...new Set(reports.map((report) => report.userId))]; // Unique user IDs
+    const nameMap: { [key: string]: string } = {};
+
+    await Promise.all(
+      userIds.map(async (userId) => {
+        const userRef = doc(db, "users", userId);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          const fullName = `${userData.firstName} ${userData.middleInitial ? userData.middleInitial + ". " : ""}${userData.lastName}`;
+          nameMap[userId] = fullName.trim();
+        } else {
+          nameMap[userId] = "Unknown User"; // Fallback for missing users
+        }
+      })
+    );
+
+    setUserNames(nameMap);
+  };
 
   if (loading) return <p>Loading reports...</p>;
 
@@ -108,23 +135,59 @@ const AdminApproval: React.FC = () => {
               </small>
 
               {/* Action Buttons */}
-              <div className="mt-3 d-flex gap-2">
+              <div className="mt-3 d-flex gap-2 float-end">
                 <button
                   className="btn btn-success"
-                  onClick={() => approveReport(report.id)}
+                  onClick={() => {
+                    setSelectedReport(report);
+                    setShowModal(true);
+                  }}
                 >
-                  Approve
+                  Process
                 </button>
 
                 <button
-                  className="btn btn-danger"
-                  onClick={() => denyReport(report.id)}
+                  className="btn btn-secondary"
                 >
-                  Deny
+                  Contact Us
                 </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {showModal && selectedReport && (
+        <div className="modal fade show d-block" tabIndex={-1} role="dialog" style={{ background: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Verify <u>{userNames[selectedReport.userId]}'s</u> claim</h5>
+                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+              </div>
+              <div className="modal-body">
+                <p>Are you sure you want to approve this report?</p>
+                <p><b>{selectedReport.item}</b> ({selectedReport.category}) </p>
+                <p><b>Description:</b> {selectedReport.description}</p>
+                <p><b>Location:</b> {selectedReport.location} at <b>{selectedReport.date}</b></p>
+              </div>
+              <div className="modal-footer">
+                <p className="text-start">If you are sure in approving this report click <b className="text-success">Approve</b></p>
+                <div className="d-flex gap-2">
+                  <button type="button" className="btn btn-outline-danger"  onClick={() => {
+                    if (selectedReport) {
+                      denyReport(selectedReport.id);
+                      setShowModal(false);
+                    }
+                  }}>
+                    Deny
+                  </button>
+                  <button type="button" className="btn btn-success" onClick={() => approveReport(selectedReport.id)} disabled={loading}>
+                    {loading ? "Processing..." : "Approve"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

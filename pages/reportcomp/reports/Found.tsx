@@ -67,12 +67,11 @@ const Found: React.FC = () => {
     
     try {
       const uploadedFile = await apwstorage.createFile(
-        APPWRITE_STORAGE_BUCKET_ID, // Replace with your Appwrite Storage bucket ID
+        APPWRITE_STORAGE_BUCKET_ID, 
         ID.unique(),
         file
       );
   
-      // Get file preview URL
       const filePreviewUrl = apwstorage.getFilePreview(APPWRITE_STORAGE_BUCKET_ID, uploadedFile.$id);
   
       setFileName(file.name);
@@ -179,7 +178,7 @@ const Found: React.FC = () => {
                   outline:'none',
                   fontFamily:'League Spartan, serif',
                   boxShadow: formData.category === category 
-                    ? '0px 6px 12px rgba(0, 0, 0, 0.2)' // **Shadow when selected**
+                    ? '0px 6px 12px rgba(0, 0, 0, 0.2)' 
                     : 'none',
                 }}
                 className="cbtn btn d-flex align-items-md-center align-items-start  flex-row flex-sm-column"
@@ -319,6 +318,7 @@ const Found: React.FC = () => {
                 className="form-control"
                 name="date"
                 value={formData.date}
+                max={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 required
               />
