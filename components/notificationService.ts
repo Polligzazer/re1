@@ -74,14 +74,18 @@ export const createNotification = async (description: string, reportId?: string)
   try {
     console.log("📢 Sending notification to all users...");
 
+    // Get all users
     const usersSnapshot = await getDocs(collection(db, "users"));
-
     const batch = writeBatch(db);
 
-    usersSnapshot.forEach((userDoc) => {
-      const userId = userDoc.id;
-      const notificationRef = doc(collection(db, "users", userId, "notifications"));
+    const pushPromises: Promise<void>[] = []; // Collect push promises here
 
+    // Iterate through all users
+    for (const userDoc of usersSnapshot.docs) {
+      const userId = userDoc.id;
+
+      // Create Firestore notification for each user
+      const notificationRef = doc(collection(db, "users", userId, "notifications"));
       batch.set(notificationRef, {
         reportId: reportId || null,
         description,
@@ -89,39 +93,47 @@ export const createNotification = async (description: string, reportId?: string)
         timestamp: serverTimestamp(),
       });
 
-      sendPushNotification(userId, "Lost Item Approved", description);
-    });
+      // Fetch all FCM tokens for the user
+      const tokensSnapshot = await getDocs(collection(db, `users/${userId}/fcmTokens`));
 
+      // Iterate through all tokens
+      for (const tokenDoc of tokensSnapshot.docs) {
+        const token = tokenDoc.id;
+
+        const pushPromise = fetch("https://flo-proxy.vercel.app/api/send-push", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token,
+            title: "Lost Item Approved",
+            body: description,
+          })
+        });
+
+        // Push each promise into the array
+        pushPromises.push(pushPromise
+          .then(res => {
+            if (!res.ok) {
+              console.error(`❌ Failed to send push to ${token}: ${res.status}`);
+            }
+          })
+          .catch(error => {
+            console.error(`❌ Failed to send push to ${token}:`, error);
+          }));
+      }
+    }
+
+    // Commit Firestore batch (do it outside the loop to reduce Firestore load)
     await batch.commit();
-    console.log("✅ Notifications sent successfully to all users!");
+    console.log("✅ Firestore notifications created.");
+
+    // Wait for all push notifications to be sent
+    await Promise.all(pushPromises);
+    console.log("📲 Push notifications sent to all users.");
   } catch (error) {
     console.error("❗ Error creating notifications:", error);
-  }
-};
-
-export const sendPushNotification = async (userId: string, title: string, body: string) => {
-  try {
-    const userDoc = await getDocs(collection(db, `users/${userId}/fcmTokens`));
-
-    userDoc.forEach(async (tokenDoc) => {
-      const token = tokenDoc.id;
-
-      await fetch("https://fcm.googleapis.com/fcm/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `key=BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w`,
-        },
-        body: JSON.stringify({
-          to: token,
-          notification: { title, body, click_action: "/lost-items" },
-        }),
-      });
-    });
-
-    console.log(`📢 Push notification sent to ${userId}`);
-  } catch (error) {
-    console.error("❗ Error sending push notification:", error);
   }
 };
 

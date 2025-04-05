@@ -16,7 +16,7 @@ const ReportForms: React.FC = () => {
       <div className="rbuttons d-flex flex-row w-100 gap-4 justify-content-center align-items-center">
         
 
-        <div className="mb-3">
+        <div className="box-animate mb-3">
           <button
             className="reportbtn btn btn-lg py-3 d-flex flex-column"
             onClick={() => navigate("/report/lost")}
@@ -62,7 +62,7 @@ const ReportForms: React.FC = () => {
 
         
 
-        <div className="mb-3">
+        <div className="box-animate2 mb-3">
           <button
             className="reportbtn btn btn-lg py-3 d-flex flex-column"
             onClick={() => navigate("/report/found")}
@@ -106,7 +106,7 @@ const ReportForms: React.FC = () => {
           </button>
         </div>
 
-        <div className="mb-3">
+        <div className="box-animate3 mb-3">
           <button
             className="reportbtn btn btn-lg py-3 d-flex flex-column"
             onClick={() => navigate("/inquiries")}

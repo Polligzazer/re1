@@ -1,74 +1,115 @@
 .graph-div{
-    border-radius:10px;
-    border:1px solid black;
-    background-color:#f1f7ff;
+  border-radius:10px;
+  border:1px solid black;
+  background-color:#f1f7ff;
+  width:100%;
+  height:100%;
+
+}
+
+.bar-graph{
+  width: 100% !important;
+  height: auto !important;
+  min-height: 180px;
+ 
+
+  
+}
+
+.pbar-div1, .pbar-div2 {
+  width:45%;
+  height:100%;
+ 
+}
+
+.pbar-div1{
+
+  animation: slideup 1s ease-in-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideup{
+    0%{
+        transform: translateY(30px);
+        opacity: 1;
+    }
+    40%{
+        transform: translateY(0);
+        opacity: 1;
+    }
+    100%{
+        transform: translateY(0);
+    }
+}
+.pbar-div2{
+
+  animation: slideup2 1.3s ease-in-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideup2{
+    0%{
+        transform: translateY(50px);
+        opacity: 1;
+    }
+    40%{
+        transform: translateY(0);
+        opacity: 1;
+    }
+    100%{
+        transform: translateY(0);
+    }
+}
+
+
+
+@media (min-width: 768px ) and (max-width: 991px){
+  .pbar-div1, .pbar-div2{
     width:100%;
     height:100%;
-  
-  }
-
-  .bar-graph{
-    width: 100% !important;
-    height: auto !important;
-    min-height: 180px;
    
-
-    
   }
+  .bar-graph{
+    max-height: 280px;
+    padding:30px !important;
+  }
+} 
 
-  .pbar-div{
-    width:45%;
+@media (min-width: 576px) and (max-width:767px ){
+  .pbar-div1, .pbar-div2{
+    width:100%;
     height:100%;
    
   }
+  .bar-graph{
+    max-height: 280px;
+    padding:30px !important;
+  }
+     
 
-  @media (min-width: 768px ) and (max-width: 991px){
-    .pbar-div{
-      width:100%;
-      height:100%;
-     
-    }
-    .bar-graph{
-      max-height: 280px;
-      padding:30px !important;
-    }
-  } 
-  
-  @media (min-width: 576px) and (max-width:767px ){
-    .pbar-div{
-      width:100%;
-      height:100%;
-     
-    }
-    .bar-graph{
-      max-height: 280px;
-      padding:30px !important;
-    }
-       
-  
-  }
+}
 
-  @media (min-width: 426px) and (max-width:575.9px ){
-    .pbar-div{
-      width:100%;
-      height:100%;
-     
-    }
-    .bar-graph{
-      max-height: 230px;
-      padding:25px !important;
-    }
+@media (min-width: 426px) and (max-width:575.9px ){
+  .pbar-div1, .pbar-div2{
+    width:100%;
+    height:100%;
+   
+  }
+  .bar-graph{
+    max-height: 230px;
+    padding:25px !important;
+  }
+}
+
+@media (max-width: 425.9px){
+  .pbar-div1, .pbar-div2{
+    width:100%;
+    height:100%;
+   
+  }
+  .bar-graph{
+    max-height: 200px;
+    padding:15px !important;
   }
   
-  @media (max-width: 425.9px){
-    .pbar-div{
-      width:100%;
-      height:100%;
-     
-    }
-    .bar-graph{
-      max-height: 200px;
-      padding:15px !important;
-    }
-    
-  }
+}

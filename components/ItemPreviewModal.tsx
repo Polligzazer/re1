@@ -28,9 +28,19 @@ const ItemPreviewModal = ({ show, onClose, item }: ItemPreviewModalProps) => {
   return (
     <Modal show={show} onHide={onClose} centered size="lg">
       <Modal.Header closeButton>
-        <Modal.Title>{currentUser?.isAdmin ? "Report Details" : "Item"}</Modal.Title>
+        <Modal.Title 
+            style={{
+              color:'#2169ac',
+              fontFamily: "Poppins, sans-serif",
+            }}>
+          {currentUser?.isAdmin ? "Report Details" : "Item"}</Modal.Title>
       </Modal.Header>
-      <Modal.Body className="modal-body-custom">
+      <Modal.Body className="modal-body-custom"
+            style={{
+              color:'#2169ac',
+              fontFamily: "Poppins, sans-serif",
+              fontSize:'16.4px'
+            }}>
         {item ? (
           <div>
             <p><strong>Item:</strong> {item.item} ({item.category})</p>
@@ -65,7 +75,15 @@ const ItemPreviewModal = ({ show, onClose, item }: ItemPreviewModalProps) => {
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onClose}>
+        <Button onClick={onClose}
+          style={{
+            backgroundColor:' #e86b70',
+            color:'white',
+            fontSize:'13px',
+            outline:'none',
+            border:'none',
+            fontFamily: "Poppins, sans-serif",
+          }}>
           Close
         </Button>
       </Modal.Footer>

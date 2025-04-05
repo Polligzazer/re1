@@ -6,6 +6,7 @@ import {
   confirmPasswordReset,
 } from "../src/firebase";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import "../css/reset.css";
 
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -102,7 +103,7 @@ const ResetPassword: React.FC = () => {
       className="d-flex container-fluid justify-content-center align-items-center"
       style={{ height: "100vh", background: "transparent" }}
     >
-      <div className="p-4 rounded shadow bg-white text-center" style={{ width: "350px" }}>
+      <div className=" reset-transition p-4 rounded shadow bg-white text-center" style={{ width: "350px" }}>
         {loading && <div className="alert alert-info text-center">Processing...</div>}
         {!loading && error && <div className="alert alert-danger text-center">{error}</div>}
         {!loading && success && <div className="alert alert-success text-center">{success}</div>}

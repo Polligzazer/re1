@@ -6,6 +6,43 @@
   margin: 20px 0;
   overflow: hidden;
 }
+.post-transition{
+  animation: slideright 1s ease-in-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideright{
+  0%{
+      transform: translatex(-50px);
+      opacity: 1;
+  }
+ 
+  50%{
+      transform: translatex(0);
+      opacity: 1;
+  }
+  100%{
+   
+    opacity: 1;
+}
+
+}
+
+.chat-animate{
+  animation: slideInCorner 0.35s ease-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideInCorner {
+  from {
+    opacity: 0;
+    transform: translate(30px, 30px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
 
 .swiper {
   width: 100%;

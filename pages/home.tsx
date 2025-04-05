@@ -12,6 +12,7 @@ import categoryImages from "../src/categoryimage";
 import "./home.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleChevronLeft, faCircleChevronRight } from '@fortawesome/free-solid-svg-icons';
+import ChatBot from "../components/Chatbot";
 
 interface Report {
   id: string;
@@ -89,10 +90,10 @@ const Home = () => {
 
   return (
     <div className="mt-4 mt-md-3">
-      <div className="d-flex flex-row justify-content-start ms-4 mb-4">
+      <div className=" d-flex flex-row justify-content-start ms-4 mb-4">
       
 
-      <div className="my-4 mt-5 d-flex align-items-center">
+      <div className="  post-transition my-4 mt-5 d-flex align-items-center">
         <label htmlFor="sortOrder" style={{ fontFamily: "Poppins, sans-serif", fontSize: "14px", marginRight: "8px" }}>
           Sort by Date:
         </label>
@@ -116,10 +117,16 @@ const Home = () => {
         </select>
       </div>
       </div>
-
+      <div className="post-transition">
       {renderSection("All Reports", allReports, "all")}
+      </div><div className="post-transition">
       {renderSection("Lost Items", lostReports, "lost")}
+      </div><div className="post-transition">    
       {renderSection("Found Items", foundReports, "found")}
+      </div>
+      <div className="chat-animate" style={{ width:'auto', position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000 }}>
+          <ChatBot/>
+      </div>
     </div>
   );
 
@@ -272,12 +279,15 @@ const Home = () => {
                   icon={faCircleChevronRight}/>
                 </button>
               </div>
+
             )}
           </div>
         ) : (
           <p className="empty-message">No {title.toLowerCase()} found.</p>
         )}
+        
       </div>
+      
     );
   }
 };

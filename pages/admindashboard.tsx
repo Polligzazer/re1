@@ -5,6 +5,7 @@ import { db } from "../src/firebase";
 import Analytics from "../components/Analytics";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleCheck, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import "../css/dashboard.css";
 
 const Dashboard = () => {
   const [pendingReports, setPendingReports] = useState(0);
@@ -44,7 +45,7 @@ const Dashboard = () => {
 
   return (
     <div className="container mt-5 pb-5 pt-2">
-      <div className="d-flex flex-column mb-3 ">
+      <div className=" title-trans d-flex flex-column mb-3 ">
         <h2 className="text-start fw-bold mt-5"
           style={{
             color:'#212020',
@@ -55,7 +56,7 @@ const Dashboard = () => {
         <p className="" style={{color:'#454545',  fontFamily:"Poppins, sans-serif"}}><small>Welcome <span style={{color:'#0e5cc5'}}>Admin,</span> here’s an overview about the items</small></p>
       </div>
       <div className="row justify-content-evenly gap-5 mt-4 mb-5">
-        <Link to="report-approval" className="col-md-3 text-center p-0 m-0"
+        <Link to="report-approval" className="box-trans col-md-3 text-center p-0 m-0"
           style={{
             textDecoration:'none',
             border:'1px solid #bfbdbc',
@@ -101,7 +102,7 @@ const Dashboard = () => {
           }}>View all request</p>
         </Link>
 
-        <Link to="claim-approval" className="col-md-3 text-center p-0 m-0"
+        <Link to="claim-approval" className=" box-trans2 col-md-3 text-center p-0 m-0"
           style={{
             textDecoration:'none',
             border:'1px solid #bfbdbc',
@@ -147,7 +148,7 @@ const Dashboard = () => {
           }}>View all request</p>
         </Link>
 
-        <Link to="claimed" className="col-md-3 text-center p-0 m-0"
+        <Link to="/item-history" className=" box-trans3 col-md-3 text-center p-0 m-0"
           style={{
             textDecoration:'none',
             border:'1px solid #bfbdbc',

@@ -195,7 +195,7 @@ const Analytics = () => {
       width:'100%'
     }}>
       {/* Monthly Reports */}
-      <div className="pbar-div mb-5 mt-4 ">
+      <div className="pbar-div1 mb-5 mt-4 ">
         <h2 className="text-start mb-3 fw-bold" style={{
            fontFamily: "DM Sans, sans-serif",
            fontSize:'clamp(12px, 1.4rem, 30px)',
@@ -239,7 +239,7 @@ const Analytics = () => {
       </div>
 
       {/* Success Rate */}
-      <div className="mb-5 pbar-div mt-4">
+      <div className="mb-5 pbar-div2 mt-4">
         <h2 className="text-start fw-bold mb-3"
         style={{
           fontFamily: "DM Sans, sans-serif",

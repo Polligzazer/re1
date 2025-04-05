@@ -1,12 +1,13 @@
-import { useState, useEffect, useContext, useRef } from 'react';
+import { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import '../css/inquiries.css';
 import 'font-awesome/css/font-awesome.min.css';
 import { db } from '../src/firebase';
-import { doc, onSnapshot, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc, Timestamp } from 'firebase/firestore';
 import { AuthContext } from '../components/Authcontext';
 import { ChatContext } from '../components/ChatContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
+
 
 interface MessageData {
   date: any;
@@ -20,6 +21,7 @@ interface MessageData {
     timestamp?:number;
   };
   messageCount?: number;
+  lastActivity?: Timestamp;
 }
 
 interface MessagesProps {
@@ -31,7 +33,7 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const [sortedChats, setSortedChats] = useState<[string, MessageData][]>([]);
-
+  const [isLoading, setIsLoading] = useState(true); 
   const { currentUser } = useContext(AuthContext);
   const chatContext = useContext(ChatContext);
   const fetchedNamesRef = useRef<{ [uid: string]: string }>({});
@@ -40,25 +42,22 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
     if (!currentUser?.uid) return;
 
     const unsub = onSnapshot(doc(db, 'userChats', currentUser.uid), async (docSnap) => {
+      setIsLoading(true);
       if (docSnap.exists()) {
         const chatData = docSnap.data() as { [key: string]: MessageData };
-        let updatedChats = { ...chatData };
+        const updatedChats = { ...chatData };
 
         await Promise.all(
           Object.entries(chatData).map(async ([key, msg]) => {
             const uid = msg.userInfo.uid;
-
-            if (fetchedNamesRef.current[uid]) {
-              updatedChats[key].userInfo.name = fetchedNamesRef.current[uid];
-            } else {
+            if (!fetchedNamesRef.current[uid]) { // Only fetch if not already fetched.
               try {
                 const userDoc = await getDoc(doc(db, 'users', uid));
                 if (userDoc.exists()) {
                   const userData = userDoc.data();
                   const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
-                  const finalName = fullName || 'Unknown';
-                  updatedChats[key].userInfo.name = finalName;
-                  fetchedNamesRef.current[uid] = finalName;
+                  updatedChats[key].userInfo.name = fullName || 'Unknown';
+                  fetchedNamesRef.current[uid] = fullName || 'Unknown';
                 } else {
                   updatedChats[key].userInfo.name = 'Unknown';
                   fetchedNamesRef.current[uid] = 'Unknown';
@@ -66,6 +65,8 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
               } catch (err) {
                 console.error('Error fetching user name:', err);
               }
+            } else {
+              updatedChats[key].userInfo.name = fetchedNamesRef.current[uid];
             }
           })
         );
@@ -74,57 +75,42 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
       } else {
         setMessages({});
       }
+      setIsLoading(false); 
     });
 
     return () => unsub();
   }, [currentUser?.uid]);
 
+
   useEffect(() => {
     const sorted = Object.entries(messages).sort((a, b) => {
-      const timestampA = a[1].lastMessage?.timestamp || 0;
-      const timestampB = b[1].lastMessage?.timestamp || 0;
-      return timestampB - timestampA;
+      const timestampA = a[1].lastActivity?.seconds || 0; // Use lastActivity timestamp
+      const timestampB = b[1].lastActivity?.seconds || 0; // Use lastActivity timestamp
+      return timestampB - timestampA; // Sort in descending order (latest first)
     });
-  
     setSortedChats(sorted);
   }, [messages]);
 
-  useEffect(() => {
-    if (!currentUser?.uid || currentUser?.isAdmin) return;
-
-    if (sortedChats.length > 0) {
-      const latestChat = sortedChats[0][1];
-      if (latestChat.userInfo.uid !== selectedUserId) {
-        chatContext?.dispatch({ type: 'CHANGE_USER', payload: latestChat.userInfo });
-        setSelectedUserId(latestChat.userInfo.uid);
-        onChatSelect?.();
+    useEffect(() => {
+      if (!currentUser?.uid || currentUser?.isAdmin) return;
+      if (sortedChats.length > 0) {
+        const latestChat = sortedChats[0][1];
+        const currentSelected = chatContext?.data.user?.uid;
+        if (latestChat.userInfo.uid !== currentSelected) {
+            chatContext?.dispatch({ type: 'CHANGE_USER', payload: latestChat.userInfo });
+            setSelectedUserId(latestChat.userInfo.uid);
+            onChatSelect?.();
+        }
       }
-    }
-  }, [sortedChats, chatContext, selectedUserId, onChatSelect, currentUser]);
-
-  useEffect(() => {
-    if (!currentUser?.uid || currentUser?.isAdmin) return;
-
-    const sorted = Object.entries(messages).sort((a, b) => b[1].date - a[1].date);
-    if (sorted.length > 0) {
-      const latest = sorted[0][1];
-      if (latest.userInfo.uid !== selectedUserId) {
-        chatContext?.dispatch({ type: 'CHANGE_USER', payload: latest.userInfo });
-        setSelectedUserId(latest.userInfo.uid);
-        onChatSelect?.();
-      }
-    }
-  }, [messages, chatContext, selectedUserId, onChatSelect, currentUser]);
+    }, [sortedChats, chatContext, selectedUserId, onChatSelect, currentUser]);
 
 
-
-  const handleSelect = (userInfo: MessageData['userInfo']) => {
-    if (!currentUser?.uid) return;
-
-    chatContext?.dispatch({ type: 'CHANGE_USER', payload: userInfo });
-    setSelectedUserId(userInfo.uid);
-    onChatSelect?.();
-  };
+    const handleSelect = useCallback((userInfo: MessageData['userInfo']) => {
+      if (!currentUser?.uid) return;
+      chatContext?.dispatch({ type: 'CHANGE_USER', payload: userInfo });
+      setSelectedUserId(userInfo.uid);
+      onChatSelect?.();
+  }, [chatContext, onChatSelect, currentUser]);
 
   if (!currentUser?.uid) return <div>Loading user...</div>;
 
@@ -132,13 +118,16 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
 
   return (
     <div className="messages" style={{ overflowY: 'auto' }}>
-    {sortedChats.length === 0 ? (
-      <div>No conversations yet.</div>
-    ) : (
-      sortedChats.map(([key, msg]) => {
-        const isActive = chatContext?.data.user?.uid === msg.userInfo.uid;
-        const userDisplayName = msg.userInfo.name || 'Unknown';
-        const lastName = userDisplayName.split(' ').slice(-1)[0];
+       {isLoading ? ( // Show loading indicator if isLoading is true
+        <div>Loading messages...</div> 
+      ) : (
+        sortedChats.length === 0 ? (
+          <div>No conversations yet.</div>
+        ) : (
+          sortedChats.map(([key, msg]) => {
+            const isActive = chatContext?.data.user?.uid === msg.userInfo.uid;
+            const userDisplayName = msg.userInfo.name || 'Unknown';
+            const lastName = userDisplayName.split(' ').slice(-1)[0]
 
           return (
             <div className="messagesselect" key={key} onClick={() => handleSelect(msg.userInfo)}>
@@ -184,6 +173,7 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
             </div>
           );
         })
+        )
       )}
     </div>
   );

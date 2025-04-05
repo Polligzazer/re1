@@ -40,6 +40,7 @@ const ClaimFormRequest: React.FC = () => {
     location: "",
     category: "",
     date: "",
+    emailSent: false,
   });
 
   const [fileName, setFileName] = useState("");
@@ -92,7 +93,7 @@ const ClaimFormRequest: React.FC = () => {
     }));
 
     if (name === "referencePostId") {
-        await validateReferenceId(value); // Ensure validation completes
+        await validateReferenceId(value);
     }
   };
 
@@ -173,7 +174,7 @@ const ClaimFormRequest: React.FC = () => {
 
       {/* Form */}
       <form 
-        className=" p-4 row g-4" 
+        className=" slide-up p-4 row g-4" 
         onSubmit={handleSubmit}
         style={{
           background:'transparent'

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { auth, signInWithEmailAndPassword } from "../src/firebase";
+import "../css/login.css"
 
 const Login: React.FC = () => {
   const [emailError, setEmailError] = useState("");
@@ -58,7 +59,7 @@ const Login: React.FC = () => {
   return (
     <div className="d-flex container-fluid justify-content-center align-items-center"
     style={{ height: "100vh", background: "transparent" }}>
-      <div className="p-4 rounded shadow bg-white" style={{ width: "350px" }}>
+      <div className="p-4 login-transition rounded shadow bg-white" style={{ width: "350px" }}>
         <h2 className="fw-bold mb-4 text-center" style={{
           fontFamily: "League Spartan, serif",
           color:' #454545',

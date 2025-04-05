@@ -62,7 +62,7 @@ const Report = () => {
 
   return (
     <div className="container overflow-y-visible">
-      <div className="d-flex justify-content-center align-items-center mt-5" style={{
+      <div className="slide-trans d-flex justify-content-center align-items-center mt-5" style={{
         width:'100%'
       }}>
         <div className="d-flex flex-column" style={{

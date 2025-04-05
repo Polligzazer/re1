@@ -5,10 +5,10 @@ import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "../css/Chatbot.css";
 
-import FLO1 from "../src/assets/1FLO.png";
-// import FLO2 from "../src/assets/2FLO.png";
+import FLO1 from "../src/assets/1bFLO.png";
+import FLO2 from "../src/assets/2FLO.png";
 import FLO3 from "../src/assets/3FLO.png";
-import FLO4 from "../src/assets/4FLO.png";
+import FLO4 from "../src/assets/4bFLO.png";
 import FLO5 from "../src/assets/5FLO.png";
 
 const Chatbot: React.FC = () => {
@@ -30,6 +30,7 @@ const Chatbot: React.FC = () => {
   const chatIconRef = useRef<HTMLButtonElement | null>(null);
   const [hoverMessage, setHoverMessage] = useState("");
   
+  
   const PopUPmessages = [
     "Navis is here! How may I help you?",
     "Got a question? Navis is at your service!",
@@ -49,48 +50,42 @@ const Chatbot: React.FC = () => {
       setRandomMessage(newMessage);
       setShowBubble(true);
     };
-  
     updateMessage(); 
-  
-    interval = setInterval(updateMessage, 120000); 
-  
+    interval = setInterval(updateMessage, 60000); 
     return () => clearInterval(interval);
   }, []);
   
   useEffect(() => {
     if (showBubble) {
-      const timeoutId = setTimeout(() => setShowBubble(false), 5000);
+      const timeoutId = setTimeout(() => setShowBubble(false), 10000);
       return () => clearTimeout(timeoutId);
     }
   }, [showBubble]);
    
-    useEffect(() => {
-        const auth = getAuth();
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-          if (user) {
-            const fetchUserName = async () => {
-              const db = getFirestore();
-              const userDoc = doc(db, "users", user.uid);
-              const docSnap = await getDoc(userDoc);
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+       if (user) {
+        const fetchUserName = async () => {
+        const db = getFirestore();
+        const userDoc = doc(db, "users", user.uid);
+        const docSnap = await getDoc(userDoc);
     
-              if (docSnap.exists()) {
-                const userData = docSnap.data();
-                setUserName(userData.firstName || "User"); 
-              } else {
-                console.error("User document not found!");
-                setUserName("User");
-              }
-            };
-    
-            fetchUserName();
+          if (docSnap.exists()) {
+            const userData = docSnap.data();
+              setUserName(userData.firstName || "User"); 
           } else {
-            console.log("No user is logged in.");
-            setUserName("Guest");
-          }
-        });
-    
-        return () => unsubscribe(); 
-      }, []);
+              console.error("User document not found!");
+                setUserName("User");
+          }};
+          fetchUserName();
+       } else {
+           console.log("No user is logged in.");
+          setUserName("Guest");
+        }
+    });
+     return () => unsubscribe(); 
+  }, []);
 
 
 
@@ -235,7 +230,7 @@ const Chatbot: React.FC = () => {
                         "5. Describe your item and Indicate pictures of proof (if you have)\n"+
                         "6. Admin will send a claim form if he/she verifies you\n"+
                         "7. Fill up the claim form, available only for 30mins\n"+
-                        "8. Please include the reference id of the post you inquire about\n"
+                        "8. Please include the reference id of the post you inquire about\n"+
                         "9. Submit the form\n"+
                         "10. Admin will double check your form\n"+
                         "11. Admin will send a receipt via email registered to your account\n"+
@@ -311,20 +306,22 @@ const Chatbot: React.FC = () => {
         setShowMainOptionsFlag(false); 
       };
   return (
-    <div ref={chatAssistantRef} className="fixed bottom-4 right-4 flex flex-col items-end">
+    <div ref={chatAssistantRef} className=" fixed bottom-4 right-4 flex flex-col items-end">
+     <div className="chat-bubble-container">
       {showBubble && !isOpen && (
-        <div 
-            className="shadow-md p-3 rounded-lg mb-3 me-3 max-w-xs flex items-start gap-2"
-            style={{
-                borderRadius:'30px',
-                backgroundColor:'#0f2c53',
-                color:'white'
-              }}
+       <div 
+         className="pop-message shadow-md p-3 rounded-lg mb-3 me-3 flex items-start gap-2"
+          style={{
+            borderRadius:'30px',
+            backgroundColor:'#0f2c53',
+            color:'white',
+            display: showBubble? 'flex' : 'none'
+           }}
         >
-          <span >{randomMessage}</span>
+          <span className="text-animate">{randomMessage}</span>
         </div>
       )}
-
+      </div>
       {isOpen && (
         <div className="shadow-lg flex flex-col" style={{
             backgroundColor:'#fafcff',
@@ -446,22 +443,24 @@ const Chatbot: React.FC = () => {
           </div>
         </div>
       )}
+       <div className="chat-bubble-container">
       {hoverMessage && (
           <div 
-          className="shadow-md p-3 rounded-lg mb-3 me-3 max-w-xs flex items-start gap-2"
+          className="hover-pop shadow-md p-3 rounded-lg mb-3 me-3 flex items-start gap-2"
           style={{
               borderRadius:'30px',
               backgroundColor:'#0f2c53',
               color:'white'
-            }}> {hoverMessage}
+            }}>  <span className="text-animate">{hoverMessage}</span>
           </div>
         )}
+      </div>  
      <div className="d-flex me-2 justify-content-end" >
      
       <button 
         style={{
             backgroundColor:'#0f2c53',
-            height:'45px',
+            height:'30px',
             borderRadius:'50%',
             borderColor:'white',
             outline:'none'
@@ -482,8 +481,8 @@ const Chatbot: React.FC = () => {
         <img src={imageSrc}
              alt="Chatbot" className=""
             style={{
-                width:'70px',
-                height:'70px',
+                width:'55px',
+                height:'55px',
                 position:'relative',
                 bottom:'30px',
             }}/>

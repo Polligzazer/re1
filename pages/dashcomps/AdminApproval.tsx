@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { db } from "../../src/firebase";
 import { collection, getDocs, doc, getDoc, updateDoc } from "firebase/firestore";
 import { createNotification } from "../../components/notificationService";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { FaChevronLeft } from "react-icons/fa";
+import categoryImages from "../../src/categoryimage";
 
 interface Report {
   id: string;
@@ -18,6 +20,7 @@ interface Report {
 }
 
 const AdminApproval: React.FC = () => {
+  const navigate = useNavigate();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [userNames, setUserNames] = useState<{ [key: string]: string }>({});
@@ -113,52 +116,105 @@ const AdminApproval: React.FC = () => {
   return (
     <div className="container mt-4">
       <h1 className="text-center mb-4">Reports Approval</h1>
-      <Link to="/dashboard" className="btn btn-secondary mt-3">
-          Back to Dashboard
-        </Link>
+      <button 
+          className="btn d-flex align-items-center mb-0 pb-0" 
+          onClick={() => navigate("/dashboard")}
+          style={{
+            fontSize:'clamp(12px, 3vw, 18px)'
+          }}
+        >
+          <FaChevronLeft /> Return
+        </button>
       {reports.length === 0 ? (
         <p className="text-center">No pending reports.</p>
       ) : (
-        <div className="list-group">
-          {reports.map((report) => (
-            <div
-              key={report.id}
-              className="list-group-item list-group-item-action flex-column align-items-start"
-            >
-              <div className="d-flex w-100 justify-content-between">
-                <h5 className="mb-1">{report.item}</h5>
-                <small className="text-muted">{report.date}</small>
+      <div className="d-flex justify-content-center">   
+       <div className="list-group w-75">
+        {reports.map((report) => (
+          <div
+            key={report.id}
+            className="list-group-item list-group-item-action text-light align-items-start rounded-3 mt-4"
+            style={{
+              backgroundColor: '#1B75BC',
+            }}
+          >
+            <div className="d-flex align-items-center">
+              <div
+                style={{
+                  width: '150px',
+                  borderRight: '1px solid white',
+                  padding: '10px',
+                }}
+              >
+                <img
+                  className="img-cat"
+                  src={categoryImages[report.category] || '../src/assets/othersIcon.png'} alt={report.category}
+                />
               </div>
-              <p className="mb-1">{report.description}</p>
-              <small className="text-muted">
-                <strong>Location:</strong> {report.location}
-              </small>
 
-              {/* Action Buttons */}
-              <div className="mt-3 d-flex gap-2 float-end">
-                <button
-                  className="btn btn-success"
-                  onClick={() => {
-                    setSelectedReport(report);
-                    setShowModal(true);
-                  }}
-                >
-                  Process
-                </button>
+              <div className="d-flex flex-column w-100 ms-3 mt-2"
+                style={{
+                  fontSize:"clamp(8px, 2vw, 15px)"
+                }}>
+                <div className="d-flex justify-content-between">
+                  <p className="mb-1 me-2">{report.item}</p>
+                  <small>{report.date}</small>
+                </div>
+                <p className="mb-1">{report.description}</p>
+                <small>
+                  <strong>Location:</strong> {report.location}
+                </small>
 
-                <button
-                  className="btn btn-secondary"
-                >
-                  Contact Us
-                </button>
+                <div className="mt-3 d-flex gap-2 ms-auto">
+                  <button
+                    className="btn"
+                    onClick={() => {
+                      setSelectedReport(report);
+                      setShowModal(true);
+                    }}
+                    style={{
+                      height:"50%",
+                      backgroundColor: '#67d753',
+                      color: 'white',
+                      fontSize:"clamp(5px, 1vw, 15px)",
+                      outline: 'none',
+                      border: 'none',
+                      fontFamily: "Poppins, sans-serif",
+                    }}
+                  >
+                    Process
+                  </button>
+
+                  <button
+                    className="btn btn-secondary"
+                    style={{
+                      height:"50%",
+                      backgroundColor: '#2169ac',
+                      color: 'white',
+                      fontSize:"clamp(5px, 1vw, 15px)",
+                      outline: 'none',
+                      border: 'none',
+                      fontFamily: "Poppins, sans-serif",
+                    }}
+                  >
+                    Contact Us
+                  </button>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
+      </div>
+     </div>   
       )}
       {showModal && selectedReport && (
         <div className="modal fade show d-block" tabIndex={-1} role="dialog" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-dialog modal-dialog-centered"
+            style={{
+              color:'#2169ac',
+              fontFamily: "Poppins, sans-serif",
+              fontSize:'16.4px'
+            }}>
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Verify <u>{userNames[selectedReport.userId]}'s</u> claim</h5>
@@ -178,10 +234,26 @@ const AdminApproval: React.FC = () => {
                       denyReport(selectedReport.id);
                       setShowModal(false);
                     }
+                  }}
+                  style={{
+                    backgroundColor:' #e86b70',
+                    color:'white',
+                    fontSize:'13px',
+                    outline:'none',
+                    border:'none',
+                    fontFamily: "Poppins, sans-serif",
                   }}>
                     Deny
                   </button>
-                  <button type="button" className="btn btn-success" onClick={() => approveReport(selectedReport.id)} disabled={loading}>
+                  <button type="button" className="btn btn-success" onClick={() => approveReport(selectedReport.id)} disabled={loading}
+                    style={{
+                      backgroundColor:'#67d753',
+                      color:'white',
+                      fontSize:'13px',
+                      outline:'none',
+                      border:'none',
+                      fontFamily: "Poppins, sans-serif",
+                    }}  >
                     {loading ? "Processing..." : "Approve"}
                   </button>
                 </div>

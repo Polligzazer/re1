@@ -18,17 +18,17 @@ interface ChatContextType {
     dispatch: React.Dispatch<any>;
 }
 
-// ✅ Create context
+
 export const ChatContext = createContext<ChatContextType | null>(null);
 
-// ✅ Custom hook to safely use ChatContext
+
 export const useChatContext = () => {
     const context = useContext(ChatContext);
     if (!context) throw new Error("useChatContext must be used within a ChatProvider");
     return context;
 };
 
-// 🔹 Chat Provider Props
+
 interface ChatProviderProps {
     children: ReactNode;
 }

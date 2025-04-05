@@ -1,7 +1,8 @@
 import '../css/Layout.css'
 import { Outlet } from "react-router-dom";
 import Topbar from "./Topbar";
-import Chatbot from "./Chatbot.tsx";
+//import Notifbutton from "../pages/SendNotificationButton";
+// diko alam kung pano mag comment below   <Notifbutton />
 
 
 const Layout = () => {
@@ -11,9 +12,8 @@ const Layout = () => {
       <Topbar />
       <div className="container pt-5 justify-content-center align-items-center">
         <Outlet />
-        <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000 }}>
-        <Chatbot/>
-      </div>
+        
+
       </div>
     </main>
   );

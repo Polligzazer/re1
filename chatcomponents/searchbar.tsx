@@ -80,49 +80,30 @@ const SearchBar = ({ onChatSelect }: SearchBarProps) => {
   
     try {
       const usersRef = collection(db, 'users');
+      const allUsersQuery = query(usersRef); // Query for all users
   
-      const firstNameQuery = query(usersRef, where('firstName', '>=', schoolId.trim()), where('firstName', '<=', schoolId.trim() + '\uf8ff'));
-      const middleInitialQuery = query(usersRef, where('middleInitial', '>=', schoolId.trim()), where('middleInitial', '<=', schoolId.trim() + '\uf8ff'));
-      const lastNameQuery = query(usersRef, where('lastName', '>=', schoolId.trim()), where('lastName', '<=', schoolId.trim() + '\uf8ff'));
-      const schoolIdQuery = query(usersRef, where('schoolId', '==', schoolId.trim()));
+      const allUsersSnapshot = await getDocs(allUsersQuery);
+      const users = allUsersSnapshot.docs.map((doc) => ({
+        uid: doc.id,
+        ...doc.data(),
+      }));
   
-      const [firstNameSnapshot, middleInitialSnapshot, lastNameSnapshot, schoolIdSnapshot] = await Promise.all([
-        getDocs(firstNameQuery),
-        getDocs(middleInitialQuery),
-        getDocs(lastNameQuery),
-        getDocs(schoolIdQuery),
-      ]);
+      const lowercaseSchoolId = schoolId.trim().toLowerCase();
+      const filteredUsers = users.filter((user) => {
+        return (
+          user.firstName?.toLowerCase().includes(lowercaseSchoolId) ||
+          user.middleInitial?.toLowerCase().includes(lowercaseSchoolId) ||
+          user.lastName?.toLowerCase().includes(lowercaseSchoolId) ||
+          user.schoolId?.toLowerCase().includes(lowercaseSchoolId)
+        );
+      });
   
-      const usersSet = new Map<string, User>();
-
-      const processSnapshot = (snapshot: any) => {
-        snapshot.forEach((doc: any) => {
-          const userData = doc.data();
-          usersSet.set(doc.id, {
-            uid: doc.id,
-            schoolId: userData.schoolId || "N/A",
-            firstName: userData.firstName || "",
-            middleInitial: userData.middleInitial || "",
-            lastName: userData.lastName || "",
-            role: userData.role || "",
-            isAdmin: userData.isAdmin || false,
-          });
-        });
-      };
-  
-      processSnapshot(firstNameSnapshot);
-      processSnapshot(middleInitialSnapshot);
-      processSnapshot(lastNameSnapshot);
-      processSnapshot(schoolIdSnapshot);
-  
-      const usersArray = Array.from(usersSet.values());
-  
-      if (usersArray.length === 0) {
+      if (filteredUsers.length === 0) {
         setErr('No users found.');
         setUser(null);
       } else {
         setErr(null);
-        setUser(usersArray[0]); 
+        setUser(filteredUsers[0]); // Return the first matching user
       }
     } catch (error) {
       console.error("Firestore Query Error:", error);
@@ -134,12 +115,15 @@ const SearchBar = ({ onChatSelect }: SearchBarProps) => {
   const handleKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') handleSearch();
   };
+  
 
   const handleSelect = async (selectedUser: User) => {
     if (!currentUser?.uid || !selectedUser?.uid) {
       alert("Error: Invalid user selection.");
       return;
     }
+
+
   
     const adminUid = currentUser.isAdmin ? currentUser.uid : selectedUser.uid;
     const userUid = currentUser.isAdmin ? selectedUser.uid : currentUser.uid;

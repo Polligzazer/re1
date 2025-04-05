@@ -115,7 +115,7 @@ const Input = () => {
       await Promise.all([
         updateDoc(currentUserChatRef, {
           [`${data.chatId}.lastMessage`]: lastMessage,
-          [`${data.chatId}.timestamp`]: serverTimestamp(),
+          [`${data.chatId}.lastActivity`]: serverTimestamp(),
           [`${data.chatId}.userInfo`]: {
             uid: data.user.uid,
             name: data.user.name,
@@ -124,7 +124,7 @@ const Input = () => {
         }),
         updateDoc(receiverUserChatRef, {
           [`${data.chatId}.lastMessage`]: lastMessage,
-          [`${data.chatId}.timestamp`]: serverTimestamp(),
+          [`${data.chatId}.lastActivity`]: serverTimestamp(),
           [`${data.chatId}.userInfo`]: {
             uid: currentUser.uid,
             name: currentUser.displayName,

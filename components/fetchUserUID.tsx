@@ -27,12 +27,8 @@ const fetchUserUID = async (): Promise<string | null> => {
         console.error("❗ User is not authenticated.");
         resolve(null);
       }
-
-      // Cleanup listener after first call
       unsubscribe();
     });
-
-    // Optional: Ensure resolve(null) if onAuthStateChanged never fires
     setTimeout(() => {
       resolve(null);
     }, 5000);

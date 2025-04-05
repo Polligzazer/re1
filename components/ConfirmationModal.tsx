@@ -38,7 +38,6 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           outline:'none',
           border:'none',
           fontFamily: "Poppins, sans-serif",
-         
         }}>
           Cancel
         </Button>
@@ -49,7 +48,6 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           outline:'none',
           border:'none',
           fontFamily: "Poppins, sans-serif",
-         
         }}>
           Confirm
         </Button>

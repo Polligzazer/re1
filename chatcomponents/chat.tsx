@@ -29,7 +29,7 @@ const Chat = ({ onBack }: ChatProps) => {
           <button
             onClick={onBack}
             className="btn btn-link text-white p-0 px-2 d-md-none"
-            style={{ display:'none', fontSize: '20px' }}
+            style={{ fontSize: '20px' }}
           >
             <FontAwesomeIcon icon={faArrowLeft} />
           </button>

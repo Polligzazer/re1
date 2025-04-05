@@ -573,13 +573,13 @@ const Aboutus = () => {
                             </span>
                             <ul className="d-flex flex-column pt-4 pb-4">
                                 <i className="bi bi-facebook pb-3" style={{ color: "white", fontSize: "calc(0.8rem + 0.8vw)" }}>
-                                    <span className="ms-2"> @FLOCodeXPH</span>
+                                    <span className="ms-2"> @FLOcodeXservices</span>
                                 </i>
                                 <i className="emailflo bi bi-envelope-fill pt-4 pb-3" style={{ color: "white", fontSize: "calc(0.8rem + 0.8vw)", width: "30vw" }}>
-                                    <span className="ms-2"> @FLOCodeXPH.gmail.com</span>
+                                    <span className="ms-2"> Support@flocodex.tech</span>
                                 </i>
                                 <i className="bi bi-telephone-fill pt-4" style={{ color: "white", fontSize: "calc(0.8rem + 0.8vw)" }}>
-                                    <span className="ms-2"> 63+ 904 516 2706</span>
+                                    <span className="ms-2"> 63+ 9359261892</span>
                                 </i>
                             </ul>
                         </section>

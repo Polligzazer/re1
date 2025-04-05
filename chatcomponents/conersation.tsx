@@ -50,9 +50,7 @@ const Convo = ({ message, previousMessage, chatPartner }: ConvoProps) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [isExpired, setIsExpired] = useState(false);
 
-  useEffect(() => {
-    ref.current?.scrollIntoView({ behavior: 'instant' });
-  }, [message]);
+
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -249,14 +247,14 @@ useEffect(() => {
                     {message.text && <p style={{ margin: 0, padding: 0 }}>{message.text}</p>}  {/* Render message.text only if it exists */}
                   </div>
                 ) : message.text.includes('https://cloud.appwrite.io/v1/storage/buckets/') ? (
-                  // If it's a URL, render it as a link
+                
                   <div>
                     <a href={message.text} target="_blank" rel="noopener noreferrer">
                       See attached file
                     </a>
                   </div>
                 ) : (
-                  // Render regular text
+              
                   <p style={{ margin: 0, padding: 0 }}>{message.text}</p>
                 )
               }
@@ -279,17 +277,17 @@ useEffect(() => {
       {showTimestamp && formatTimestamp(message.date)}
     </div>
 
-    <ItemPreviewModal 
-  show={showModal} 
-  onClose={() => setShowModal(false)} 
-  item={selectedReport ? { 
-    ...selectedReport, 
-    userId: selectedReport.userId || "",
-    type: "lost"
-  } : null} 
-/>
-  </div>
-</div>
+      <ItemPreviewModal 
+        show={showModal} 
+        onClose={() => setShowModal(false)} 
+        item={selectedReport ? { 
+          ...selectedReport, 
+          userId: selectedReport.userId || "",
+          type: "lost"
+        } : null} 
+      />
+        </div>
+      </div>
 
   );
 };

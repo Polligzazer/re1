@@ -1,8 +1,10 @@
 import {useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { db } from "../../src/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { FaChevronLeft } from "react-icons/fa";
+import categoryImages from "../../src/categoryimage";
 
 interface Report {
     id: string;
@@ -17,6 +19,7 @@ interface Report {
 }
 
 const ClaimedReports: React.FC = () => {
+    const navigate = useNavigate();
     const [reports, setReports] = useState<Report[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -69,14 +72,19 @@ const ClaimedReports: React.FC = () => {
     return (
         <div className="container mt-4">
             <h1 className="text-center mb-4">Claimed Reports</h1>
-            <Link to="/dashboard" className="btn btn-secondary mb-3">
-                Back to Dashboard
-            </Link>
-
+            <button 
+          className="btn d-flex align-items-center mb-0 pb-0" 
+          onClick={() => navigate("/dashboard")}
+          style={{
+            fontSize:'clamp(12px, 3vw, 18px)'
+          }}
+        >
+          <FaChevronLeft /> Return
+        </button>
             <input
                 type="text"
                 placeholder="Search by Name, Item, Location, etc..."
-                className="form-control mb-3"
+                className="form-control mt-3 mb-3"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -85,24 +93,52 @@ const ClaimedReports: React.FC = () => {
                 <p className="text-center">No claimed reports found.</p>
             ) : (
                 <div className="list-group">
-                    {filteredReports.map((report) => (
+                {filteredReports.map((report) => (
+                    <div className="w-75">
+                    <div
+                    key={report.id}
+                    className="list-group-item list-group-item-action flex-column align-items-start text-light mb-3"
+                    style={{
+                        backgroundColor: '#1B75BC',
+                    }}
+                    >
+                    <div className="d-flex mt-2 mb-2 align-items-center">
                         <div
-                            key={report.id}
-                            className="list-group-item list-group-item-action flex-column align-items-start"
+                        style={{
+                            width: '150px',
+                            height: 'auto',
+                            minHeight: '150px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            borderRight: '1px solid white',
+                            padding: '10px',
+                        }}
                         >
-                            <div className="d-flex w-100 justify-content-between">
-                                <h5 className="mb-1">{report.itemName} ({report.category})</h5>
-                                <small className="text-muted">{report.timestamp}</small>
-                            </div>
-                            <p className="mb-1">{report.description}</p>
-                            <p className="mb-1">Location: {report.location}</p>
-                            <p className="mb-1">Reference Post: {report.referencePostId}</p>
-                            <small className="text-muted">
-                                <strong>Claimant:</strong> {report.claimantName || "N/A"}
-                            </small>
+                        <img
+                            className="img-cat"
+                            src={categoryImages[report.category] || '../src/assets/othersIcon.png'}
+                            alt={report.category}/>
                         </div>
-                    ))}
+
+                        <div className="d-flex flex-column w-100 ms-4" 
+                            style={{fontSize:"clamp(10px, 2vw, 15px)"}}>
+                        <div className="d-flex justify-content-between">
+                            <p className="mb-1"  style={{fontSize:"clamp(16px, 2vw, 20px)"}}>{report.itemName} ({report.category})</p>
+                            <small>{report.timestamp}</small>
+                        </div>
+                        <p className="mb-1">{report.description}</p>
+                        <p className="mb-1">Location: {report.location}</p>
+                        <p className="mb-1">Reference Post: {report.referencePostId}</p>
+                        <small>
+                            <strong>Claimant:</strong> {report.claimantName || "N/A"}
+                        </small>
+                        </div>
+                    </div>
+                 </div>
                 </div>
+                ))}
+            </div>
             )}
         </div>
     );
