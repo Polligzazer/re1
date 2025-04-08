@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useRef } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { FreeMode } from "swiper/modules";
+import { FreeMode, Virtual } from "swiper/modules";
 import "swiper/swiper-bundle.css";
 import { db } from "../src/firebase";
 import { handleSend } from "../chatcomponents/handleSend";
@@ -132,7 +132,7 @@ const Home = () => {
 
   function renderSection(title: string, reportList: Report[], key: string) {
     return (
-      <div style={{ width: "100%", maxWidth: "100vw", marginBottom: "50px", position: "relative", textAlign: "start" }}>
+      <div style={{ width: "100%", maxWidth: "100vw", marginBottom: "60px", position: "relative", textAlign: "start" }}>
         <p style={{ 
           fontFamily: "DM Sans, sans-serif", 
           fontSize: "clamp(13px, 5vw, 18px)", 
@@ -150,10 +150,14 @@ const Home = () => {
           
               display: "flex",
             }}
-            modules={[FreeMode]}
+            modules={[FreeMode, Virtual]}
+            virtual={{
+              addSlidesBefore: 10,
+              addSlidesAfter: 10
+            }}
             spaceBetween={0} 
             slidesPerView={1}
-            freeMode={true}
+            freeMode={{ enabled: true, sticky: true }}
 
             onSwiper={(swiper) => (swiperRefs.current[key] = swiper)}
             breakpoints={{
@@ -183,8 +187,8 @@ const Home = () => {
             grabCursor={true}
           >
 
-              {reportList.map((report) => (
-                <SwiperSlide key={report.id}>
+              {reportList.map((report, index) => (
+                <SwiperSlide key={report.id} virtualIndex={index}>
                   <div className="report-card p-3 d-flex align-items-center">
                     <div className="imgreport-div d-flex align-items-center p-2 me-4"
                       style={{
@@ -283,7 +287,10 @@ const Home = () => {
             )}
           </div>
         ) : (
-          <p className="empty-message">No {title.toLowerCase()} found.</p>
+          <p className="empty-message p-3 rounded text-center" style={{
+            fontFamily: "Poppins, sans-serif",
+          
+          }}>No {title.toLowerCase()} found.</p>
         )}
         
       </div>

@@ -106,7 +106,7 @@ const ReportForms: React.FC = () => {
           </button>
         </div>
 
-        <div className="box-animate3 mb-3">
+        <div className="ox-animate3 mb-3">
           <button
             className="reportbtn btn btn-lg py-3 d-flex flex-column"
             onClick={() => navigate("/inquiries")}

@@ -6,7 +6,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "../css/Chatbot.css";
 
 import FLO1 from "../src/assets/1bFLO.png";
-import FLO2 from "../src/assets/2FLO.png";
+// import FLO2 from "../src/assets/2FLO.png";
 import FLO3 from "../src/assets/3FLO.png";
 import FLO4 from "../src/assets/4bFLO.png";
 import FLO5 from "../src/assets/5FLO.png";
@@ -51,7 +51,7 @@ const Chatbot: React.FC = () => {
       setShowBubble(true);
     };
     updateMessage(); 
-    interval = setInterval(updateMessage, 60000); 
+    interval = setInterval(updateMessage, 420000); 
     return () => clearInterval(interval);
   }, []);
   

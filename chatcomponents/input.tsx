@@ -194,7 +194,7 @@ const Input = () => {
   };
 
   return (
-    <div className="input py-3 px-0 d-flex gap-lg-2 gap justify-content-center align-items-center" style={{ borderTop: "1px solid" }}>
+    <div className="input py-3 px-0 d-flex gap-lg-2 gap justify-content-center align-items-center">
       {isAdmin && (
         <button className="btn" style={{ backgroundColor: "transparent" }} onClick={handleSendClaimFormRequest}>
           <FontAwesomeIcon className="fs-3" style={{ color: "#e8a627" }} icon={faFileAlt} />

@@ -4,13 +4,15 @@ import { apwstorage, APPWRITE_STORAGE_BUCKET_ID } from "../../../src/appwrite";
 import fetchUserUID from "../../../components/fetchUserUID";
 import { useState, useEffect } from "react";
 import { db } from "../../../src/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, Timestamp, addDoc, serverTimestamp } from "firebase/firestore";
 import ConfirmationModal from "../../../components/ConfirmationModal"; 
 import { useNavigate } from "react-router-dom";
 import { faFileCirclePlus } from '@fortawesome/free-solid-svg-icons';
 import { FaChevronLeft } from "react-icons/fa";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import "../../../css/report.css";
+import { Modal} from 'react-bootstrap';  
+
 
 
 const Found: React.FC = () => {
@@ -40,8 +42,11 @@ const Found: React.FC = () => {
 
   const [userUID, setUserUID] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
   const [fileName, setFileName] = useState("");
   const [fileUrl, setFileUrl] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false); 
+    const [success, setSucess] = useState(false);
 
   useEffect(() => {
     const getUserUID = async () => {
@@ -64,6 +69,9 @@ const Found: React.FC = () => {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    setLoading(true); 
+    setShowLoadingModal(true);
     
     try {
       const uploadedFile = await apwstorage.createFile(
@@ -79,6 +87,9 @@ const Found: React.FC = () => {
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("❗ Failed to upload file. Please try again.");
+    }finally {
+      setLoading(false); 
+      setShowLoadingModal(false);
     }
   };
 
@@ -87,7 +98,11 @@ const Found: React.FC = () => {
       alert("❗ User not authenticated. Please log in again.");
       return;
     }
-
+    setLoading(true); 
+    const now = new Date();
+    const nineMonthsLater = new Date(now.setMonth(now.getMonth() + 9));
+    const validUntil = Timestamp.fromDate(nineMonthsLater);
+    
     const reportData = {
       ...formData,
       status: "pendingreport",
@@ -95,18 +110,28 @@ const Found: React.FC = () => {
       userId: userUID,
       reportId: `FND-${Date.now()}`,
       timestamp: serverTimestamp(),
+      validUntil: validUntil,
       imageUrl: fileUrl || "",
     };
 
     try {
       await addDoc(collection(db, "lost_items"), reportData);
-      navigate("/home");
+       setLoading(false);
+       setSucess(true);
+      
     } catch (error) {
+      setLoading(false); 
+      setSucess(false); 
       console.error("🔥 Error submitting report:", error);
       alert("❗ Error submitting report. Please try again.");
-    } finally {
-      setShowModal(false); // Hide the modal after submission
+    } finally{
+      setTimeout(() => {
+        setSucess(false); 
+        setShowModal(false)
+        navigate("/report"); 
+      }, 2000); 
     }
+   
   };
 
   return (
@@ -203,11 +228,11 @@ const Found: React.FC = () => {
                 />
                 </div>
                 </div>
-                <div className="pt-2" style={{
+                <div className="pt-2 px-1" style={{
                   height:'50%',
                   width:'100%',
                   marginTop:'10px',
-                  fontSize:"clamp(12px, 1.8vh, 19px)",
+                  fontSize:"clamp(10px, 1.6vh, 19px)",
                   color:formData.category === category ? '#dfe8f5' : '#2169ac',
                   fontWeight:'bold',
                   lineHeight:'1.2'
@@ -453,7 +478,41 @@ const Found: React.FC = () => {
         onConfirm={handleConfirmSubmit}
         title="Confirm Submission"
         message="Are you sure you want to submit this found item report?"
+        loading={loading}
+        success={success}
       />
+        <Modal show={showLoadingModal} onHide={() => setShowLoadingModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{loading ? "Uploading..." : "File Upload Complete"}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {loading ? (
+            <div className="d-flex justify-content-center align-items-center flex-column">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Uploading...</span>
+              </div>
+              <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+                Uploading your file...
+              </span>
+            </div>
+          ) : (
+            <div className="d-flex justify-content-center align-items-center flex-column">
+              <div className="check-container pb-1">
+                <div className="check-background">
+                  <svg viewBox="0 0 65 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 25L27.3077 44L58.5 7" stroke="white" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </div>
+              <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+                File uploaded successfully!
+              </span>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+        </Modal.Footer>
+      </Modal>
     </div>
     
   );

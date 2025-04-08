@@ -33,7 +33,7 @@
 .chat{
   width:70%;
   border:1px solid #004aad;
-  height:31rem;
+  height:37rem;
   background-color: #f1f7ff;
   border-radius: 23px;
 }
@@ -41,14 +41,14 @@
 .sidebar{
   width:30%;
   border:1px solid #004aad;
-  height:31rem;
+  height:37rem;
   background-color: #f1f7ff;
-  border-radius: 23px;
+  border-radius: 23px;  
   
 }
 .chatcontainermain{
-  height:66%;
-  max-height: 66%;
+  height:70%;
+  max-height: 70%;
 }
 
 .chatcontainer::-webkit-scrollbar {

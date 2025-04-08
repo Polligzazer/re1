@@ -21,6 +21,32 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #555; 
 }
+/*history*/
+.custom-scrollbar1::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+.custom-scrollbar1{
+    width: 65%;
+    height: 355px;
+    overflow-Y: auto;
+    overflow-X: hidden;
+    gap:20px;
+  
+}
+
+.custom-scrollbar1::-webkit-scrollbar-track {
+  background: transparent; /* Track color */
+}
+
+.custom-scrollbar1::-webkit-scrollbar-thumb {
+  background: #888; 
+  border-radius: 4px; 
+}
+
+.custom-scrollbar1::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
 .fcolumn{
   width: 78%;
 }
@@ -64,7 +90,10 @@
     .custom-scrollbar::-webkit-scrollbar {
       width: 7px; /* Width of the scrollbar */
     }
-    .custom-scrollba{
+    .custom-scrollbar{
+      width:100%;
+    }
+    .custom-scrollbar1{
       width:100%;
     }
 } 
@@ -86,6 +115,9 @@
     width: 6px; /* Width of the scrollbar */
   }
   .custom-scrollbar{
+    width:100%;
+  }
+  .custom-scrollbar1{
     width:100%;
   }
   .card-main{
@@ -125,6 +157,9 @@
   .custom-scrollbar{
     width:100%;
   }
+  .custom-scrollbar1{
+    width:100%;
+  }
   .card-main{
     flex-direction: column;
     padding-bottom:0px !important;
@@ -161,6 +196,9 @@
     width: 5px; /* Width of the scrollbar */
   }
   .custom-scrollbar{
+    width:100%;
+  }
+  .custom-scrollbar1{
     width:100%;
   }
   .card-main{

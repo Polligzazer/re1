@@ -49,6 +49,8 @@ const ClaimFormRequest: React.FC = () => {
   const [userUID, setUserUID] = useState<string | null>(null);
   const [isValidReference, setIsValidReference] = useState<boolean | null>(null);
   const [, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false); 
+    const [success, setSucess] = useState(false);
 
   const validateReferenceId = async (id: string) => {
     if (!id) {
@@ -62,13 +64,21 @@ const ClaimFormRequest: React.FC = () => {
     const lostItemSnap = await getDoc(lostItemRef);
 
     if (lostItemSnap.exists()) {
-      setIsValidReference(true);
-      setErrorMessage("");
+      const lostItemData = lostItemSnap.data();
+      // Assuming the type is stored as 'type' field in the lost items collection
+      if (lostItemData?.type === "found") {
+        setIsValidReference(true);
+        setErrorMessage("");
+      } else {
+        setIsValidReference(false);
+        setErrorMessage("The reference ID is not of type 'found'.");
+      }
     } else {
       setIsValidReference(false);
-      setErrorMessage("No Reference ID");
+      setErrorMessage("No Reference ID found.");
     }
   };
+  
 
 
   useEffect(() => {
@@ -147,10 +157,11 @@ const ClaimFormRequest: React.FC = () => {
 
   const handleConfirmSubmit = async () => {
     if (!isValidReference) {
+      
       alert("❗ Please enter a valid reference ID.");
       return;
     }
-
+    setLoading(true); 
     const claimData = {
       ...formData,
       status: "pendingclaim",
@@ -162,10 +173,19 @@ const ClaimFormRequest: React.FC = () => {
 
     try {
       await addDoc(collection(db, "claim_items"), claimData);
-      navigate("/home");
+      setLoading(false);
+      setSucess(true);
     } catch (error) {
+      setLoading(false); 
+      setSucess(false); 
       console.error("🔥 Error submitting claim request:", error);
       alert("❗ Error submitting claim request. Please try again.");
+    } finally{
+      setTimeout(() => {
+        setSucess(false); 
+        setShowModal(false)
+        navigate("/inquiries"); 
+      }, 2000); 
     }
   };
 
@@ -449,6 +469,8 @@ const ClaimFormRequest: React.FC = () => {
         onConfirm={handleConfirmSubmit}
         title="Confirm Submission"
         message="Are you sure you want to submit this claim form?"
+        loading={loading}
+        success={success}
       />
     </div>
     

@@ -89,9 +89,9 @@ const Analytics = () => {
       scales: {
         y: {
           beginAtZero: true,
-          suggestedMax: 30,
+          suggestedMax: 100,
           ticks: {
-            stepSize: 10,
+            stepSize: 25,
             font: {
               size: getFontSize(8, 100, 14), 
           },
