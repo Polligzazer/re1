@@ -67,12 +67,12 @@ const Profile: React.FC = () => {
   return (
     <div className="mt-5" style={{paddingTop:"5vw"}}>
 
-      <div className="pb-5">
+      <div className="pb-3 ms-2">
         <img src="../../src/assets/notifpfpicon.png" className="rounded-circle"
           style={{
-            width: "10vw"
+            width: "7vw"
           }} />
-        <span className="ps-5"
+        <span className="ps-3"
           style={{
             fontSize:"3vw",
             color: "#0e5cc5",
@@ -84,11 +84,11 @@ const Profile: React.FC = () => {
         <div className="d-flex flex-row p-3"
           style={{
             color: "#0e5cc5",
-            fontSize: "2vw",
+            fontSize: "clamp(20px, 3vw, 15px)",
             fontFamily: "Work Sans, sans-serif",
-            gap: "2vw"
+            gap: "1.5vw"
           }}>
-          <div className="me-4">
+          <div className="">
 
             <li> <span className="">Role: </span> <span> {user.role}</span> </li>
             {user.role === "student" && (
@@ -106,21 +106,23 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
-        <div className="d-flex" style={{gap: "5vw"}}>
-          <div className="d-flex w-50" style={{gap: "3vw"}}>
-            <div
-              className="ps-4 pt-1 pb-3"
-              style={{
+        <div className="d-flex flex-column flex-md-row" style={{gap: "5vw"}}>
+          <div className="d-flex flex-column flex-md-row align-items-center w-50">
+            <div className="d-flex flex-column flex-md-row w-100" style={{gap: "3vw"}}>
+              <div
+                className="ps-4 pt-1 pb-3"
+                style={{
                 width: "60%",
                 border: "2px solid #bfbdbc",
                 borderRadius: "10px",
+                fontSize: "clamp(10px, 2vw, 15px)",
                 fontFamily: "Work Sans, sans-serif",
-              }}>
+                }}>
 
               <div className="d-flex justify-content-between align-items-center pt-3">
                 <span
                   style={{
-                    fontSize: "2.5vw",
+                    fontSize: "2vw",
                     fontWeight: "bold",
                     color: "#0e5cc5",
                   }}> {reportCount}
@@ -140,7 +142,7 @@ const Profile: React.FC = () => {
               <span className="d-block"
                 style={{
                   color: "#636363",
-                  fontSize: "1.2vw"
+                  fontSize: "clamp(20px, 3vw, 20px)"
                 }}>Total reports</span>
             </div>
             <div
@@ -155,7 +157,7 @@ const Profile: React.FC = () => {
               <div className="d-flex justify-content-between align-items-center pt-3">
                 <span
                   style={{
-                    fontSize: "2.5vw",
+                    fontSize: "2vw",
                     fontWeight: "bold",
                     color: "#0e5cc5",
                   }}> {claimCount}
@@ -175,23 +177,24 @@ const Profile: React.FC = () => {
               <span className="d-block"
                 style={{
                   color: "#636363",
-                  fontSize: "1.2vw"
+                  fontSize: "clamp(20px, 3vw, 20px)"
                 }}>Total claimed</span>
             </div>
-
+                </div>
           </div>
 
 
-          <div className="d-flex flex-column align-items-center" style={{width: "30vw"}}>
-            <div className="pb-4">
+          <div className="d-flex flex-column align-items-center" style={{width: "50vw"}}>
+            <div className="d-flex flex-column w-75 align-items-center">
+              <div className="pb-4">
               <button
                 onClick={() => setShowModal(true)}
                 className="btn text-start"
                 style={{
-                  width: "25vw",
+                  width: "27vw",
                   borderRadius: "20px",
                   fontFamily: "Work Sans, sans-serif",
-                  fontSize: "clamp(14px, 1.5vw, 16px)",
+                  fontSize: "clamp(20px, 3vw, 20px)",
                   color: "#fafcff",
                   backgroundColor: "#3998ff",
                 }}>
@@ -205,10 +208,10 @@ const Profile: React.FC = () => {
                 onClick={() => navigate("/aboutus")}
                 className="btn text-start"
                 style={{
-                  width: "25vw",
+                  width: "27vw",
                   borderRadius: "20px",
                   fontFamily: "Work Sans, sans-serif",
-                  fontSize: "clamp(14px, 1.5vw, 16px)",
+                  fontSize: "clamp(20px, 3vw, 20px)",
                   color: "#fafcff",
                   backgroundColor: "#3998ff",
                 }}
@@ -222,10 +225,10 @@ const Profile: React.FC = () => {
                 onClick={() => navigate("/reset-password")}
                 className="btn text-start"
                 style={{
-                  width: "25vw",
+                  width: "27vw",
                   borderRadius: "20px",
                   fontFamily: "Work Sans, sans-serif",
-                  fontSize: "clamp(14px, 1.5vw, 16px)",
+                  fontSize: "clamp(20px, 3vw, 20px)",
                   color: "#fafcff",
                   backgroundColor: "#3998ff",
                 }}
@@ -236,7 +239,7 @@ const Profile: React.FC = () => {
           </div>
         </div>
       </div>
-
+      </div>
     </div >
   );
 };
