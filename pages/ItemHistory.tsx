@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { db } from '../src/firebase';
 import { collection, getDocs, doc, updateDoc, Timestamp, query, where } from 'firebase/firestore';
 import { Card } from 'react-bootstrap';
+import { faCheckCircle, faExclamationTriangle, faHeadset } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import categoryImages from '../src/categoryimage';
+import "../css/PendingClaimDash.css";
 
 interface Item {
   id: string;
@@ -11,19 +16,29 @@ interface Item {
   type: string;
   date: string;
   location: string;
+  category:string;
   description: string;
   item: string;
+  itemName: string;
   status: 'unclaimed' | 'claimed';
   timestamp?: Timestamp;
+  validUntil?: Timestamp;
+  claimantName?: string; 
+  claimedDate?: string | Timestamp; 
 }
 
 const ItemHistory = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [filter, setFilter] = useState<'unclaimed' | 'claimed'>('unclaimed');
   const [, setUsers] = useState<{ [key: string]: string }>({}); // To store users' names
+  const [claimedCount, setClaimedCount] = useState<number>(0);
+  const [unclaimedCount, setUnclaimedCount] = useState<number>(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchItemsAndUsers = async () => {
+      console.log(`📌 Fetching items with status: '${filter}'`);
+
       // Get all users and map them by userId for quick access
       const userSnapshot = await getDocs(collection(db, "users"));
       const usersData = userSnapshot.docs.reduce((acc, userDoc) => {
@@ -33,9 +48,9 @@ const ItemHistory = () => {
       }, {} as { [key: string]: string });
       setUsers(usersData);
 
-      // Query lost items based on filter
+  
       const itemsQuery = query(
-        collection(db, "lost_items"),
+        collection(db, "claim_items"),
         where('status', '==', filter)
       );
       const querySnapshot = await getDocs(itemsQuery);
@@ -44,13 +59,18 @@ const ItemHistory = () => {
         ...doc.data(),
       })) as Item[];
 
-      // Update items with usernames from the pre-fetched users data
+      const claimed = fetchedItems.filter(item => item.status === 'claimed').length;
+      const unclaimed = fetchedItems.filter(item => item.status === 'unclaimed').length;
+      
+      setClaimedCount(claimed);
+      setUnclaimedCount(unclaimed);
+
       const updatedItems = fetchedItems.map(item => ({
         ...item,
         username: usersData[item.userId] || "Unknown User",
       }));
 
-      // Perform status update if necessary (only if status is 'claimed' and older than 9 months)
+
       const nineMonthsAgo = new Date();
       nineMonthsAgo.setMonth(nineMonthsAgo.getMonth() - 9);
       
@@ -60,7 +80,7 @@ const ItemHistory = () => {
           if (reportDate < nineMonthsAgo && item.status !== "unclaimed") {
             const itemRef = doc(db, "lost_items", item.id);
             await updateDoc(itemRef, { status: "unclaimed" });
-            item.status = "unclaimed";  // Update the status in the local state
+            item.status = "unclaimed";  
           }
         }
       });
@@ -72,69 +92,177 @@ const ItemHistory = () => {
     fetchItemsAndUsers();
   }, [filter]);
 
-  const filteredItems = items.filter((item) =>
-    filter === "unclaimed" ? item.status === "unclaimed" : item.status === "claimed"
-  );
+  const filteredItems = items.filter((item) => {
+    if (filter === "unclaimed") {
+      return (
+        item.status === "unclaimed" &&
+        item.validUntil &&
+        item.validUntil.toDate() < new Date()
+      );
+    } else {
+      return item.status === "claimed";
+    }
+  });
 
   return (
     <div className="container mt-5">
-      <div className="d-flex justify-content-between align-items-center">
-        <h2 className="mb-2 fw-bold">Item history</h2>
-        <div className="d-flex gap-3 mb-4">
-          <div
-            className={`fw-bold ${filter === 'unclaimed' ? 'text-primary' : ''}`}
-            style={{ cursor: 'pointer' }}
-            onClick={() => setFilter('unclaimed')}
-          >
-            Unclaimed
-          </div>
-          <div
-            className={`fw-bold ${filter === 'claimed' ? 'text-primary' : ''}`}
-            style={{ cursor: 'pointer' }}
-            onClick={() => setFilter('claimed')}
-          >
-            Recovered
+      <div className="claim-top-text d-flex" >
+      <div className="claim-top-text-text d-flex flex-column">
+       <p className="text-start fw-bold m-0 pb-2 mt-5"
+        style={{
+          fontSize:"24px",
+          color:'#212020',
+          fontFamily: "DM Sans, sans-serif", 
+           
+        }}
+      >Item history</p>
+        <p className="" 
+        style={{
+          color:'#454545',  
+          fontFamily:"Poppins, sans-serif"
+        }}>
+           Managing, securing, and maintaining report logs
+        </p>
+      </div>  
+      <div className='countdiv'>    
+         <div className="number-of-pending d-flex p-2 flex-column pb-4" style={{
+            backgroundColor:'#f1f7ff',
+            borderRadius:'10px',
+            border:'1px solid #bfbdbc',
+
+          }}>
+            <div className="d-flex flex-row justify-content-between align-items-center px-4">
+              <p className="number-of-pending-text mt-3 m-0 mb-1" style={{
+                fontFamily: "DM Sans, sans-serif", 
+                fontSize:'25px',
+                color:'#0e5cc5',
+                padding:'0'
+                
+              }}>  {filter === 'unclaimed' ? unclaimedCount : claimedCount}</p>
+              <FontAwesomeIcon 
+               icon={filter === 'unclaimed' ? faExclamationTriangle : faCheckCircle}
+                style={{
+                  position:'relative',
+                  color: filter === 'unclaimed' ? '#e86b70' : '#28a745',
+                  fontSize:'29px',
+                  top:'-5px'
+                }}/>
+                
+            </div>
+            <p className="px-4 text-start" style={{
+              color:'#636363',
+              fontFamily:"Poppins, sans-serif",
+              fontSize:'13.6px'
+            }}> {filter === 'unclaimed' ? 'Unclaimed' : 'Recovered Items'}</p>
           </div>
         </div>
       </div>
-      <p className="text-muted mb-4">
-        Managing, securing, and maintaining report logs
-      </p>
-
+      <div className='d-flex flex-column mt-4 align-items-center justify-content-center'>
+      <div className="r-btn d-flex gap-3 mb-5">
+        <div
+          className={`radio-btn ${filter === 'unclaimed' ? 'active' : ''}`}
+          onClick={() => setFilter('unclaimed')}
+          style={{
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            fontWeight: 'bold',
+          }}
+        >
+          <div
+            className={`radio-circle ${filter === 'unclaimed' ? 'filled' : ''}`}
+            style={{
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              border: '2px solid #007bff',
+              marginRight: '8px',
+              transition: 'background-color 0.3s ease',
+              backgroundColor: filter === 'unclaimed' ? '#007bff' : 'transparent',
+            }}
+          ></div>
+          Unclaimed
+        </div>
+        
+        <div
+          className={`radio-btn ${filter === 'claimed' ? 'active' : ''}`}
+          onClick={() => setFilter('claimed')}
+          style={{
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            fontWeight: 'bold',
+          }}
+        >
+          <div
+            className={`radio-circle ${filter === 'claimed' ? 'filled' : ''}`}
+            style={{
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              border: '2px solid #28a745',
+              marginRight: '8px',
+              transition: 'background-color 0.3s ease',
+              backgroundColor: filter === 'claimed' ? '#28a745' : 'transparent',
+            }}
+          ></div>
+          Recovered
+        </div>
+      </div>
+     
+      <div className="custom-scrollbar2 d-flex ms-0 align-items-center pb-4 flex-column">
       {filteredItems.map((item) => (
-       <div className="d-flex justify-content-center"> 
-        <Card key={item.id} className="d-flex item-history-card mb-3 shadow-sm" style={{width:"70%"}} >
-          <Card.Body className="item-history-card text-light p-5 d-flex rounded-3" style={{backgroundColor:"#1B75BC"}}>
-            <div className="ps-3 pe-4 d-flex align-items-center" 
-             style={{
-              borderRight:"1px solid white"
-             }}>
-              <img
-                src="../src/assets/walletIcon.png"
-                alt="Wallet"
-                style={{ width: 'clamp(50px, 10vw, 100px)', minWidth:"20px" }}
-              />
-            </div>
+    
+        <Card key={item.id}    
+        className="d-flex flex-lg-row flex-column align-items-center mb-1 p-0 m-0"
+              style={{ backgroundColor: 'transparent', border:"none", color: '#fff', width: "100%",}}>
 
-            <div className="w-100 ms-3" style={{fontSize:"clamp(8px, 2vw, 15px)"}}>
-              <div className="fw-bold">{item.item}</div>
-              {item.referenceId && <p>Reference Id: {item.id}</p>}
-              {item.status === 'claimed' && (
+          <Card.Body className="pending-card align-content-center">
+          <div className="card-main d-flex align-items-center p-4"
+            style={{ backgroundColor: '#1B75BC', color: '#fff', width: "100%", borderRadius:'6px' }}>
+            <div className="d-flex flex-row fcolumn w-100">
+              <div className="conimg d-flex align-items-center justify-content-center "style={{
+                  borderRight:'1px solid white'
+                  }}>
                 <div>
-                  
-                    <strong>Location:</strong> {item.location}
-                
-                  <p>
-                    <strong>Date:</strong> {item.date}
-                    <span className="float-end text-light" style={{ wordBreak: 'break-all' }}><br />Post ID: {item.id}</span>
-                  </p>
+                  <img className="img-cat"
+                    src={categoryImages[item.category] || '../src/assets/othersIcon.png'}
+                    alt={item.category}/>
                 </div>
-              )}
+              </div>
+
+                <div className="details d-flex justify-content-center align-items-start ms-4 flex-column">
+                  <p><span className="fw-bold">Claimnant: </span> {item.claimantName || 'N/A'}</p>  
+                  <p><span className="fw-bold">Item claimed: </span> {item.itemName || 'Item not available'}</p> 
+                  {item.status === 'claimed' && (
+                    <div>
+                      <p><strong>Date of claimed: </strong> 
+                        {item.claimedDate 
+                          ? (item.claimedDate instanceof Timestamp 
+                              ? new Date(item.claimedDate.seconds * 1000).toLocaleString() 
+                              : item.claimedDate)
+                          : 'Date not available'}
+                      </p> 
+                  </div>
+                )}
+              </div>
             </div>
+            <div className="card-button d-flex gap-2 align-self-end justify-content-end pt-0" style={{
+                width:'22%',
+                fontFamily: "Poppins, sans-serif"
+              }}>
+                <button className="btn" style={{ backgroundColor: "#67d753", width: "50px", height: "30px", color: "white", fontSize: "15.2px", borderRadius: "15px" }} onClick={() => navigate(`/inquiries`)}>
+                  <FontAwesomeIcon icon={faHeadset} />
+                </button>
+
+            </div>
+          </div>
           </Card.Body>
         </Card>
-        </div>
+        
       ))}
+      </div>
+      </div>
     </div>
   );
 };

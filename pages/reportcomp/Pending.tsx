@@ -18,6 +18,8 @@ interface Report {
   date: string;
   status: string;
   type: string;
+  emailSent: boolean;
+  timestamp: Date;
 }
 
 interface Claim {
@@ -27,6 +29,8 @@ interface Claim {
   location: string;
   date: string;
   status: string;
+  emailSent: boolean;
+  timestamp: Date;
 }
 
 const PendingReports = () => {
@@ -37,6 +41,7 @@ const PendingReports = () => {
   const [showClaimModal, setClaimModal] = useState(false);
   const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
+  const [filteredPending, setFilteredPending] = useState<(Report | Claim)[]>([]);
 
   useEffect(() => {
     const fetchPendingData = async () => {
@@ -52,6 +57,7 @@ const PendingReports = () => {
         const fetchedReports = reportsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
+          timestamp: (doc.data().timestamp?.toDate && doc.data().timestamp.toDate()) || new Date() // fallback just in case
         })) as Report[];
   
         const claimsQuery = query(
@@ -63,11 +69,17 @@ const PendingReports = () => {
         const fetchedClaims = claimsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
+          timestamp: (doc.data().timestamp?.toDate && doc.data().timestamp.toDate()) || new Date()
         })) as Claim[];
+
+        const combined = [...fetchedReports, ...fetchedClaims].sort(
+          (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+        );
   
         // Update State
         setPendingReports(fetchedReports);
-        setPendingClaims(fetchedClaims); // <-- Add this state in your component
+        setPendingClaims(fetchedClaims);
+        setFilteredPending(combined); // <-- Add this state in your component
       } catch (error) {
         console.error("❗ Error fetching pending data:", error);
       }
@@ -80,8 +92,12 @@ const PendingReports = () => {
     setShowModal(true);
     setProgress(status === 'pendingreport' ? 50 : 0);
   };
-  const handlePendingClaim = () => {
+  const handlePendingClaim = (_item: Report | Claim) => {
     setClaimModal(true);
+  };
+
+  const isReport = (item: Report | Claim): item is Report => {
+    return (item as Report).type !== undefined;
   };
 
   return (
@@ -103,182 +119,129 @@ const PendingReports = () => {
       </div>
 
       {pendingReports.length > 0 || pendingClaims.length > 0 ? (
-        <div className="custom-scrollbar d-flex ms-0 ms-lg-5 pb-4 flex-column">
-          {pendingReports.map(report => (
-            <div key={report.id} className="d-flex flex-lg-row flex-column align-items-center mb-1 p-0 m-0"  
-              style={{
-                width:'100%',
-                
-              }}>
-              
-              {/* Report Details */}
-              <div  className="pending-card align-content-center">
-               
-                  <div
-                    className="card-main d-flex align-items-center p-4"
-                    style={{ backgroundColor: '#1B75BC', color: '#fff', width: "100%", borderRadius:'6px' }}
-                  >
-                   <div className="d-flex flex-row fcolumn" >
-                      <div className="conimg justify-content-center ">
-                        <div style={{
-                          borderRight:'1px solid white'
-                        }}>
-                          <img className="img-cat"
-                            src={categoryImages[report.category] || '../src/assets/othersIcon.png'}
-                            alt={report.category}
-                            
-                          />
-                        </div>
-                      </div>
-
-                      <div className=" details d-flex justify-content-center align-items-start ms-4 flex-column gap-2">
-                        <p className="m-0">
-                          <strong>Requested:</strong> {report.date}
-                        </p>
-                        <p className="m-0">
-                          <strong>Last location:</strong> {report.location}
-                        </p>
-                        <p className="m-0">
-                          <strong>{report.type.charAt(0).toUpperCase() + report.type.slice(1)} Item:</strong> {report.item}
-                        </p>
-                      </div>
-                    </div>  
-
-                    <div className="card-button d-flex gap-2 align-self-end justify-content-end" style={{
-                      width:'22%',
-                      fontFamily: "Poppins, sans-serif"
-                    }}>
-                      {report.type.toLowerCase() === "found" && (
-                        <button className="btn" style={{ 
-                          backgroundColor: "#e8a627", 
-                          borderRadius:'15px',
-                           width: "90px", 
-                           height: "30px", 
-                           color: "white", 
-                           fontSize: "clamp(9px, 1vw, 12px)" }} onClick={() => handleProcess(report.status)}>
-                          Process
-                        </button>
-                      )}
-                      {report.type.toLowerCase() === "claim" && (
-                        <button className="btn" style={{ backgroundColor: "#e8a627", width: "90px", borderRadius:'15px', height: "30px", color: "white", fontSize: "10.8px" }} onClick={() => handleProcess(report.status)}>
-                          Process
-                        </button>
-                      )}
-                        <button className="btn"
-                          style={{
-                            backgroundColor: "#67d753",
-                            width: "50px",
-                            height: "30px",
-                            color: "white",
-                            fontSize: "15.2px",
-                            borderRadius:'15px'
-                          }}
-                          onClick={() => navigate(`/inquiries`)}
-                        >
-                          <FontAwesomeIcon icon={faHeadset}/>
-                        </button>
-                    </div>
-                  </div>
-                
-              </div>
-              {/* Report Status */}
-              <div className="stsdiv mt-lg-0 mt-3 align-content-center" >
-                <div className="d-flex text-center align-items-center ps-lg-0 ps-2 justify-content-lg-center justify-content-start">
-                  
-                  <span className='labelstatus fw-bold pe-2 me-1 d-lg-none d-flex' style={{
-                    fontFamily: "Poppins, sans-serif",
-                    fontSize:'16px',
-                    color:'#0e5cc5'
-                  }}>Status:</span>
-                  <span
-                    className="text-white py-2 px-4"
-                    style={{
-                      width: '150px',
-                      height: "35px",
-                      textAlign: 'center',
-                      borderRadius: '11px',
-                      fontSize: "11.8px",
-                      fontFamily: "Poppins, sans-serif",
-                      backgroundColor: 
-                        report.status === 'pendingreport'
-                          ? '#59b9ff'
-                          : report.status === 'pendingclaim'
-                          ? '#67d753' 
-                          : '#ffc107', 
-                    }}
-                  >
-                    {report.status === 'pendingreport'
-                      ? 'Under Review'
-                      : report.status === 'pendingclaim'
-                      ? 'To be claimed'
-                      : 'Unknown Status'}
-                  </span>
+  <div className="custom-scrollbar d-flex ms-0 ms-lg-5 pb-4 flex-column">
+    {filteredPending.map(item => (
+      <div key={item.id} className="d-flex flex-lg-row flex-column align-items-center mb-1 p-0 m-0" style={{ width: '100%' }}>
+        
+        {/* Report/Claim Details */}
+        <div className="pending-card align-content-center">
+          <div className="card-main d-flex align-items-center p-4" style={{ backgroundColor: '#1B75BC', color: '#fff', width: "100%", borderRadius: '6px' }}>
+            <div className="d-flex flex-row fcolumn">
+              <div className="conimg justify-content-center">
+                <div style={{ borderRight: '1px solid white' }}>
+                  <img className="img-cat"
+                    src={categoryImages[item.category] || '../src/assets/othersIcon.png'}
+                    alt={item.category}
+                  />
                 </div>
               </div>
 
+              <div className="details d-flex justify-content-center align-items-start ms-4 flex-column gap-2">
+                <p className="m-0">
+                  <strong>{item.status === 'pendingclaim' ? 'Claim Requested:' : 'Requested:'}</strong> {item.date}
+                </p>
+                <p className="m-0">
+                  <strong>Last location:</strong> {item.location}
+                </p>
+                {isReport(item) && (
+                  <p className="m-0">
+                    <strong>{item.type.charAt(0).toUpperCase() + item.type.slice(1)} Item:</strong> {item.item}
+                  </p>
+                )}
+              </div>
             </div>
-          ))}
-        {pendingClaims.map((claim) => (
-        <div key={claim.id} className="d-flex flex-lg-row flex-column align-items-center mb-1 p-0 m-0" style={{ width: "100%" }}>
-          <div className="pending-card align-content-center">
-            <div className="card-main d-flex align-items-center p-4" style={{ backgroundColor: "#1B75BC", color: "#fff", width: "100%", borderRadius: "6px" }}>
-              
-              <div className="d-flex flex-row fcolumn">
-                <div className="conimg justify-content-center">
-                  <div style={{ borderRight: "1px solid white" }}>
-                    <img className="img-cat" src={categoryImages[claim.category] || "../src/assets/othersIcon.png"} alt={claim.category} />
-                  </div>
-                </div>
 
-                <div className="details d-flex justify-content-center align-items-start ms-4 flex-column gap-2">
-                  <p className="m-0">
-                    <strong>Claim Requested:</strong> {claim.date}
-                  </p>
-                  <p className="m-0">
-                    <strong>Last location:</strong> {claim.location}
-                  </p>
-                  <p className="m-0">
-                  </p>
-                </div>
-              </div>
-
-              <div className="card-button d-flex gap-2 align-self-end justify-content-end" style={{ width: "22%", fontFamily: "Poppins, sans-serif" }}>
-                <button className="btn" style={{ backgroundColor: "#e8a627", borderRadius: "15px", width: "90px", height: "30px", color: "white", fontSize: "clamp(9px, 1vw, 12px)" }} onClick={() => handlePendingClaim()}>
+            <div className="card-button d-flex gap-2 align-self-end justify-content-end" style={{ width: '22%', fontFamily: "Poppins, sans-serif" }}>
+              {item.status === 'pendingclaim' ? (
+                <button className="btn" style={{ 
+                  backgroundColor: "#e8a627", 
+                  borderRadius: '15px',
+                  width: "90px", 
+                  height: "30px", 
+                  color: "white", 
+                  fontSize: "clamp(9px, 1vw, 12px)" }} 
+                  onClick={() => handlePendingClaim(item)}>
                   Process
                 </button>
-                <button className="btn" style={{ backgroundColor: "#67d753", width: "50px", height: "30px", color: "white", fontSize: "15.2px", borderRadius: "15px" }} onClick={() => navigate(`/inquiries`)}>
-                  <FontAwesomeIcon icon={faHeadset} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Claim Status */}
-          <div className="stsdiv mt-lg-0 mt-3 align-content-center">
-            <div className="d-flex text-center align-items-center ps-lg-0 ps-2 justify-content-lg-center justify-content-start">
-              <span className="labelstatus fw-bold pe-2 me-1 d-lg-none d-flex" style={{ fontFamily: "Poppins, sans-serif", fontSize: "16px", color: "#0e5cc5" }}>
-                Status:
-              </span>
-              <span
-                className="text-white py-2 px-4"
+              ) : (
+                <>
+                  {isReport(item) && item.type.toLowerCase() === "found" && (
+                    <button className="btn" style={{ 
+                      backgroundColor: "#e8a627", 
+                      borderRadius: '15px',
+                      width: "90px", 
+                      height: "30px", 
+                      color: "white", 
+                      fontSize: "clamp(9px, 1vw, 12px)" }} 
+                      onClick={() => handleProcess(item.status)}>
+                      Process
+                    </button>
+                  )}
+                  {isReport(item) && item.type.toLowerCase() === "claim" && (
+                    <button className="btn" style={{ 
+                      backgroundColor: "#e8a627", 
+                      width: "90px", 
+                      borderRadius: '15px', 
+                      height: "30px", 
+                      color: "white", 
+                      fontSize: "10.8px" }} 
+                      onClick={() => handleProcess(item.status)}>
+                      Process
+                    </button>
+                  )}
+                </>
+              )}
+              <button className="btn"
                 style={{
-                  width: "150px",
-                  height: "35px",
-                  textAlign: "center",
-                  borderRadius: "11px",
-                  fontSize: "11.8px",
-                  fontFamily: "Poppins, sans-serif",
-                  backgroundColor: claim.status === "pendingclaim" ? "#67d753" : "#ffc107",
+                  backgroundColor: "#67d753",
+                  width: "50px",
+                  height: "30px",
+                  color: "white",
+                  fontSize: "15.2px",
+                  borderRadius: '15px'
                 }}
+                onClick={() => navigate('/inquiries')}
               >
-                {claim.status === "pendingclaim" ? "To be approved" : "Unknown Status"}
-              </span>
+                <FontAwesomeIcon icon={faHeadset}/>
+              </button>
             </div>
           </div>
         </div>
-      ))}
+
+        {/* Status Section */}
+        <div className="stsdiv mt-lg-0 mt-3 align-content-center">
+          <div className="d-flex text-center align-items-center ps-lg-0 ps-2 justify-content-lg-center justify-content-start">
+            <span className='labelstatus fw-bold pe-2 me-1 d-lg-none d-flex' style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: '16px',
+              color: '#0e5cc5'
+            }}>Status:</span>
+            <span
+              className="text-white py-2 px-4"
+              style={{
+                width: '150px',
+                minHeight: '35px',
+                height: 'auto',
+                textAlign: 'center',
+                borderRadius: '11px',
+                fontSize: "11.8px",
+                fontFamily: "Poppins, sans-serif",
+                backgroundColor: 
+                  item.status === 'pendingreport' ? '#59b9ff' :
+                  item.status === 'pendingclaim' ? (item.emailSent ? '#67d753' : '#ffc107') :
+                  '#ffc107',
+              }}
+            >
+              {item.status === 'pendingreport' ? 'Under Review' :
+               item.status === 'pendingclaim' ? (item.emailSent ? 'Item is ready to claim' : 'Verifying your request') :
+               'Unknown Status'}
+            </span>
+          </div>
         </div>
-      ) : (
+      </div>
+    ))}
+  </div>
+)  : (
         <p className="text-center">No pending reports found.</p>
       )}
 
@@ -315,12 +278,15 @@ const PendingReports = () => {
           <Modal.Title style={{
             fontSize:'16.4px',
             fontWeight:'light'
-          }}>The admin is approving your request</Modal.Title>
+          }}>The admin is reviewing your request</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+           <ProgressBar className="progress-container mb-5" animated now={progress}>
+            <div className="progress-bar-custom" />
+          </ProgressBar>
           <p className="" style={{
             fontSize:'16.4px',
-          }}>Kindly wait for a few days or contact the admin if the process takes too long.</p>
+          }}>Kindly wait for a moment or contact the admin if the process takes too long. You'll receive a receipt if the admin approve your request.</p>
           
         </Modal.Body>
         <Modal.Footer>

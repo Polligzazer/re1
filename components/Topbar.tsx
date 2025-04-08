@@ -39,7 +39,6 @@ const Topbar = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-
   const { isAdmin } = useContext(AuthContext);
   const userId = auth.currentUser?.uid;
 
@@ -109,7 +108,7 @@ const Topbar = () => {
         borderBottom:"1.5px solid #dfe8f5"
       
       }}>
-        <div className="container-fluid">
+        <div className="d-flex justify-content-evenly w-100">
           <div className=" ps-4 align-items-center d-flex">
             <button
               className="btn btn-light me-2"

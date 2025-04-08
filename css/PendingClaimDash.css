@@ -21,6 +21,40 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #555; 
 }
+.custom-scrollbar1::-webkit-scrollbar, .custom-scrollbar2::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+.custom-scrollbar1{
+    width: 65%;
+    height: 355px;
+    overflow-Y: auto;
+    overflow-X: hidden;
+    gap:20px;
+  
+}
+
+.custom-scrollbar2{
+  width: 65%;
+  height: 355px;
+  overflow-Y: auto;
+  overflow-X: hidden;
+  gap:0px;
+
+}
+
+.custom-scrollbar1::-webkit-scrollbar-track, .custom-scrollbar2::-webkit-scrollbar-track {
+  background: transparent; /* Track color */
+}
+
+.custom-scrollbar1::-webkit-scrollbar-thumb, .custom-scrollbar2::-webkit-scrollbar-thumb {
+  background: #888; 
+  border-radius: 4px; 
+}
+
+.custom-scrollbar1::-webkit-scrollbar-thumb:hover, .custom-scrollbar2::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
 .fcolumn{
   width: 78%;
 }
@@ -47,11 +81,34 @@
 .conimg{
   width: 30%;
 }
+.claim-top-text{
+  width: 100%;
+  justify-content: space-evenly;
+}
+.countdiv{
+  width:15%;
+}
+.claim-top-text-text{
+  width: 70%;
+}
+.r-btn{
+  width: 85%;
+}
 /*queries*/
+.modal-custom{
 
+    width:48%;
+    border:1px solid #2169ac;
+    color:#2169ac;
+    border-radius:5px;
+
+}
 @media (min-width: 768px ) and (max-width: 991px){
   .pending-card{
       width:98% !important;
+  }
+  .modal-custom{
+    width: 100%;
   }
   .img-cat{
       width: 80px; 
@@ -64,9 +121,26 @@
     .custom-scrollbar::-webkit-scrollbar {
       width: 7px; /* Width of the scrollbar */
     }
-    .custom-scrollba{
+    .custom-scrollbar{
       width:100%;
     }
+    .claim-top-text{
+      width: 100%;
+      justify-content: center;
+    }
+    .countdiv{
+      width:30%;
+    }
+    .claim-top-text-text{
+      width: 70%;
+    }
+    .custom-scrollbar1, .custom-scrollbar2{
+      width: 100%;
+    
+  }
+  .r-btn{
+    width: 100%;
+  }
 } 
 
 @media (min-width: 576px) and (max-width:767px ){
@@ -104,6 +178,23 @@
   }
   .conimg{
     width:20%;
+  }
+  .claim-top-text{
+    width: 100%;
+    justify-content: space-between;
+  }
+  .countdiv{
+    width:30%;
+  }
+  .claim-top-text-text{
+    width: 60%;
+  }
+  .custom-scrollbar1, .custom-scrollbar2{
+    width: 100%;
+  
+}
+  .r-btn{
+    width: 100%;
   }
 }
 
@@ -143,6 +234,23 @@
   .conimg{
     width:20%;
   }
+  .claim-top-text{
+    width: 100%;
+    justify-content: space-between;
+  }
+  .countdiv{
+    display: none;
+  }
+  .claim-top-text-text{
+    width: 100%;
+  }
+  .custom-scrollbar1, .custom-scrollbar2{
+    width: 100%;
+  
+}
+.r-btn{
+  width: 100%;
+}
 }
 
 @media (max-width: 425.9px){
@@ -183,4 +291,21 @@
   .conimg{
     width:25%;
   }
+  .claim-top-text{
+    width: 100%;
+    justify-content: space-between;
+  }
+  .countdiv{
+    display: none;
+  }
+  .claim-top-text-text{
+    width: 100%;
+  }
+  .custom-scrollbar1, .custom-scrollbar2{
+    width: 100%;
+  
+}
+.r-btn{
+  width: 100%;
+}
 }

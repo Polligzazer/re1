@@ -2,16 +2,18 @@ import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import emailjs from "emailjs-com";
 import { db } from "../../src/firebase";
-import { onSnapshot, collection, doc, where, addDoc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
+import { onSnapshot, collection, doc, where, addDoc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy, writeBatch } from "firebase/firestore";
 import categoryImages from "../../src/categoryimage";
 import { FaChevronLeft } from "react-icons/fa";
 import { AuthContext } from '../../components/Authcontext';
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
-import { Modal, Button, Form } from "react-bootstrap";
+import { faExclamationTriangle, faUser, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { Modal, Button, Form, Spinner } from "react-bootstrap";
+import { createNotification } from "../../components/notificationService";
+import "../../css/ModalProgress.css";
 import "../../css/PendingClaimDash.css"
-import ClaimedReports from "./ClaimsPage";
+import "../../css/loading.css"
 
 interface Report {
   id: string;
@@ -26,6 +28,7 @@ interface Report {
   timestamp: string;
   userId: string;
   emailSent: boolean;
+  imageUrl?: string;
 }
 
 interface Claim {
@@ -36,6 +39,7 @@ interface Claim {
   date: string;
   status: string;
   emailSent: boolean;
+  imageUrl?: string;
 }
 
 const AdminApproval: React.FC = () => {
@@ -44,7 +48,6 @@ const AdminApproval: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const { currentUser } = useContext(AuthContext);
-  const [emailSentMap, setEmailSentMap] = useState<Record<string, boolean>>({});
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [showVerifyModal, setVerifyModal] = useState(false);
@@ -55,35 +58,19 @@ const AdminApproval: React.FC = () => {
   const [showEmailModal, setShowEmailModal] = useState(false); //email
   const [emailMessage, setEmailMessage] = useState("");
   const [showConfirmModal, setShowConfirmModal] = useState(false); 
-  const [pendingClaims, setPendingClaims] = useState<Claim[]>([]);
+  const [, setPendingClaims] = useState<Claim[]>([]);
   const [pendingClaimCount, setPendingClaimCount] = useState<number>(0);
-  const [pendingReports, setPendingReports] = useState<number>(0);
 
-  const [formData, setFormData] = useState<Claim>({
-    id: "",
-    item: "",
-    category: "",
-    location: "",
-    date: "",
-    status: "",
-    emailSent: false,  // <-- Add emailSent here
-  });
+  const [linkedPostData, setLinkedPostData] = useState<any | null>(null);
+  const [reporterName, setReporterName] = useState('');
+
 
   useEffect(() => {
     const fetchPendingData = async () => {
       if (!currentUser) return;
   
       try {
-        const reportsQuery = query(
-          collection(db, "lost_items"),
-          where("userId", "==", currentUser.uid),
-          where("status", "in", ["pendingreport"])
-        );
-        const reportsSnapshot = await getDocs(reportsQuery);
-        const fetchedReports = reportsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Report[];
+        setLoading(true);
   
         const claimsQuery = query(
           collection(db, "claim_items"),
@@ -96,10 +83,11 @@ const AdminApproval: React.FC = () => {
           ...doc.data(),
         })) as Claim[];
   
-        // Update State
-        setPendingClaims(fetchedClaims); // <-- Add this state in your component
+        setPendingClaims(fetchedClaims); 
       } catch (error) {
         console.error("❗ Error fetching pending data:", error);
+      }finally {
+        setLoading(false); 
       }
     };
   
@@ -116,8 +104,16 @@ const AdminApproval: React.FC = () => {
     }
   };
 
-  const handleDenyClick = (event: React.MouseEvent, report: Report) => {
+  const handleDenyClick = async (event: React.MouseEvent, report: Report) => {
     event.stopPropagation();
+
+    await createNotification(
+      report.userId,
+      "Your claim request has been denied",
+      report.id
+    );
+
+
     setReportToDeny(report);
     setShowDenyModal(true);
   };
@@ -170,21 +166,26 @@ const AdminApproval: React.FC = () => {
       const claimRef = doc(db, "claim_items", report.id);
       await updateDoc(claimRef, { emailSent: true });
 
-      setReports((prev) =>
-        prev.map((r) =>
-          r.id === report.id ? { ...r, emailSent: true } : r
-        )
+      const updatedReport = { ...report, emailSent: true };
+      setReports(prev => prev.map(r => r.id === report.id ? updatedReport : r));
+
+      // Always send notification after successful email
+      await createNotification(
+        report.userId,
+        "Receipt has been sent in the mail, claim your lost item.",
+        report.id
       );
   
       setSelectedReport(report);
       setVerifyModal(false);
+      setLoading(false);
       setShowConfirmModal(true);
   
     } catch (error) {
       console.error("Error sending email:", error);
       alert("Error processing claim.");
     } finally {
-      setLoading(false);
+     
       setShowEmailModal(false);
     }
   };
@@ -208,11 +209,55 @@ const AdminApproval: React.FC = () => {
   
       const claimData = claimSnap.data();
       const referencePostId = claimData.referencePostId;
+      const claimantUserId = claimData.userId;
+
       const lostItemRef = doc(db, "lost_items", referencePostId);
+      const lostItemSnap = await getDoc(lostItemRef);
+      if(!lostItemSnap.exists()){
+        throw new Error("Lost item not found");
+      }
+      
+      const originalPosterId = lostItemSnap.data().userId;
   
-      await updateDoc(lostItemRef, { status: "claimed" });
-      await updateDoc(reportRef, { status: "claimed" });
+      // 3. Create batch for atomic operations
+      const batch = writeBatch(db);
   
+      // Update documents
+      batch.update(lostItemRef, {
+        status: "claimed",
+        claimedBy: claimantUserId,
+        claimedAt: serverTimestamp()
+      });
+  
+      batch.update(reportRef, {
+        status: "claimed",
+        processedAt: serverTimestamp()
+      });
+  
+      // Create notifications
+      const claimantNotificationRef = doc(collection(db, "users", claimantUserId, "notifications"));
+      batch.set(claimantNotificationRef, {
+        description: "Item has been successfully claimed",
+        isRead: false,
+        timestamp: serverTimestamp(),
+        relatedPostId: referencePostId,
+        type: "claim_success"
+      });
+  
+      if(lostItemSnap.data().type === "found"){
+        const posterNotificationRef = doc(collection(db, "users", originalPosterId, "notifications"));
+        batch.set(posterNotificationRef, {
+          description: "Your item has been claimed by a user",
+          isRead: false,
+          timestamp: serverTimestamp(),
+          relatedPostId: referencePostId,
+          type: "item_claimed"
+        });
+      }
+  
+      // 4. Execute all operations atomically
+      await batch.commit();
+
       setReports((prevReports) => prevReports.filter((r) => r.id !== selectedReport.id));
   
       setShowConfirmModal(false);
@@ -285,10 +330,50 @@ const AdminApproval: React.FC = () => {
     }
   };
 
-  const handleSelectReport = (reportId: string) => {
+  const handleSelectReport = async (reportId: string) => {
     const report = reports.find((r) => r.id === reportId);
     if (report) {
       setSelectedReport(report);
+      setShowReportModal(true);
+  
+     
+      if (report.referencePostId) {
+        try {
+          const refPostDoc = await getDoc(doc(db, "lost_items", report.referencePostId));
+          console.log("Attempting to fetch reference post with ID:", report.referencePostId);
+          if (refPostDoc.exists()) {
+            const postData = refPostDoc.data();
+            console.log("Reference post data found:", refPostDoc.data());
+            setLinkedPostData(postData);
+           
+            if (postData.userId) {
+              try {
+                const userDoc = await getDoc(doc(db, "users", postData.userId));
+                if (userDoc.exists()) {
+                  const userData = userDoc.data();
+                  console.log("Fetched user data:", userData);
+                  const fullName = `${userData?.firstName || ""} ${userData?.middleInitial || ""} ${userData?.lastName || ""}`.trim();
+                  setReporterName(fullName || "Admin");
+                } else {
+                  console.warn("User not found for userId in linked post");
+                  setReporterName("User not found");
+                }
+              } catch (userFetchErr) {
+                console.error("Error fetching user data:", userFetchErr);
+                setReporterName("Error fetching user");
+              }
+            } else {
+              setReporterName("N/A");
+            }
+          } else {
+            setLinkedPostData(null);
+            console.warn("Reference post not found");
+          }
+        } catch (error) {
+          console.error("Error fetching reference post:", error);
+          setLinkedPostData(null);
+        }
+      }
     }
   };
   
@@ -338,7 +423,7 @@ const AdminApproval: React.FC = () => {
         >
           <FaChevronLeft /> Return
         </button>
-     <div className="claim-top-text d-flex flex-row align-items-center justify-content-evenly">   
+     <div className="claim-top-text d-flex flex-row align-items-center">   
       <div className="claim-top-text-text d-flex flex-column" style={{
         width:'70%'
       }}>
@@ -356,11 +441,9 @@ const AdminApproval: React.FC = () => {
           fontFamily:"Poppins, sans-serif"
         }}>
           Hello <span style={{color:'#0e5cc5'}}>Admin, </span> you have 
-          <span style={{color:'red'}}> {pendingClaimCount}</span> pending claims</p>
+          <span style={{color:'red'}}> {pendingClaimCount}</span> pending claim approval</p>
         </div>
-      <div style={{
-        width:'15%'
-      }}>    
+      <div className="countdiv">    
          <div className="number-of-pending d-flex p-2 flex-column pb-4" style={{
             backgroundColor:'#f1f7ff',
             borderRadius:'10px',
@@ -392,8 +475,8 @@ const AdminApproval: React.FC = () => {
           </div>
         </div>
        </div> 
-       <div className="ms-5">
-       <div className=" ms-5 mt-5 d-flex justify-content-end" style={{ width: '85%' }}>
+       <div className="container d-flex flex-column justify-content-center align-items-center px-0 mt-5"> 
+          <div className=" ms-5 mt-5 d-flex justify-content-end" style={{ width: '85%' }}>
             <div className="d-lg-flex d-none justify-content-center" style={{
               width:'30%'
             }}>
@@ -407,7 +490,11 @@ const AdminApproval: React.FC = () => {
             </div>
           </div>  
         {loading ? (
-      <p className="text-center">Loading reports...</p>
+      <div className="d-flex justify-content-center align-items-center mt-5">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </div>
       ) : reports.length === 0 ? (
         <p className="text-center">No pending claims.</p>
       ) : (
@@ -418,7 +505,7 @@ const AdminApproval: React.FC = () => {
               className="d-flex flex-lg-row flex-column align-items-center mb-1 p-0 m-0"
               style={{ backgroundColor: 'transparent', border:"none", color: '#fff', width: "100%", borderRadius:'6px' }}
               onClick={() => {
-                setSelectedReport(report);
+                handleSelectReport(report.id);
                 setShowReportModal(true);
               }}
             >
@@ -441,8 +528,8 @@ const AdminApproval: React.FC = () => {
                <div className="details d-flex justify-content-center align-items-start ms-4 flex-column">
                   
                 <p className="m-1"><strong> Claimnant: </strong>{report.claimantName}</p>
-                <p className="m-1"><span className="fw-bold">Item to claim:</span>{report.itemName}</p>
-                <p className="m-1">
+                <p className="m-1"><span className="fw-bold">Item: </span>{report.itemName}</p>
+                <p className="m-1 text-start">
                 <span className="fw-bold"> Last location: </span>{report.location} 
                 </p>
                 <p className="m-1"><span className="fw-bold">Date of Lost: </span>{report.date}</p>
@@ -469,33 +556,66 @@ const AdminApproval: React.FC = () => {
                     }
                   }}
                   style={{ 
-                    backgroundColor: "#e8a627", 
+                    backgroundColor: "#67d753", 
                     borderRadius:'15px',
                      width: "90px", 
                      height: "30px", 
                      color: "white", 
                      fontSize: "clamp(9px, 1vw, 12px)" }}
                 >
-                  Verify
+                 Verify
                 </button>
                 <button
                   className="btn"
                   onClick={(event) => handleDenyClick(event, report)}
                   style={{ 
-                    backgroundColor: "#e8a627", 
+                    backgroundColor: "#f0474e", 
                     borderRadius:'15px',
-                     width: "90px", 
+                     width: "auto", 
                      height: "30px", 
                      color: "white", 
                      fontSize: "clamp(9px, 1vw, 12px)" }}
                 >
-                  Deny
+                   <FontAwesomeIcon icon={faXmark}/>
                 </button>
                 </div>
                 </div>
               
               </div>
-              
+              <div className="stsdiv mt-lg-0 mt-3 align-content-center" >
+                <div className="d-flex text-center align-items-center ps-lg-0 ps-2 justify-content-lg-center justify-content-start">
+                  
+                  <span className='labelstatus fw-bold pe-2 me-1 d-lg-none d-flex' style={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontSize:'16px',
+                    color:'#0e5cc5'
+                  }}>Status:</span>
+                  <span
+                    className="text-white py-2 px-4"
+                    style={{
+                      width: '150px',
+                      height:'auto',
+                      minHeight: "35px",
+                      textAlign: 'center',
+                      borderRadius: '11px',
+                      fontSize: "11.8px",
+                      fontFamily: "Poppins, sans-serif",
+                      backgroundColor: 
+                        report.emailSent === true
+                          ? '#67d753' 
+                          : report.emailSent === false
+                          ? '#59b9ff'  
+                          : '#ffc107', 
+                    }}
+                  >
+                    {report.emailSent === true
+                      ? 'Waiting for the receipt'
+                      : report.emailSent === false
+                      ? 'Verifying information'
+                      : 'Unknown Status'}
+                  </span>
+                </div>
+              </div>
             </button>
             
           ))}
@@ -505,13 +625,14 @@ const AdminApproval: React.FC = () => {
       )}
        </div>
       {/* Verify Claim Modal */}
-    <Modal show={showVerifyModal && !!selectedReport} onHide={() => setVerifyModal(false)} centered>
+    <Modal contentClassName="custom-modal" show={showVerifyModal && !!selectedReport} onHide={() => setVerifyModal(false)} centered>
       <Modal.Header closeButton>
         <Modal.Title 
                style={{
                 color:'#2169ac',
                 fontFamily: "Poppins, sans-serif",
-                fontSize:'22.4px'
+                fontSize:'17.4px',
+                backgroundColor:'#f1f7ff'
               }}>
         Verify {selectedReport?.claimantName}'s claim</Modal.Title>
       </Modal.Header>
@@ -519,19 +640,33 @@ const AdminApproval: React.FC = () => {
        style={{
           color:'#2169ac',
           fontFamily: "Poppins, sans-serif",
-          fontSize:'16.4px'
+          fontSize:'13.4px',
+          backgroundColor:'#f1f7ff'
         }}>
-        <p>Are you sure you want to verify this claim?</p>
-        <p><b>{selectedReport?.itemName}</b> ({selectedReport?.category})</p>
-        <p><b>Description:</b> {selectedReport?.description}</p>
-        <p><b>Location:</b> {selectedReport?.location} at <b>{selectedReport?.date}</b></p>
+         {loading ? (
+        <div className="d-flex justify-content-center align-items-center mt-5">
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden"> Sending email...</span>
+          </Spinner>
+          <span className=""> Sending receipt...</span>
+        </div>
+      ) : (
+        <>
+          <p>Are you sure you want to verify this claim?</p>
+          <p><strong>Item: </strong> {selectedReport?.itemName}</p>
+          <p><strong>Description:</strong> {selectedReport?.description}</p>
+          <p><strong>Lost at:</strong> {selectedReport?.location} </p>
+          <p><strong> Date of lost: </strong>{selectedReport?.date}</p>
+        </>
+      )}
       </Modal.Body>
       <Modal.Footer>
         <p
             style={{
               color:'#2169ac',
               fontFamily: "Poppins, sans-serif",
-              fontSize:'16.4px'
+              fontSize:'13.4px',
+              
         }}>
           If you are sure in approving this claim, press <b className="text-success">Send Email</b> to send their claim receipt.</p>
         <Button onClick={() => setVerifyModal(false)}
@@ -579,7 +714,7 @@ const AdminApproval: React.FC = () => {
     </Modal.Header>
     <Modal.Body
         style={{
-          fontSize:'16.4px'
+          fontSize:'13.4px'
         }}>
       <p><strong>Verify this user attempting to claim their item</strong></p>
       <p>✅ You have successfully sent an email to the user!</p>
@@ -611,24 +746,123 @@ const AdminApproval: React.FC = () => {
   </Modal>
 
     {/* Report Details Modal */}
-    <Modal show={showReportModal && !!selectedReport} onHide={() => setShowReportModal(false)} centered
+    <Modal contentClassName='custom-modal2' show={showReportModal && !!selectedReport} onHide={() => setShowReportModal(false)} centered size="lg"
         style={{
             color:'#2169ac',
             fontFamily: "Poppins, sans-serif",
         }}>
       <Modal.Header closeButton>
-        <Modal.Title>Report Details</Modal.Title>
+        <Modal.Title  style={{
+          fontSize:'14.4px',
+          fontFamily: "Poppins, sans-serif",
+        }}>Claim form details</Modal.Title>
       </Modal.Header>
       <Modal.Body
+        className="d-flex flex-column flex-lg-row justify-content-evenly"
         style={{
-          fontSize:'16.4px',
+          fontSize:'14px',
+          fontFamily: "Poppins, sans-serif",
+          width:'100%'
         }}>
-        <h5>{selectedReport?.itemName} ({selectedReport?.category})</h5>
-        <p><b>Description:</b> {selectedReport?.description}</p>
-        <p><b>Location:</b> {selectedReport?.location} at {selectedReport?.date}</p>
-        <p><b>Claimant:</b> {selectedReport?.claimantName}</p>
-        <p><b>Reference Post ID:</b> {selectedReport?.referencePostId}</p>
-        <p><b>Reported On:</b> {selectedReport?.timestamp}</p>
+        {selectedReport && (
+      <>
+      <div className=" p-3 modal-custom d-flex flex-column">
+        <div className="d-flex p-3 flex-row" style={{
+          backgroundColor:'#e8a627',
+          color:'white',
+        }}>
+        <FontAwesomeIcon icon={faUser} style={{
+          color:'white',
+          fontSize:'26px'
+         
+        }}/>
+          <p className="p-0 m-1"><strong>{selectedReport.claimantName}</strong> (Claimnant)</p>
+        </div>
+          <div className="p-2">
+            <p className="p-0 my-2"><strong>Lost Item:</strong> {selectedReport.itemName}</p>
+            <p className="p-0 my-2"><strong>Category:</strong> {selectedReport.category}</p>
+            <p className="p-0 my-2"><strong>Lost at:</strong> {selectedReport.location}</p>
+            <p className="p-0 my-2"><strong>Description:</strong> {selectedReport.description}</p>
+            <p className="p-0 my-2"><strong>Date of Lost:</strong> {selectedReport.date}</p>
+          </div>
+          {selectedReport.imageUrl && (
+          <a
+            href={selectedReport.imageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src={selectedReport.imageUrl}
+              alt={selectedReport.itemName}
+              style={{
+                width: '100%',
+                maxHeight: '250px',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                marginTop: '10px',
+                cursor: 'pointer'
+              }}
+              onError={(e) => {
+                console.error("Image failed to load:", e.currentTarget.src);
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          </a>
+        )}
+        </div>
+      </>
+    )}
+
+    {linkedPostData ? (
+      <>
+      <div className="p-3 modal-custom d-flex flex-column">
+        <div className="d-flex p-3 flex-row" style={{
+          backgroundColor:'#2169ac',
+          color:'white',
+        }}>
+           <FontAwesomeIcon icon={faUser} style={{
+            color:'white',
+            fontSize:'26px'
+          
+            }}/>
+            <p className="p-0 m-1"><strong>{reporterName ||"Admin"}</strong> (Finder) </p>
+          </div>
+          <div className="p-2">
+            <p className="p-0 my-2"><strong>Found Item:</strong> {linkedPostData.item}</p>
+            <p className="p-0 my-2"><strong>Category:</strong> {linkedPostData.category}</p>
+            <p className="p-0 my-2"><strong>Found at:</strong> {linkedPostData.location}</p>
+            <p className="p-0 my-2"><strong>Description:</strong> {linkedPostData.description}</p>
+            <p className="p-0 my-2"><strong>Date sighted:</strong> {linkedPostData.date}</p>
+          </div>
+          {linkedPostData.imageUrl && (
+          <a
+            href={linkedPostData.imageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src={linkedPostData.imageUrl}
+              alt={linkedPostData.itemName}
+              style={{
+                width: '100%',
+                maxHeight: '250px',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                marginTop: '10px',
+                cursor: 'pointer'
+              }}
+              onError={(e) => {
+                console.error("Image failed to load:", e.currentTarget.src);
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          </a>
+          )}
+        </div>
+      </>
+    ) : (
+      <p className="text-muted">No linked reference post found or failed to load.</p>
+    )}
       </Modal.Body>
       <Modal.Footer>
         <Button onClick={() => setShowReportModal(false)}
@@ -646,13 +880,15 @@ const AdminApproval: React.FC = () => {
     {/* Confirm Denial Modal */}
     <Modal show={showDenyModal && !!reportToDeny} onHide={() => setShowDenyModal(false)} centered>
       <Modal.Header closeButton>
-        <Modal.Title className="text-danger">Confirm Denial</Modal.Title>
+        <Modal.Title className="" style={{
+          color:'#2169ac',
+        }}>Confirm Denial</Modal.Title>
       </Modal.Header>
       <Modal.Body
              style={{
               color:'#2169ac',
               fontFamily: "Poppins, sans-serif",
-              fontSize:'16.4px'
+              fontSize:'13px'
             }}>
         <p>Are you sure you want to <strong className="text-danger">deny</strong> the claim for <strong>{reportToDeny?.itemName}</strong>?</p>
         <p>This action <b>cannot be undone</b>.</p>

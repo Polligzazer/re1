@@ -10,7 +10,7 @@
 }
 
 .modal-content {
-  background-color: #dfe8f5 !important;
+  background-color:#f1f7ff !important;
   border-radius: 8px;
 }
 .modal-header .btn-close {
@@ -25,8 +25,18 @@
   padding:30px;
   border:1px solid #2169ac;
 }
+.custom-modal-content1{
+  padding:20px;
+  border:1px solid #2169ac;
+}
+
+.custom-modal2{
+  border:1px solid #2169ac;
+}
+
 
 .custom-modal{
   padding:10px;
   border:1px solid #2169ac;
 }
+

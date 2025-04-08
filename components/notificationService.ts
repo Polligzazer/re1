@@ -18,10 +18,11 @@ import { Item } from "./types";
 
 export interface AppNotification {
   id: string;
-  reportId?: string;
   description: string;
   isRead: boolean;
   timestamp: number;
+  reportId?: string;
+  type?: string;
 }
 
 
@@ -70,72 +71,104 @@ export const hasUnreadNotifications = (notifications: AppNotification[]): boolea
   return notifications.some((notif) => !notif.isRead);
 };
 
-export const createNotification = async (description: string, reportId?: string) => {
+export const createNotification = async (
+  userIds: string | string[] | "all",
+  description: string,
+  reportId?: string
+) => {
   try {
-    console.log("📢 Sending notification to all users...");
-
-    // Get all users
-    const usersSnapshot = await getDocs(collection(db, "users"));
+    console.log("📢 Creating notifications in Firestore…");
     const batch = writeBatch(db);
 
-    const pushPromises: Promise<void>[] = []; // Collect push promises here
-
-    // Iterate through all users
-    for (const userDoc of usersSnapshot.docs) {
-      const userId = userDoc.id;
-
-      // Create Firestore notification for each user
-      const notificationRef = doc(collection(db, "users", userId, "notifications"));
+    if (userIds === "all") {
+      const usersSnapshot = await getDocs(collection(db, "users"));
+      usersSnapshot.docs.forEach((userDoc) => {
+        const notificationRef = doc(collection(db, "users", userDoc.id, "notifications"));
+        batch.set(notificationRef, {
+          reportId: reportId || null,
+          description,
+          isRead: false,
+          timestamp: serverTimestamp(),
+        });
+      });
+    } 
+    else if (Array.isArray(userIds)) {
+      userIds.forEach((userId) => {
+        const notificationRef = doc(collection(db, "users", userId, "notifications"));
+        batch.set(notificationRef, {
+          reportId: reportId || null,
+          description,
+          isRead: false,
+          timestamp: serverTimestamp(),
+        });
+      });
+    } 
+    else {
+      const notificationRef = doc(collection(db, "users", userIds, "notifications"));
       batch.set(notificationRef, {
         reportId: reportId || null,
         description,
         isRead: false,
         timestamp: serverTimestamp(),
       });
-
-      // Fetch all FCM tokens for the user
-      const tokensSnapshot = await getDocs(collection(db, `users/${userId}/fcmTokens`));
-
-      // Iterate through all tokens
-      for (const tokenDoc of tokensSnapshot.docs) {
-        const token = tokenDoc.id;
-
-        const pushPromise = fetch("https://flo-proxy.vercel.app/api/send-push", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            token,
-            title: "Lost Item Approved",
-            body: description,
-          })
-        });
-
-        // Push each promise into the array
-        pushPromises.push(pushPromise
-          .then(res => {
-            if (!res.ok) {
-              console.error(`❌ Failed to send push to ${token}: ${res.status}`);
-            }
-          })
-          .catch(error => {
-            console.error(`❌ Failed to send push to ${token}:`, error);
-          }));
-      }
     }
 
-    // Commit Firestore batch (do it outside the loop to reduce Firestore load)
     await batch.commit();
     console.log("✅ Firestore notifications created.");
-
-    // Wait for all push notifications to be sent
-    await Promise.all(pushPromises);
-    console.log("📲 Push notifications sent to all users.");
   } catch (error) {
     console.error("❗ Error creating notifications:", error);
+    throw error; // Re-throw to allow handling in calling code
   }
 };
+
+// export const useChatNotifications = (currentUserId: string) => {
+//   const [notifications, setNotifications] = useState([]);
+//   const [unreadCount, setUnreadCount] = useState(0);
+
+//   useEffect(() => {
+//     if (!currentUserId) return;
+
+//     const q = query(
+//       collection(db, 'userChats'),
+//       where('senderId', '==', currentUserId),
+//       orderBy('lastActivity', 'desc')
+//     );
+
+//     const unsubscribe = onSnapshot(q, (querySnapshot) => {
+//       const newNotifications = [];
+//       let totalUnread = 0;
+
+//       querySnapshot.forEach((doc) => {
+//         const chatData = doc.data();
+//         const notification = {
+//           id: doc.id,
+//           date: chatData.date,
+//           lastActivity: chatData.lastActivity?.toDate() || null,
+//           lastMessage: {
+//             text: chatData.lastMessage?.text || '',
+//             timestamp: chatData.lastMessage?.timestamp?.toDate() || null,
+//             senderId: chatData.lastMessage?.senderId || '',
+//           },
+//           messageCount: chatData.messageCount || 0,
+//           userInfo: {
+//             name: chatData.userInfo?.name || 'Unknown',
+//             uid: chatData.userInfo?.uid || '',
+//           },
+//         };
+
+//         newNotifications.push(notification);
+//         totalUnread += notification.messageCount;
+//       });
+
+//       setNotifications(newNotifications);
+//       setUnreadCount(totalUnread);
+//     });
+
+//     return () => unsubscribe();
+//   }, [currentUserId]);
+
+//   return { notifications, unreadCount };
+// };
 
 export const watchLostItemApprovals = () => {
   const q = query(collection(db, "lost_items"));

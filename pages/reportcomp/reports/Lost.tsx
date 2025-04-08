@@ -11,6 +11,7 @@ import { FaChevronLeft } from "react-icons/fa";
 import "../../../css/report.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileCirclePlus } from '@fortawesome/free-solid-svg-icons';
+import { Modal } from 'react-bootstrap';  
 
 
 const Lost: React.FC = () => {
@@ -42,8 +43,11 @@ const Lost: React.FC = () => {
 
   const [userUID, setUserUID] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+    const [showLoadingModal, setShowLoadingModal] = useState(false);
   const [fileName, setFileName] = useState("");
   const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false); 
+  const [success, setSucess] = useState(false);
 
   useEffect(() => {
     const getUserUID = async () => {
@@ -67,6 +71,9 @@ const Lost: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setLoading(true); 
+    setShowLoadingModal(true);
+    
     try {
       const uploadedFile = await apwstorage.createFile(
         APPWRITE_STORAGE_BUCKET_ID, // Replace with your Appwrite Storage bucket ID
@@ -81,6 +88,9 @@ const Lost: React.FC = () => {
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("❗ Failed to upload file. Please try again.");
+    }finally {
+      setLoading(false); 
+      setShowLoadingModal(false);
     }
   };
 
@@ -90,6 +100,7 @@ const Lost: React.FC = () => {
       return;
     }
 
+    setLoading(true); 
     const reportData = {
       ...formData,
       status: "pendingreport",
@@ -102,13 +113,23 @@ const Lost: React.FC = () => {
 
     try {
       await addDoc(collection(db, "lost_items"), reportData);
-      navigate("/home");
+      setLoading(false);
+      setSucess(true);
+    
     } catch (error) {
+      setLoading(false); 
+      setSucess(false); 
       console.error("🔥 Error submitting report:", error);
       alert("❗ Error submitting report. Please try again.");
-    } finally {
-      setShowModal(false); // Hide the modal after submission
+    } 
+     finally{
+      setTimeout(() => {
+        setSucess(false); 
+        setShowModal(false)
+        navigate("/report"); 
+      }, 2000); 
     }
+
   };
 
   return (
@@ -456,7 +477,45 @@ const Lost: React.FC = () => {
         onConfirm={handleConfirmSubmit}
         title="Confirm Submission"
         message="Are you sure you want to submit this lost item report?"
+        loading={loading}
+        success={success}
       />
+        <Modal show={showLoadingModal} onHide={() => setShowLoadingModal(false)} centered>
+              <Modal.Header closeButton>
+                <Modal.Title style={{
+                color:'#2169ac',
+                fontFamily: "Poppins, sans-serif",
+                fontSize:'16.4px',
+              }}>{loading ? "Uploading..." : "File Upload Complete"}</Modal.Title>
+                </Modal.Header>
+              <Modal.Body>
+                {loading ? (
+                  <div className="d-flex justify-content-center align-items-center flex-column">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Uploading...</span>
+                    </div>
+                    <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+                      Uploading your file...
+                    </span>
+                  </div>
+                ) : (
+                  <div className="d-flex justify-content-center align-items-center flex-column">
+                    <div className="check-container pb-1">
+                      <div className="check-background">
+                        <svg viewBox="0 0 65 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M7 25L27.3077 44L58.5 7" stroke="white" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                    </div>
+                    <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+                      File uploaded successfully!
+                    </span>
+                  </div>
+                )}
+              </Modal.Body>
+              <Modal.Footer>
+              </Modal.Footer>
+            </Modal>
     </div>
     
   );

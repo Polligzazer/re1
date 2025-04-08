@@ -19,11 +19,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 
 interface User {
-  uid: string;
   firstName: string;
   middleInitial: string;
   lastName: string;
   role: string;
+  uid: string;
   schoolId?: string;
   isAdmin?: boolean;
 }
@@ -84,12 +84,11 @@ const SearchBar = ({ onChatSelect }: SearchBarProps) => {
   
       const allUsersSnapshot = await getDocs(allUsersQuery);
       const users = allUsersSnapshot.docs.map((doc) => ({
-        uid: doc.id,
         ...doc.data(),
       }));
   
-      const lowercaseSchoolId = schoolId.trim().toLowerCase();
       const filteredUsers = users.filter((user) => {
+        const lowercaseSchoolId = schoolId.trim().toLowerCase();
         return (
           user.firstName?.toLowerCase().includes(lowercaseSchoolId) ||
           user.middleInitial?.toLowerCase().includes(lowercaseSchoolId) ||
@@ -103,7 +102,7 @@ const SearchBar = ({ onChatSelect }: SearchBarProps) => {
         setUser(null);
       } else {
         setErr(null);
-        setUser(filteredUsers[0]); // Return the first matching user
+        setUser(filteredUsers[0] as User); // Return the first matching user
       }
     } catch (error) {
       console.error("Firestore Query Error:", error);
