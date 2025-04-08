@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { auth, db } from "../src/firebase";
 import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import "../css/completeregistration.css";
 
 const CompleteRegistration: React.FC = () => {
   const navigate = useNavigate();
@@ -163,19 +164,49 @@ const CompleteRegistration: React.FC = () => {
     }
   };
 
+  const [progress, setProgress] = useState(11);
+  const handleButtonClick = () =>{
+    if (progress < 100) {
+      setProgress(progress + 50);
+    }
+  }
+
+  const handleButtonReset = () => {
+    setProgress(progress - 50);
+  }
+
+  const getColor = () => {
+    if (progress < 40) {
+      return "#e8a627";
+    } else if (progress < 70) {
+      return "#e8a627";
+    } else {
+      return "#2ecc71";
+    }
+  }
+
   return (
-    <div className="container">
+    <div className="main d-flex justify-content-start align-items-center px-5">
+      <div className="regcontainer p-3 mb-5">
+      <p className="welcometoflo p-0 m-0 ">Welcome to FLO</p>
+          <p className="wewouldlike ">We would like to know you better, fill in the following below</p>
+        
       <div className="progress-bar">
         {[1, 2, 3].map((num) => (
           <div key={num} className={`progress-step ${step >= num ? "active" : ""}`}></div>
         ))}
-      </div>
+        </div>
 
+        <div className="progress-barr">
+          <div className="progress-bar-fill" style={{ width: `${progress}%`, backgroundColor: getColor() }}>
+          </div>
+        </div>  
+        
       {step === 1 && (
-        <div>
-          <h2>Welcome to FLO</h2>
-          <p>We would like to know you better, fill in the following below</p>
+        <div className="p-3 d-flex flex-column">
+        <div className="p-3 d-flex flex-row">  
           <input
+            className="regFname me-4"
             type="text"
             name="firstName"
             value={formData.firstName}
@@ -185,15 +216,16 @@ const CompleteRegistration: React.FC = () => {
             aria-label="First Name"
           />
           <input
+            className="regMinitial me-4"
             type="text"
             name="middleInitial"
             value={formData.middleInitial}
             onChange={handleChange}
-            placeholder="Middle Initial"
+            placeholder="MI"
             aria-label="Middle Initial"
           />
           <input
-            type="text"
+            className="regLname"
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
@@ -201,7 +233,11 @@ const CompleteRegistration: React.FC = () => {
             placeholder="Last Name"
             aria-label="Last Name"
           />
+        </div>
+        <div className="p-3 d-flex flex-row">  
+          
           <input
+            className="regcontact"
             type="text"
             name="contact"
             value={formData.contact}
@@ -210,14 +246,19 @@ const CompleteRegistration: React.FC = () => {
             placeholder="Contact Number"
             aria-label="Contact Number"
           />
-          <button onClick={() => setStep(2)}>Next</button>
+          </div>
+          <div>
+              <button className="regnext1 p-1 px-4 rounded-5" onClick={() => {
+                setStep(2)
+                handleButtonClick()
+              }}> Next </button>
+          </div>   
         </div>
       )}
 
       {step === 2 && (
-        <div>
-          <h2>Role Selection</h2>
-          <select name="role" value={formData.role} onChange={handleChange} required aria-label="Select Role">
+        <div className="mt-3">
+          <select className="selectroledrop" name="role" value={formData.role} onChange={handleChange} required aria-label="Select Role">
             <option value="">Select Role</option>
             <option value="faculty">Faculty</option>
             <option value="staff">Staff</option>
@@ -227,6 +268,7 @@ const CompleteRegistration: React.FC = () => {
           {formData.role === "student" && (
             <>
               <select
+                className="selectstrand mx-3"
                 name="strandOrCourse"
                 value={formData.strandOrCourse}
                 onChange={handleChange}
@@ -246,6 +288,7 @@ const CompleteRegistration: React.FC = () => {
               </select>
 
               <input
+                className="selectyear"
                 type="text"
                 name="yearSection"
                 value={formData.yearSection}
@@ -256,22 +299,37 @@ const CompleteRegistration: React.FC = () => {
               />
             </>
           )}
-
-          <button onClick={() => setStep(1)}>Previous</button>
-          <button onClick={() => setStep(3)}>Next</button>
+        <div className="mt-3 align-items-center justify-content-start d-flex">
+          <button className="regprevious me-2 p-1 px-4 rounded-5" onClick={() => {
+                setStep(1)
+                handleButtonReset()
+              }}>Previous</button>
+          <button className="regnext2 p-1 px-4 rounded-5" onClick={() => {
+                setStep(3)
+                handleButtonClick()}}>Next</button>
+        </div>
         </div>
       )}
 
       {step === 3 && (
         <div>
-          <h2>Confirmation</h2>
-          <p>Review your details before submitting.</p>
-          <button onClick={() => setStep(2)}>Previous</button>
-          <button onClick={handleSubmit} disabled={loading}>
-            {loading ? "Submitting..." : "Submit"}
-          </button>
+          <p className="regreview "> Please review your details before submitting</p>
+          <button className="regprevious2 me-2 p-1 px-4  rounded-5" onClick={() => {
+                setStep(2)
+                handleButtonReset()
+              }}>Previous</button>
+          <button className="regsubmit p-1 px-4  rounded-5" onClick={handleSubmit}>Submit</button>
         </div>
-      )}
+        )}
+      </div>  
+      <div className="imgcustomshow" >
+        <img src="./src/assets/image.png" style={{
+          maxWidth:'100%',
+          height:'100%',
+          objectFit:"cover"
+        }}/>
+
+      </div>
     </div>
   );
 };

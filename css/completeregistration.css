@@ -1,0 +1,155 @@
+.progress-barr {
+    width:90%;
+    height: 20px;
+    border-radius:10px ;
+    background-color:#ffffff;
+    margin-bottom: 1%;
+}
+
+.progress-bar-fill {
+    height:100%;
+    border-radius: 10px;
+    background-color:#e8a627;
+    transition: width 0.5s ease-out;
+}
+
+.label {
+    margin-top: 10px;
+    font-size: 25px;
+    font-weight: bold;
+    color: aquamarine;
+}
+
+.progress{
+    border: 0.5px solid grey;
+}
+
+.main{
+    width: 100%;
+    height: 100vh;
+}
+.regcontainer {
+   width: 60%;
+}
+.welcometoflo{
+    color:#0e5cc5;
+    font-size: clamp(30px, 2vw, 42px);
+    font-family:"DM Sans", sans-serif;
+} .wewouldlike {
+    color:#0e5cc5;
+    font-size: clamp(17px, 1vw, 27px);
+    font-family:"Poppins", sans-serif;
+}
+.regFname, .regMinitial, .regLname, .regcontact, .selectroledrop, .regprevious, .selectstrand, .selectyear{
+    border:none;
+    padding:0.5%;
+    background-color: transparent;
+    font-family:"Poppins", sans-serif;
+    font-size: clamp(13px, 1vw, 27px);
+    border-bottom: 1px solid #0e5cc5;
+    color: black;
+}
+
+.regreview{
+    font-size: clamp(15px, 1.3vw, 27px);
+}
+
+input:focus{
+    outline: none !important;
+    border-top:none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: 1px solid #0e5cc5;
+}
+.regMinitial {
+    width:10%;
+}
+
+.regFname{
+    width: 35%;
+}
+.regLname{
+    width: 35%;
+}
+
+.selectyear{
+    width:11%;
+}
+
+.regFname:hover, .regMinitial:hover, .regLname:hover, .regcontact:hover, .selectroledrop:hover,
+.regprevious:hover, .selectstrand:hover, .selectyear:hover {
+    border:1px solid #2169ac;
+    border-radius: 2%;
+}
+
+.regnext1, .regnext2, .regprevious {
+   color: white;
+   background-color: #2169ac;
+   border: none;
+   
+  
+}
+
+.regnext1:hover, .regnext2:hover, .regprevious:hover, .regprevious2:hover {
+   background-color: #2f7ac0;
+}
+
+.roleselect, .regreview, .regconfirm {
+    color: #0e5cc5;
+}
+
+.regprevious2 {
+    color: white;
+    background-color: #2169ac;
+    border: none;
+   
+
+   
+}
+
+.regsubmit {
+    background-color:rgb(100, 201, 0);
+    color: white;
+    border: none;
+    padding: 0.4%;
+    padding-left: 3%;
+    padding-right: 3%;
+
+}
+
+.regsubmit:hover {
+    background-color:rgb(121, 216, 25);
+}
+
+.circle1 {
+    position: absolute;
+    top: 70%;
+    right: 75%;
+    width: 550px;
+    height: 550px;
+    background-image: linear-gradient(80deg, #004097, #92e9fd);
+    border-radius: 50%;
+}
+
+.circle2 {
+    position: absolute;
+    top: 62%;
+    right: 80%;
+    width: 600px;
+    height: 600px;
+    background-image: linear-gradient(350deg, #004097, #92e9fd);
+    border-radius: 50%;
+}
+.imgcustomshow{
+    
+        width:40%;
+        height:100vh;
+        padding-top:2%;
+        padding-bottom:2%;
+      
+}
+@media (max-width: 768px) {
+    .imgcustomshow{
+        display: none;
+    }
+}
