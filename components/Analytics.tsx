@@ -36,7 +36,7 @@ const Analytics = () => {
 
         reportsSnapshot.forEach((doc) => {
           const data = doc.data();
-          if (data.status === "approved" && data.date) {
+          if (data.status === "approved" || data.status === "claimed" && data.date) {
             const monthIndex = new Date(data.date).getMonth();
             reportData[monthIndex]++;
           }

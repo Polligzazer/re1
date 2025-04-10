@@ -29,6 +29,8 @@ interface Report {
   userId: string;
   emailSent: boolean;
   imageUrl?: string;
+  receiptId?: string;
+
 }
 
 interface Claim {
@@ -162,6 +164,12 @@ const AdminApproval: React.FC = () => {
       }
   
       await sendEmail(report, receiptId, userEmail);
+      console.log("receiptId:", receiptId); 
+
+      const reportWithReceipt = { ...report, receiptId };
+      setSelectedReport(reportWithReceipt);
+      console.log("🔍 reportWithReceipt:", JSON.stringify(reportWithReceipt, null, 2));
+      console.log("🧾 Selected report set:", reportWithReceipt);
 
       const claimRef = doc(db, "claim_items", report.id);
       await updateDoc(claimRef, { emailSent: true });
@@ -169,14 +177,13 @@ const AdminApproval: React.FC = () => {
       const updatedReport = { ...report, emailSent: true };
       setReports(prev => prev.map(r => r.id === report.id ? updatedReport : r));
 
-      // Always send notification after successful email
       await createNotification(
         report.userId,
         "Receipt has been sent in the mail, claim your lost item.",
         report.id
       );
   
-      setSelectedReport(report);
+     
       setVerifyModal(false);
       setLoading(false);
       setShowConfirmModal(true);
@@ -231,10 +238,10 @@ const AdminApproval: React.FC = () => {
   
       batch.update(reportRef, {
         status: "claimed",
-        processedAt: serverTimestamp()
+        claimedDate: serverTimestamp()
       });
   
-      // Create notifications
+      
       const claimantNotificationRef = doc(collection(db, "users", claimantUserId, "notifications"));
       batch.set(claimantNotificationRef, {
         description: "Item has been successfully claimed",
@@ -333,8 +340,27 @@ const AdminApproval: React.FC = () => {
   const handleSelectReport = async (reportId: string) => {
     const report = reports.find((r) => r.id === reportId);
     if (report) {
-      setSelectedReport(report);
-      setShowReportModal(true);
+      try {
+        // Fetch receipt ID from claim_receipts collection
+        const receiptQuery = query(
+          collection(db, "claim_receipts"),
+          where("referenceId", "==", report.id)
+        );
+        const receiptSnapshot = await getDocs(receiptQuery);
+  
+        let receiptId = "";
+        if (!receiptSnapshot.empty) {
+          const receiptDoc = receiptSnapshot.docs[0];
+          receiptId = receiptDoc.id;
+          console.log("📄 Found receipt ID:", receiptId);
+        } else {
+          console.log("🛑 No receipt found for report ID:", report.id);
+        }
+  
+        const updatedReport = { ...report, receiptId };
+        setSelectedReport(updatedReport);
+        setShowReportModal(true);
+      
   
      
       if (report.referencePostId) {
@@ -374,7 +400,12 @@ const AdminApproval: React.FC = () => {
           setLinkedPostData(null);
         }
       }
+    }catch (err) {
+      console.error("Error fetching receipt ID:", err);
+      setSelectedReport(report); // fallback to normal report
+      setShowReportModal(true);
     }
+  }
   };
   
   useEffect(() => {
@@ -718,7 +749,9 @@ const AdminApproval: React.FC = () => {
         }}>
       <p><strong>Verify this user attempting to claim their item</strong></p>
       <p>✅ You have successfully sent an email to the user!</p>
-      <p><strong>REFID:</strong> {selectedReport?.id}</p>
+      
+        <p><strong>Receipt ID:</strong> {selectedReport?.receiptId}</p>
+    
       <p><strong>Claimant:</strong> {selectedReport?.claimantName}</p>
     </Modal.Body>
     <Modal.Footer>

@@ -7,6 +7,9 @@ import {
   markNotificationAsRead,
   fetchNotifications,
   fetchItemDetails,
+  watchNewMessagesForUser, 
+  createNotification,
+  ValidMessage
 } from "../components/notificationService";
 import React from "react";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -68,15 +71,27 @@ const Topbar = () => {
   useEffect(() => {
     if (!userId) return;
   
-    const unsubscribe = fetchNotifications(userId, (fetchedNotifications) => {
+    // Fetch and listen for notifications
+    const unsubscribeNotif = fetchNotifications(userId, (fetchedNotifications) => {
       setNotifications(fetchedNotifications);
-  
-      setHasUnread(
-        fetchedNotifications.some((notif) => !notif.isRead)
-      );
+      setHasUnread(fetchedNotifications.some(notif => !notif.isRead));
     });
   
-    return () => unsubscribe();
+    // Message listener
+    const handleNewMessage = (chatId: string, message: ValidMessage) => {
+      if (message.senderId === userId) return;
+      
+      createNotification(userId, `${message.senderName} sent a message`, chatId)
+        .then(() => console.log("Notification created"))
+        .catch(console.error);
+    };
+  
+    const unsubscribeMessages = watchNewMessagesForUser(userId, handleNewMessage);
+  
+    return () => {
+      unsubscribeNotif();
+      unsubscribeMessages();
+    };
   }, [userId]);
   
   const handleNotificationClick = async (notif: AppNotification) => {
@@ -138,7 +153,7 @@ const Topbar = () => {
           />
           </div>
           {/* Search Box */}
-          <form className="flex-grow-1 ps-md-5 justify-content-center d-flex mx-3">
+          <form className="flex-grow-1 ps-md-5 align-items-center justify-content-center d-flex mx-3">
             <input
               type="text"
               placeholder="Search..."

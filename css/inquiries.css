@@ -58,6 +58,7 @@
 .chatcontainer{
 height:100%;
 overflow-y: auto;
+will-change: transform;
 
 }
 .messageselection{

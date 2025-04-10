@@ -9,6 +9,7 @@ import {
   Timestamp,
   serverTimestamp,
   increment,
+  writeBatch,
 } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { v4 as uuid } from "uuid";
@@ -98,43 +99,44 @@ const Input = () => {
         ? { ...messageData, img: fileUrl }
         : messageData;
 
+      const batch = writeBatch(db);
+      
+      // Update main chat document
       const chatRef = doc(db, 'chats', data.chatId);
-      await updateDoc(chatRef, {
+      batch.update(chatRef, {
         messages: arrayUnion(finalMessage),
         timestamp: serverTimestamp(),
       });
-
+  
+      // Prepare chat updates
       const lastMessage = {
         text: text || "Sent a file",
         senderId: currentUser.uid,
+        senderName: currentUser.firstName || "Unknown User", // Add sender name
+        timestamp: serverTimestamp()
       };
-
-      const currentUserChatRef = doc(db, "userChats", currentUser.uid);
+  
+      // Update receiver's chat document only
       const receiverUserChatRef = doc(db, "userChats", data.user.uid);
-
-      await Promise.all([
-        updateDoc(currentUserChatRef, {
-          [`${data.chatId}.lastMessage`]: lastMessage,
-          [`${data.chatId}.lastActivity`]: serverTimestamp(),
-          [`${data.chatId}.userInfo`]: {
-            uid: data.user.uid,
-            name: data.user.name,
-          },
-          [`${data.chatId}.messageCount`]: increment(1),
-        }),
-        updateDoc(receiverUserChatRef, {
-          [`${data.chatId}.lastMessage`]: lastMessage,
-          [`${data.chatId}.lastActivity`]: serverTimestamp(),
-          [`${data.chatId}.userInfo`]: {
-            uid: currentUser.uid,
-            name: currentUser.displayName,
-          },
-          [`${data.chatId}.messageCount`]: increment(1),
-        })
-      ]);
-
+      batch.update(receiverUserChatRef, {
+        [`${data.chatId}.lastMessage`]: lastMessage,
+        [`${data.chatId}.userInfo`]: {
+          uid: currentUser.uid,
+          name: currentUser.firstName // Ensure name is stored
+        },
+        [`${data.chatId}.messageCount`]: increment(1)
+      });
+  
+      await batch.commit();
+      console.log('Message committed successfully');
+  
+      // Reset UI state
+      setText("");
+      setFile(null);
+  
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Message send failed:", error);
+      // Add error recovery logic here
     }
   };
 

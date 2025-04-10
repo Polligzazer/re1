@@ -50,7 +50,7 @@ const Inquiries = () => {
   };
 
   return (
-    <div className="main pt-4">
+    <div className="main pt-4 mt-2">
       <div className="inquiries w-100 justify-content-center align-items-center d-flex">
         {(!showChat || windowWidth > 768) && (
           <Sidebar onChatSelect={handleSelectChat} />

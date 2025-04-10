@@ -13,7 +13,7 @@ const Chat = ({ onBack }: ChatProps) => {
   const { data } = useChatContext();
 
   return (
-    <div className="chat position-relative">
+    <div className="chat">
       <div
         className="chatInfo p-2 d-flex flex-row align-items-center"
         style={{

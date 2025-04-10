@@ -37,7 +37,7 @@ const ChatContainer = () => {
         );
         setMessages(sortedMessages);
       }
-      setTimeout(() => setLoading(false), 500);
+      setTimeout(() => setLoading(false), 700);
     });
 
     return () => {
@@ -47,10 +47,13 @@ const ChatContainer = () => {
 
   useEffect(() => {
     if (!loading && virtuosoRef.current && messages.length > 0) {
-      virtuosoRef.current.scrollToIndex({
-        index: messages.length ,
-        align: 'end', behavior:'auto'
-      });
+      setTimeout(() => {
+        virtuosoRef.current?.scrollToIndex({
+          index: messages.length,
+          align: 'end',
+          behavior: 'auto'
+        });
+      }, 200);
     }
   }, [messages, data.chatId, loading]);
 
@@ -71,6 +74,7 @@ const ChatContainer = () => {
           ref={virtuosoRef} 
           className="chatcontainer"
           totalCount={messages.length}
+          followOutput={true}
           itemContent={(index) => (
             <div key={messages[index].id}>
               <Convo

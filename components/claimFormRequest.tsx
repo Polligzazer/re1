@@ -424,6 +424,70 @@ const ClaimFormRequest: React.FC = () => {
                 required
               />
             </div>
+           <div className=" d-flex d-lg-none align-self-end" style={{ width: "100%" }}>
+  
+                 <input
+                   type="file"
+                   id="fileInput"
+                   onChange={handleFileChange}
+                   style={{
+                     width: 0,
+                     height: 0,
+                     opacity: 0,
+                     overflow: "hidden",
+                     position: "absolute",
+                   }}
+                 />
+ 
+                 <label
+                   htmlFor="fileInput"
+                   className="d-flex flex-row justify-end items-center w-full h-[125.4px] cursor-pointer"
+                   style={{
+                     padding: "8px 12px",
+                     backgroundColor: "transparent",
+                     color: "#2169ac",
+                     borderRadius: "5px",
+                   }}
+                 >
+                   <FontAwesomeIcon
+                     icon={faFileCirclePlus}
+                     style={{
+                       color: "#2169ac",
+                       fontSize: "40px",
+                     }}
+                   />
+                   <p className="text-center p-2 pb-0 mb-0">Choose File</p>
+                 </label>
+ 
+                 <div className="w-full text-start px-2">
+                   {fileName && fileUrl && (
+                     <a
+                       href={fileUrl}
+                       download={fileName}
+                       style={{ color: "#2169ac", fontSize:'12px', cursor: "pointer", textDecoration: "underline" }}
+                     >
+                       {fileName}
+                     </a>
+                     
+                   )}
+                 </div>
+                 <button
+                   onClick={() => {
+                     setFileName("");
+                     setFileUrl(null);
+                   }}
+                   style={{
+                     background: "none",
+                     border: "none",
+                     cursor: "pointer",
+                     fontSize: "16px",
+                     color: "red",
+                     fontWeight: "bold",
+                   }}
+                 >
+                   Remove file
+                 </button>
+               </div>           
           </div>
         </div>
         

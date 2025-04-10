@@ -284,7 +284,7 @@ const Chatbot: React.FC = () => {
             response = "You can email **support@floapp.com** or message the admin for more concerns and questions.";
             break;
           case "📊 Track report status":
-            response = "Your report status does have its own status depending on what type it is. Just check it in you report page under the pending section.";
+            response = "Your report status does have its own status depending on what type it is. Just check it in your report page under the pending section.";
             break;
         }
       }
@@ -348,7 +348,7 @@ const Chatbot: React.FC = () => {
 
           <div className="overflow-y-auto overflow-x-hidden p-2 rounded messages-scroll"
             style={{
-                height:'300px',
+                height:'400px',
                 width:'400px'
             }}
            ref={chatContainerRef} >
@@ -398,49 +398,7 @@ const Chatbot: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex items-center mt-2 p-3" style={{
-            borderTop:'1px solid #0f2c53',
-          }}>
-            <input
-              type="text"
-              className="flex-1 p-1 px-2 me-2 border-none"
-              placeholder="Type a message..."
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              ref={inputRef}
-              style={{
-                backgroundColor:'transparent',
-                border:'1px solid #0f2c53',
-                borderRadius:'15px',
-                fontSize:'11.5px',
-                color:'black',
-                width:'250px',
-                fontFamily:"Work sans, sans-serif",
-              }}
-            />
-            <button 
-                onClick={() => 
-                setMessages([...messages, { text: userInput, sender: "user" }, 
-                    { text: "⏳ I'm sorry but I'm still in development. Please contact the Admin for more inquiries.", sender: "bot" }])} 
-                className="" 
-                style={{
-                    backgroundColor:' #0f2c53',
-                    color:'white',
-                    border:'none',
-                    outline:'none',
-                    borderRadius:'50%',
-                    fontSize:'15px'
-                }}
-                ref={sendButtonRef} 
-                onKeyPress={handleKeyPress} 
-                >
-              <FontAwesomeIcon icon={faPaperPlane} 
-              style={{
-                transform: "rotate(30deg)"
-              }}/>
-            </button>
-          </div>
+          
         </div>
       )}
        <div className="chat-bubble-container">

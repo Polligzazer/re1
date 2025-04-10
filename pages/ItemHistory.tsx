@@ -30,7 +30,7 @@ interface Item {
 const ItemHistory = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [filter, setFilter] = useState<'unclaimed' | 'claimed'>('unclaimed');
-  const [, setUsers] = useState<{ [key: string]: string }>({}); // To store users' names
+  const [, setUsers] = useState<{ [key: string]: string }>({}); 
   const [claimedCount, setClaimedCount] = useState<number>(0);
   const [unclaimedCount, setUnclaimedCount] = useState<number>(0);
   const navigate = useNavigate();
@@ -39,7 +39,6 @@ const ItemHistory = () => {
     const fetchItemsAndUsers = async () => {
       console.log(`📌 Fetching items with status: '${filter}'`);
 
-      // Get all users and map them by userId for quick access
       const userSnapshot = await getDocs(collection(db, "users"));
       const usersData = userSnapshot.docs.reduce((acc, userDoc) => {
         const userData = userDoc.data();
@@ -58,6 +57,12 @@ const ItemHistory = () => {
         id: doc.id,
         ...doc.data(),
       })) as Item[];
+
+      const sortedItems = fetchedItems.sort((a, b) => {
+        const timestampA = a.timestamp ? a.timestamp.toDate() : new Date(0); 
+        const timestampB = b.timestamp ? b.timestamp.toDate() : new Date(0); 
+        return timestampB.getTime() - timestampA.getTime(); 
+      });
 
       const claimed = fetchedItems.filter(item => item.status === 'claimed').length;
       const unclaimed = fetchedItems.filter(item => item.status === 'unclaimed').length;
@@ -238,10 +243,19 @@ const ItemHistory = () => {
                     <div>
                       <p><strong>Date of claimed: </strong> 
                         {item.claimedDate 
+                        
                           ? (item.claimedDate instanceof Timestamp 
-                              ? new Date(item.claimedDate.seconds * 1000).toLocaleString() 
+                            ? new Date(item.claimedDate.seconds * 1000).toLocaleDateString('en-US', { 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            })  + ' ' + new Date(item.claimedDate.seconds * 1000).toLocaleTimeString('en-US', {
+                              hour: '2-digit', 
+                              minute: '2-digit',
+                            })
                               : item.claimedDate)
                           : 'Date not available'}
+                          
                       </p> 
                   </div>
                 )}

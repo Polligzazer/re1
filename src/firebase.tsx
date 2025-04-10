@@ -27,6 +27,7 @@ import {
   where,
 } from "firebase/firestore";
 
+
 const firebaseConfig = {
     apiKey: "AIzaSyC_FLCIBWdReqRPmWFZB1L_4rhLntNWuyA",
     authDomain: "message-4138f.firebaseapp.com",
@@ -35,7 +36,8 @@ const firebaseConfig = {
     storageBucket: "message-4138f.firebasestorage.app",
     messagingSenderId: "197072020008",
     appId: "1:197072020008:web:e0676251a0d313260dcb1d",
-    measurementId: "G-GD15C1MZW2"
+    measurementId: "G-GD15C1MZW2",
+    vapidKey:"BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w"
   };
 
 const app = initializeApp(firebaseConfig);
@@ -45,15 +47,59 @@ export { messaging, getToken, onMessage };
 
 export const requestNotificationPermission = async () => {
   try {
+    // Log current notification permission
+    console.log("Current Notification Permission:", Notification.permission);
+
+    // Check if Notification API is available in the browser
+    if (!("Notification" in window)) {
+      throw new Error("This browser does not support notifications.");
+    }
+
+    // If the permission is denied, throw an error
+    if (Notification.permission === "denied") {
+      console.error("❌ Notifications are blocked by the user.");
+      alert("Notifications are blocked by the user. Please enable them in your browser settings.");
+      throw new Error("Notifications are blocked by the user.");
+    }
+
+    // If the permission is default, request it
+    if (Notification.permission === "default") {
+      console.log("📢 Requesting notification permission...");
+
+      const permissionRequest = await Notification.requestPermission();
+      console.log("Notification permission request response:", permissionRequest);
+
+      // Check if permission granted
+      if (permissionRequest !== "granted") {
+        console.error("❌ Notification permission not granted.");
+        throw new Error("Notification permission not granted");
+      }
+    } else {
+      console.log("✅ Notification permission already granted.");
+    }
+
+    // Initialize Firebase messaging (make sure Firebase is initialized)
+    const messaging = getMessaging(); // Ensure Firebase messaging is set up correctly
+
+    // Fetch token
     const token = await getToken(messaging, {
       vapidKey: "BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w",
     });
-    console.log("✅ Notification token:", token);
-    return token;
+
+    // Log the retrieved token
+    if (token) {
+      console.log("✅ Notification token:", token);
+      return token;
+    } else {
+      console.error("❌ Failed to retrieve notification token.");
+      throw new Error("Failed to retrieve notification token.");
+    }
   } catch (error) {
+    // Log all errors for easier debugging
     console.error("❌ Error getting notification token:", error);
   }
 };
+
 export const setupForegroundNotifications = () => {
   if (messaging) {
     onMessage(messaging, (payload) => {

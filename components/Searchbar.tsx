@@ -148,7 +148,7 @@ const SearchPage = () => {
       <div className="filter-container container mt-4" style={{
         width:'20%'
       }}>
-        <button className="back-btn btn mb-4" onClick={() => navigate(-1)}>← Back</button>
+        <button className="back-btn btn mb-4" onClick={() => navigate('/home')}>← Back</button>
 
         {/* Filters */}
         <div className="d-flex flex-column mb-4 fw-bold" 
@@ -169,7 +169,7 @@ const SearchPage = () => {
                 <option value="all">All</option>
                 <option value="Gadgets">Gadgets</option>
                 <option value="School Belongings">School Belongings</option>
-                <option value="Accessories/Personal Belongings">Personal Belongings</option>
+                <option value="Personal Belongings">Personal Belongings</option>
                 <option value="Others">Others</option>
               </select>
               <div className="dropdown-icon"></div>
