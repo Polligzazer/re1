@@ -35,7 +35,6 @@ const VerifyEmail: React.FC = () => {
       }
 
       try {
-        // Create user account now
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         console.log("User created:", userCredential.user);
 

@@ -17,7 +17,7 @@ const Signup: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [checked, setChecked] = useState(false);
   const [emailError, setEmailError] = useState("");
-  const [termsModalShow, setTermsModalShow] = useState(false); // State for modal visibility
+  const [termsModalShow, setTermsModalShow] = useState(false);
   const navigate = useNavigate();
 
   const emailPattern = /^([a-z]+\.\d{6}@meycauayan\.sti\.edu\.ph|[a-z]+\.[a-z]+@meycauayan\.sti\.edu\.ph)$/;
@@ -58,25 +58,26 @@ const Signup: React.FC = () => {
         return;
       }
   
-      // Generate a unique verification ID
       const verificationId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const verificationLink = `${window.location.origin}/verify-email?uid=${verificationId}`;
   
-      // Store the verification link in Firebase Realtime Database
       await set(ref(database, `verificationLinks/${verificationId}`), {
         email: email,
-        password: password, // Store password temporarily
-        expiresAt: Date.now() + 15 * 60 * 1000, // 15 minutes expiration
+        password: password,
+        expiresAt: Date.now() + 15 * 60 * 1000,
         createdAt: serverTimestamp(),
       });
   
-      // Send verification email using EmailJS
       emailjs.send(
         "service_a9p3n1f",
         "template_pi72mvc",
         {
           to_email: email,
-          verification_link: verificationLink,
+          message: "Welcome to FLO! Please verify your email to continue.",
+          action_link: verificationLink,
+          button_text: "Verify Email",
+          footer_message:
+          "If you have any questions and inquiries, kindly email as at support@flocodex.tech",
         },
         "JoMHbOBfIABg9jZ_U"
       );
@@ -89,7 +90,6 @@ const Signup: React.FC = () => {
     }
   };
 
-  // Toggle modal
   const handleShowTermsModal = () => setTermsModalShow(true);
   const handleCloseTermsModal = () => setTermsModalShow(false);
 
