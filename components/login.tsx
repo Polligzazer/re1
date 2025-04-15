@@ -35,7 +35,7 @@ const Login: React.FC = () => {
       console.log("User logged in:", user);
 
      
-      const adminEmail = "admin.123456@meycauayan.sti.edu.ph"; // Fixed admin email
+      const adminEmail = "admin.123456@meycauayan.sti.edu.ph";
 
       if (user.email === adminEmail) {
         console.log("Admin logged in successfully");

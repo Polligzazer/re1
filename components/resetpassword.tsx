@@ -5,12 +5,11 @@ import {
   verifyPasswordResetCode,
   confirmPasswordReset,
 } from "../src/firebase";
-import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import emailjs from "emailjs-com";
 import "../css/reset.css";
 
 const ResetPassword: React.FC = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -18,13 +17,11 @@ const ResetPassword: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [isResetLinkSent, setIsResetLinkSent] = useState(false);
+  const [_isResetLinkSent, setIsResetLinkSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [oobCode, setOobCode] = useState<string | null>(null);
 
-  
   const location = useLocation();
-  // const history = useHistory();
   
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search); 
@@ -42,10 +39,9 @@ const ResetPassword: React.FC = () => {
     }
   }, [location]);
   
-  // Handle sending the reset email
   const handleSendResetEmail = async () => {
     await sendPasswordResetEmail(auth, email, {
-      url: `${window.location.origin}/reset-password`, // Redirect back to this page
+      url: `${window.location.origin}/reset-password`,
       handleCodeInApp: true,
     });
     setIsResetLinkSent(true);
@@ -68,7 +64,6 @@ const ResetPassword: React.FC = () => {
 
       if (!data.resetLink) throw new Error("No reset link received");
 
-      // Fire EmailJS to send an additional reset email notification
       emailjs
       .send(
         "service_a9p3n1f",
@@ -97,7 +92,6 @@ const ResetPassword: React.FC = () => {
       setSuccess("Check your email for a reset link.");
       setEmail("");
 
-      // Go back to /login after 15 seconds
       setTimeout(() => navigate("/login"), 15000);
     } catch (err: any) {
       console.error("Error sending reset email:", err);
@@ -107,7 +101,6 @@ const ResetPassword: React.FC = () => {
     setLoading(false);
   };
 
-  // Handle resetting the password (only when accessed through the oobCode link)
   const handlePasswordReset = async () => {
     const oobCode = new URLSearchParams(window.location.search).get("oobCode");
     setError("");
@@ -132,8 +125,6 @@ const ResetPassword: React.FC = () => {
     try {
       await confirmPasswordReset(auth, oobCode, password);
       setSuccess("Password reset successfully! You can now log in with your new password.");
-
-      // Fire EmailJS to send a confirmation email that the password was reset
       emailjs
         .send(
           "service_a9p3n1f",
@@ -155,7 +146,6 @@ const ResetPassword: React.FC = () => {
           }
         );
 
-      // Go back to /login after 10 seconds
       setTimeout(() => navigate("/login"), 10000);
     } catch (err: any) {
       console.error("Error resetting password:", err);
@@ -176,7 +166,6 @@ const ResetPassword: React.FC = () => {
       {!loading && success && <div className="alert alert-success text-center">{success}</div>}
 
       {oobCode ? (
-        // Password Reset Form (when opened via email link)
         <>
           <h2 className="fw-bold mb-4 text-center">Reset Password</h2>
           <input
@@ -200,7 +189,6 @@ const ResetPassword: React.FC = () => {
           </button>
         </>
       ) : (
-        // Email Input for Reset Link (default view)
         <>
           <h2
             className="fw-bold mb-4 text-center"
