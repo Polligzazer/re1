@@ -81,56 +81,6 @@ export const hasUnreadNotifications = (notifications: AppNotification[]): boolea
   return notifications.some((notif) => !notif.isRead);
 };
 
-
-// export const useChatNotifications = (currentUserId: string) => {
-//   const [notifications, setNotifications] = useState([]);
-//   const [unreadCount, setUnreadCount] = useState(0);
-
-//   useEffect(() => {
-//     if (!currentUserId) return;
-
-//     const q = query(
-//       collection(db, 'userChats'),
-//       where('senderId', '==', currentUserId),
-//       orderBy('lastActivity', 'desc')
-//     );
-
-//     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-//       const newNotifications = [];
-//       let totalUnread = 0;
-
-//       querySnapshot.forEach((doc) => {
-//         const chatData = doc.data();
-//         const notification = {
-//           id: doc.id,
-//           date: chatData.date,
-//           lastActivity: chatData.lastActivity?.toDate() || null,
-//           lastMessage: {
-//             text: chatData.lastMessage?.text || '',
-//             timestamp: chatData.lastMessage?.timestamp?.toDate() || null,
-//             senderId: chatData.lastMessage?.senderId || '',
-//           },
-//           messageCount: chatData.messageCount || 0,
-//           userInfo: {
-//             name: chatData.userInfo?.name || 'Unknown',
-//             uid: chatData.userInfo?.uid || '',
-//           },
-//         };
-
-//         newNotifications.push(notification);
-//         totalUnread += notification.messageCount;
-//       });
-
-//       setNotifications(newNotifications);
-//       setUnreadCount(totalUnread);
-//     });
-
-//     return () => unsubscribe();
-//   }, [currentUserId]);
-
-//   return { notifications, unreadCount };
-// };
-
 export const watchLostItemApprovals = () => {
   const q = query(collection(db, "lost_items"));
 
