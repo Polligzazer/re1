@@ -58,11 +58,11 @@ const ItemHistory = () => {
         ...doc.data(),
       })) as Item[];
 
-      const sortedItems = fetchedItems.sort((a, b) => {
-        const timestampA = a.timestamp ? a.timestamp.toDate() : new Date(0); 
-        const timestampB = b.timestamp ? b.timestamp.toDate() : new Date(0); 
-        return timestampB.getTime() - timestampA.getTime(); 
-      });
+      // const sortedItems = fetchedItems.sort((a, b) => {
+      //   const timestampA = a.timestamp ? a.timestamp.toDate() : new Date(0); 
+      //   const timestampB = b.timestamp ? b.timestamp.toDate() : new Date(0); 
+      //   return timestampB.getTime() - timestampA.getTime(); 
+      // });
 
       const claimed = fetchedItems.filter(item => item.status === 'claimed').length;
       const unclaimed = fetchedItems.filter(item => item.status === 'unclaimed').length;
