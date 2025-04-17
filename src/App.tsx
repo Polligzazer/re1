@@ -26,7 +26,6 @@ import Aboutus from "../pages/aboutUs";
 import ClaimApproval from "../pages/dashcomps/PendingClaimPage"
 import ReportApproval from "../pages/dashcomps/AdminApproval";
 import Claimed from "../pages/dashcomps/ClaimsPage"
-import useLostItemApprovalListener from "../components/notificationService";
 
 
 function App() {
@@ -70,7 +69,6 @@ function App() {
   }, [currentUser]);
 
   
-  useLostItemApprovalListener();
   return (
     <Router>
       <Routes>

@@ -1,5 +1,8 @@
-import { useState } from "react";
-import { createNotification } from "../components/notificationService";
+import React, { useState } from "react";
+
+import { getAuth } from "firebase/auth";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+// import { createNotification } from "../components/notificationService";
 
 const SendNotificationButton: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -12,7 +15,51 @@ const SendNotificationButton: React.FC = () => {
     setError(null);
 
     try {
-      await createNotification("📍 A new lost item has been approved!", "sample-report-id");
+      const auth = getAuth();
+      const firestore = getFirestore();
+  
+      const user = auth.currentUser;
+      if (!user) throw new Error("User not authenticated");
+  
+      // Get all documents from fcmTokens subcollection
+      const fcmTokenRef = collection(firestore, "users", user.uid, "fcmTokens");
+      const fcmTokenSnap = await getDocs(fcmTokenRef);
+  
+      if (fcmTokenSnap.empty) throw new Error("No FCM tokens found");
+  
+      // Extract all token values
+      const tokens: string[] = [];
+      fcmTokenSnap.forEach((doc) => {
+        const data = doc.data();
+        if (data.token) {
+          tokens.push(data.token);
+        }
+      });
+  
+      if (tokens.length === 0) throw new Error("No valid FCM tokens found");
+  
+      // Send notification to each token
+      await Promise.allSettled(
+        tokens.map((token) =>
+          fetch("https://flo-proxy.vercel.app/api/send-notification", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              token: token,
+              title: 'New Message',
+              body: 'You have a new notification!',
+              data: {
+                type: 'message',
+                chatId: '123'
+              }
+            })
+          })
+        )
+      );
+  
+
       setSuccess("Notification sent successfully!");
     } catch (err) {
       console.error("Failed to send notification:", err);

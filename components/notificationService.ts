@@ -287,6 +287,3 @@ export const createNotification = async (
     throw error;
   }
 };
-
-
-export default useFirebaseNotifications;
