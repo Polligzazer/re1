@@ -55,14 +55,20 @@ const AdminApproval: React.FC = () => {
 
       const reportData = reportSnap.data();
       const type = reportData.type;
+      const notificationText = type === "lost" 
+        ? "A lost item report has been approved!" 
+        : "A found item report has been approved!";
+      const usersSnapshot = await getDocs(collection(db, "users"));
 
-      await createNotification(
-        "all",
-        type === "lost" ? "A lost item report has been approved!" : "A found item report has been approved!",
-        reportId
+      const notificationPromises = usersSnapshot.docs.map(userDoc => 
+        createNotification(
+          userDoc.id, // Use actual user ID instead of "all"
+          notificationText,
+          reportId
+        )
       );
     
-
+      await Promise.all(notificationPromises);
       setReports((prevReports) => prevReports.filter((r) => r.id !== reportId));
       setIsApproved(true);  
       setLoading(false);  

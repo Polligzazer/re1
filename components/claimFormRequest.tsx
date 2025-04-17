@@ -66,7 +66,7 @@ const ClaimFormRequest: React.FC = () => {
     if (lostItemSnap.exists()) {
       const lostItemData = lostItemSnap.data();
       // Assuming the type is stored as 'type' field in the lost items collection
-      if (lostItemData?.type === "found") {
+      if (lostItemData?.type === "found" || lostItemData?.type === "lost") {
         setIsValidReference(true);
         setErrorMessage("");
       } else {

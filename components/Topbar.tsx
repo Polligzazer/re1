@@ -95,23 +95,36 @@ const Topbar = () => {
   }, [userId]);
   
   const handleNotificationClick = async (notif: AppNotification) => {
-    if (!userId) return;
-  
-    if (notif.reportId) {
-      const itemDetails = await fetchItemDetails(notif.reportId);
-      if (itemDetails) {
-        setSelectedItem(itemDetails);
-        setShowModal(true);
-      } else {
-        alert("Item details not found.");
-      }
+    if (!userId) {
+      console.error("User ID is not available");
+      return;
     }
   
-    await markNotificationAsRead(userId, notif.id);
-  
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
-    );
+    try {
+      // Mark as read first for better UX (even if details fetch fails)
+      await markNotificationAsRead(userId, notif.id);
+      setNotifications(prev => 
+        prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n)
+      );
+
+      if (notif.reportId) {
+        console.log(`Fetching details for report ID: ${notif.reportId}`);
+        const itemDetails = await fetchItemDetails(notif.reportId);
+        
+        if (!itemDetails) {
+          console.error("Item details not found for ID:", notif.reportId);
+          alert("The reported item could not be found. It may have been removed.");
+          return;
+        }
+
+        console.log("Retrieved item details:", itemDetails);
+        setSelectedItem(itemDetails);
+        setShowModal(true);
+      }
+    } catch (error) {
+      console.error("Error handling notification click:", error);
+      alert("Failed to process this notification. Please try again.");
+    }
   };
 
   return (
