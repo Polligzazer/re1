@@ -128,16 +128,28 @@ export const watchNewMessagesForUser = (
   onNewMessage: (chatId: string, message: ValidMessage) => void
 ): Unsubscribe => {
   const userChatsRef = doc(db, "userChats", userId);
-  const state = new Map<string, { 
-    hash: string;
-    timer?: NodeJS.Timeout;
-  }>();
+  const PERSISTENT_CACHE_KEY = "messageNotifications";
+
+  // Get stored message counts { "userId|chatId": lastMessageCount }
+  const getMessageCountCache = (): Record<string, number> => {
+    try {
+      return JSON.parse(localStorage.getItem(PERSISTENT_CACHE_KEY) || "{}");
+    } catch {
+      return {};
+    }
+  };
+
+  const updateMessageCountCache = (chatId: string, count: number) => {
+    const cache = getMessageCountCache();
+    cache[`${userId}|${chatId}`] = count;
+    localStorage.setItem(PERSISTENT_CACHE_KEY, JSON.stringify(cache));
+  };
 
   const unsubscribe = onSnapshot(userChatsRef, (docSnapshot) => {
-    // Skip local updates and empty docs
     if (docSnapshot.metadata.hasPendingWrites || !docSnapshot.exists()) return;
 
     const data = docSnapshot.data();
+    const countCache = getMessageCountCache();
 
     Object.entries(data).forEach(([chatId, chatData]) => {
       const chatInfo = chatData as {
@@ -145,48 +157,21 @@ export const watchNewMessagesForUser = (
         messageCount?: number;
       };
 
-      // Validate structure
-      if (!chatInfo?.lastMessage?.text || 
-          !chatInfo?.lastMessage?.senderId ||
-          typeof chatInfo.messageCount !== 'number') return;
+      if (!chatInfo?.lastMessage || typeof chatInfo.messageCount !== "number") return;
 
-      // Create enhanced unique hash
-      const hash = `${chatInfo.messageCount}-${
-        chatInfo.lastMessage.senderId
-      }-${chatInfo.lastMessage.timestamp.seconds}-${
-        chatInfo.lastMessage.timestamp.nanoseconds
-      }`;
+      const cacheKey = `${userId}|${chatId}`;
+      const storedCount = countCache[cacheKey] || 0;
+      const currentCount = chatInfo.messageCount;
 
-      // Global cache check
-      const cacheKey = `${userId}|${chatId}|${hash}`;
-      if (notificationCache.has(cacheKey)) return;
-
-      // Local state check
-      const currentState = state.get(chatId);
-      if (currentState?.hash === hash) return;
-
-      // Clear existing timer
-      if (currentState?.timer) clearTimeout(currentState.timer);
-
-      // Set new state with longer debounce
-      state.set(chatId, {
-        hash,
-        timer: setTimeout(() => {
-          if (chatInfo.lastMessage!.senderId !== userId) {
-            notificationCache.set(cacheKey, 'processed');
-            onNewMessage(chatId, chatInfo.lastMessage!);
-          }
-          state.delete(chatId);
-        }, 1000) // 1-second debounce
-      });
+      // Only trigger if message count increased and message is from another user
+      if (currentCount > storedCount && chatInfo.lastMessage.senderId !== userId) {
+        onNewMessage(chatId, chatInfo.lastMessage);
+        updateMessageCountCache(chatId, currentCount);
+      }
     });
   });
 
-  return () => {
-    state.forEach(({ timer }) => timer && clearTimeout(timer));
-    state.clear();
-    unsubscribe();
-  };
+  return () => unsubscribe();
 };
 
 export const createNotification = async (
