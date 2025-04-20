@@ -99,18 +99,6 @@ export const watchLostItemApprovals = () => {
   });
 };
 
-const useFirebaseNotifications = () => {
-  useEffect(() => {
-    const unsubscribe = onMessage(messaging, (payload) => {
-      console.log("Message received: ", payload);
-      alert(`Notification: ${payload.notification?.title}`);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  return null;
-};
 
 
 export interface ValidMessage {
@@ -119,9 +107,6 @@ export interface ValidMessage {
   senderName: string;
   timestamp: { seconds: number; nanoseconds: number };
 }
-
-// Global cache to track notifications (survives component remounts)
-const notificationCache = new Map<string, string>();
 
 export const watchNewMessagesForUser = (
   userId: string,

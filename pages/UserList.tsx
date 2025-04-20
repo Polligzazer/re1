@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { doc, deleteDoc, collection, query, where, getDocs, writeBatch } from "firebase/firestore";
-import { getAuth, deleteUser } from "firebase/auth";
+import { collection, getDocs } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import "../css/userlist.css";
 import { db } from "../src/firebase";
 
@@ -9,6 +9,7 @@ const UserList = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const auth = getAuth();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -33,35 +34,41 @@ const UserList = () => {
   }, []);
 
   const handleDeleteUser = async (userId: string) => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    if (!user) return alert("No user is signed in.");
+    if (!auth.currentUser) {
+      return alert("No user is signed in.");
+    }
 
-    if (window.confirm("Are you sure you want to delete this user and all their data?")) {
-      try {
-  
-        // Delete user document from Firestore
-        await deleteDoc(doc(db, "users", userId));
-  
-        // Query and delete all lost_items belonging to this user
-        const postsQuery = query(collection(db, "lost_items"), where("userId", "==", userId));
-        const querySnapshot = await getDocs(postsQuery);
-  
-        const batch = writeBatch(db);
-        querySnapshot.forEach((document) => {
-          batch.delete(document.ref);
-        });
-  
-        await batch.commit();
-  
-        // Update local state (assuming setUsers is in scope)
-        setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-  
-        alert("User and their posts deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting user:", error);
-        alert("Error deleting user: " + (error as Error).message);
+    if (!window.confirm("Are you sure you want to delete this user and all their data?")) {
+      return;
+    }
+
+    try {
+      // Get fresh ID token
+      const token = await auth.currentUser.getIdToken(true);
+      if (!token) throw new Error("Not authenticated");
+
+      // Call Vercel serverless function
+      const res = await fetch('https://flo-proxy.vercel.app/api/delete-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token,
+        },
+        body: JSON.stringify({ uid: userId }),
+      });
+
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || res.statusText);
       }
+
+      // Update local state
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+
+      alert("User and all their data have been deleted.");
+    } catch (err: any) {
+      console.error("Delete failed:", err);
+      alert("Error deleting user: " + err.message);
     }
   };
 
@@ -140,14 +147,10 @@ const UserList = () => {
                   </td>
                   <td className="td1">{user.contact}</td>
                   <td className="td1">
-                    <button 
+                    <button
                       onClick={() => handleDeleteUser(user.id)}
                       className="btn btn-danger btn-sm"
-                      style={{
-                        borderRadius: '20px',
-                        padding: '5px 15px',
-                        fontSize: '14px'
-                      }}
+                      style={{ borderRadius: '20px', padding: '5px 15px', fontSize: '14px' }}
                     >
                       Delete
                     </button>
