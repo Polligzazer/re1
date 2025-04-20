@@ -19,6 +19,6 @@ messaging.onBackgroundMessage((payload) => {
     body,
     icon: icon || "/icon.png",
     vibrate: [200, 100, 200],
-    badge: "/badge-icon.png",
+    badge: "/round.png",
   });
 });

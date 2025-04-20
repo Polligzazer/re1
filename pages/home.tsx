@@ -89,8 +89,8 @@ const Home = () => {
   const allReports = sortByTimestamp(reports);
 
   return (
-    <div className="mt-4 mt-md-3">
-      <div className=" d-flex flex-row justify-content-start ms-4 mb-4">
+    <div className="mt-4 mt-md-3 container">
+      <div className="d-flex flex-row justify-content-start ms-4 mb-4">
       
 
       <div className="  post-transition my-4 mt-5 d-flex align-items-center">

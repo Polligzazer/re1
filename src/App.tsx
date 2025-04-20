@@ -71,9 +71,7 @@ function App() {
 
   
   return (
-    
     <Router>
-      <SpeedInsights />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Signup />} />
@@ -114,6 +112,7 @@ function App() {
         {/* Admin-only Routes */}
       </Routes>
     </Router>
+    
   );
 }
 

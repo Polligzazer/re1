@@ -6,7 +6,7 @@ import Topbar from "./Topbar";
 const Layout = () => {
 
   return (
-    <main className="mt-5">
+    <main className="py-5 container">
       <Topbar />
       <div className="container pt-5 justify-content-center align-items-center">
         <Outlet />
