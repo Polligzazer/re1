@@ -15,8 +15,6 @@ import {
   limit
 } from "firebase/firestore";
 import { v4 as uuidv4 } from 'uuid';
-import { useEffect } from "react";
-import { messaging, onMessage } from "../src/firebase";
 import { Item } from "./types";
 
 export interface AppNotification {
