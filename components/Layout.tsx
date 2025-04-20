@@ -1,8 +1,6 @@
 import '../css/Layout.css'
 import { Outlet } from "react-router-dom";
 import Topbar from "./Topbar";
-import Notifbutton from "../pages/SendNotificationButton";
-// diko alam kung pano mag comment below   
 
 
 const Layout = () => {
@@ -12,9 +10,6 @@ const Layout = () => {
       <Topbar />
       <div className="container pt-5 justify-content-center align-items-center">
         <Outlet />
-<Notifbutton />
-        
-
       </div>
     </main>
   );

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { doc, deleteDoc, collection, query, where, getDocs, writeBatch } from "firebase/firestore";
+import { getAuth, deleteUser } from "firebase/auth";
 import "../css/userlist.css";
 import { db } from "../src/firebase";
 
@@ -30,6 +31,39 @@ const UserList = () => {
 
     fetchUsers();
   }, []);
+
+  const handleDeleteUser = async (userId: string) => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return alert("No user is signed in.");
+
+    if (window.confirm("Are you sure you want to delete this user and all their data?")) {
+      try {
+  
+        // Delete user document from Firestore
+        await deleteDoc(doc(db, "users", userId));
+  
+        // Query and delete all lost_items belonging to this user
+        const postsQuery = query(collection(db, "lost_items"), where("userId", "==", userId));
+        const querySnapshot = await getDocs(postsQuery);
+  
+        const batch = writeBatch(db);
+        querySnapshot.forEach((document) => {
+          batch.delete(document.ref);
+        });
+  
+        await batch.commit();
+  
+        // Update local state (assuming setUsers is in scope)
+        setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+  
+        alert("User and their posts deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        alert("Error deleting user: " + (error as Error).message);
+      }
+    }
+  };
 
   // Improved filtering logic
   const searchLower = searchTerm.toLowerCase();
@@ -105,6 +139,19 @@ const UserList = () => {
                       : user.role}
                   </td>
                   <td className="td1">{user.contact}</td>
+                  <td className="td1">
+                    <button 
+                      onClick={() => handleDeleteUser(user.id)}
+                      className="btn btn-danger btn-sm"
+                      style={{
+                        borderRadius: '20px',
+                        padding: '5px 15px',
+                        fontSize: '14px'
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))
             ) : ( 
