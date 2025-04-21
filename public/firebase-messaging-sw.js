@@ -16,15 +16,13 @@ messaging.onBackgroundMessage((payload) => {
   return self.registration.showNotification(title, {
     body,
     icon: '/icon.png',
-    data,
-    actions: [{ action: 'open', title: 'Open Chat' }]
+    data
   });
 });
 
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
-  // Navigate to `/home` or focus if already open
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then(function(clientList) {
       for (const client of clientList) {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../src/firebase";
-import { collection, getDocs, doc, getDoc, updateDoc, orderBy, query, writeBatch, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, updateDoc, orderBy, query, setDoc, serverTimestamp } from "firebase/firestore";
 import { createNotification } from "../../components/notificationService";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaChevronLeft } from "react-icons/fa";
@@ -123,12 +123,10 @@ const AdminApproval: React.FC = () => {
   const denyReport = async (reportId: string) => {
     try {
       setLoading(true);
+  
       const reportRef = doc(db, "lost_items", reportId);
-      
-      // First update the status
       await updateDoc(reportRef, { status: "denied" });
   
-      // Get report data
       const reportSnap = await getDoc(reportRef);
       if (!reportSnap.exists()) {
         alert("Report not found");
@@ -137,61 +135,65 @@ const AdminApproval: React.FC = () => {
   
       const reportData = reportSnap.data();
       const userId = reportData.userId;
-      const batch = writeBatch(db);
   
-      // 1. Create Firestore notification
+      if (!userId) {
+        console.error("❗ Report has no associated userId.");
+        return;
+      }
+  
+      // Create Firestore notification
       const notificationRef = doc(collection(db, "users", userId, "notifications"));
-      batch.set(notificationRef, {
+      await setDoc(notificationRef, {
         description: "Your report has been denied",
         isRead: false,
         timestamp: serverTimestamp(),
         relatedPostId: reportId,
       });
   
-      await batch.commit();
+      // Get FCM tokens
+      const tokensRef = collection(db, "users", userId, "fcmTokens");
+      const tokensSnap = await getDocs(tokensRef);
+      const tokens = tokensSnap.docs.map(doc => doc.data().token).filter(Boolean);
   
-      // 2. Send push notification to the specific user
-      try {
-        // Get user's FCM tokens
-        const tokensRef = collection(db, "users", userId, "fcmTokens");
-        const tokensSnap = await getDocs(tokensRef);
-        const tokens = tokensSnap.docs.map(doc => doc.data().token).filter(Boolean);
+      console.log("🔔 FCM tokens:", tokens);
   
-        if (tokens.length > 0) {
-          await Promise.allSettled(
-            tokens.map(async (token) => {
-              try {
-                const response = await fetch("https://flo-proxy.vercel.app/api/send-notification", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    token,
-                    title: "Report Denied",
-                    body: "Your report has been denied by the admin",
-                    data: {
-                      type: "report_denied",
-                      reportId,
-                    }
-                  })
-                });
+      if (tokens.length > 0) {
+        await Promise.allSettled(
+          tokens.map(async (token) => {
+            try {
+              const response = await fetch("https://flo-proxy.vercel.app/api/send-notification", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  token,
+                  title: "Report Denied",
+                  body: "Your report has been denied by the admin.",
+                  data: {
+                    type: "report_denied",
+                    reportId,
+                  }
+                }),
+              });
   
-                if (!response.ok) {
-                  console.error('Push failed for user', userId);
-                }
-              } catch (error) {
-                console.error('Push error for user', userId, error);
+              const resData = await response.json();
+  
+              if (!response.ok) {
+                console.error("❌ Push failed:", resData);
+              } else {
+                console.log("✅ Push sent:", resData);
               }
-            })
-          );
-        }
-      } catch (pushError) {
-        console.error("Error sending push notification:", pushError);
+            } catch (err) {
+              console.error("❗ Push error:", err);
+            }
+          })
+        );
+      } else {
+        console.warn("⚠️ No FCM tokens found for user:", userId);
       }
   
       setReports((prevReports) => prevReports.filter((r) => r.id !== reportId));
-      alert("Report successfully denied");
     } catch (error) {
-      console.error(error);
+      console.error("❌ Error denying report:", error);
       alert("Error denying report");
     } finally {
       setLoading(false);

@@ -344,6 +344,9 @@ const Found: React.FC = () => {
                 name="date"
                 value={formData.date}
                 max={new Date().toISOString().split("T")[0]}
+                min={new Date(new Date().setMonth(new Date().getMonth() - 5))
+                  .toISOString()
+                  .split("T")[0]}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 required
               />
