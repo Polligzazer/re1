@@ -60,13 +60,55 @@ const AdminApproval: React.FC = () => {
         : "A found item report has been approved!";
       const usersSnapshot = await getDocs(collection(db, "users"));
 
-      const notificationPromises = usersSnapshot.docs.map(userDoc => 
-        createNotification(
-          userDoc.id, // Use actual user ID instead of "all"
-          notificationText,
-          reportId
-        )
-      );
+      const notificationPromises = usersSnapshot.docs.map(async (userDoc) => {
+        try {
+          // Create regular notification
+          await createNotification(
+            userDoc.id,
+            notificationText,
+            reportId
+          );
+  
+          // Get user's FCM tokens
+          const tokensRef = collection(db, "users", userDoc.id, "fcmTokens");
+          const tokensSnap = await getDocs(tokensRef);
+          const tokens = tokensSnap.docs.map(doc => doc.data().token).filter(Boolean);
+  
+          if (tokens.length === 0) return;
+  
+          // Send push notifications to all tokens
+          return Promise.allSettled(
+            tokens.map(async (token) => {
+              try {
+                const response = await fetch("https://flo-proxy.vercel.app/api/send-notification", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    token,
+                    title: "Report Approved",
+                    body: notificationText,
+                    data: { 
+                      type: "report_approved",
+                      reportId,
+                      itemType: type
+                    }
+                  })
+                });
+  
+                if (!response.ok) {
+                  const error = await response.json();
+                  console.error('Push failed for', userDoc.id, error);
+                }
+                return response.json();
+              } catch (error) {
+                console.error('Push error for', userDoc.id, error);
+              }
+            })
+          );
+        } catch (error) {
+          console.error('Notification error for', userDoc.id, error);
+        }
+      });
     
       await Promise.all(notificationPromises);
       setReports((prevReports) => prevReports.filter((r) => r.id !== reportId));
@@ -77,22 +119,27 @@ const AdminApproval: React.FC = () => {
       alert("❗ Failed to approve the report.");
     }
   };
+
   const denyReport = async (reportId: string) => {
-    
     try {
       setLoading(true);
-      const reportRefr = doc(db, "lost_items", reportId)
-      await updateDoc(reportRefr, {status: "denied"});
-
-      const reportSnap = await getDoc(reportRefr);
-      if(!reportSnap.exists()){
+      const reportRef = doc(db, "lost_items", reportId);
+      
+      // First update the status
+      await updateDoc(reportRef, { status: "denied" });
+  
+      // Get report data
+      const reportSnap = await getDoc(reportRef);
+      if (!reportSnap.exists()) {
         alert("Report not found");
         return;
       }
-
-      const userId = reportSnap.data().userId; 
+  
+      const reportData = reportSnap.data();
+      const userId = reportData.userId;
       const batch = writeBatch(db);
-
+  
+      // 1. Create Firestore notification
       const notificationRef = doc(collection(db, "users", userId, "notifications"));
       batch.set(notificationRef, {
         description: "Your report has been denied",
@@ -100,14 +147,53 @@ const AdminApproval: React.FC = () => {
         timestamp: serverTimestamp(),
         relatedPostId: reportId,
       });
-
+  
       await batch.commit();
-
+  
+      // 2. Send push notification to the specific user
+      try {
+        // Get user's FCM tokens
+        const tokensRef = collection(db, "users", userId, "fcmTokens");
+        const tokensSnap = await getDocs(tokensRef);
+        const tokens = tokensSnap.docs.map(doc => doc.data().token).filter(Boolean);
+  
+        if (tokens.length > 0) {
+          await Promise.allSettled(
+            tokens.map(async (token) => {
+              try {
+                const response = await fetch("https://flo-proxy.vercel.app/api/send-notification", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    token,
+                    title: "Report Denied",
+                    body: "Your report has been denied by the admin",
+                    data: {
+                      type: "report_denied",
+                      reportId,
+                    }
+                  })
+                });
+  
+                if (!response.ok) {
+                  console.error('Push failed for user', userId);
+                }
+              } catch (error) {
+                console.error('Push error for user', userId, error);
+              }
+            })
+          );
+        }
+      } catch (pushError) {
+        console.error("Error sending push notification:", pushError);
+      }
+  
       setReports((prevReports) => prevReports.filter((r) => r.id !== reportId));
+      alert("Report successfully denied");
     } catch (error) {
       console.error(error);
-      alert("Deny error");
-    }finally{
+      alert("Error denying report");
+    } finally {
       setLoading(false);
     }
   };

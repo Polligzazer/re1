@@ -15,8 +15,6 @@ import {
   limit
 } from "firebase/firestore";
 import { v4 as uuidv4 } from 'uuid';
-import { useEffect } from "react";
-import { messaging, onMessage } from "../src/firebase";
 import { Item } from "./types";
 
 export interface AppNotification {
@@ -99,21 +97,8 @@ export const watchLostItemApprovals = () => {
   });
 };
 
-const useFirebaseNotifications = () => {
-  useEffect(() => {
-    const unsubscribe = onMessage(messaging, (payload) => {
-      console.log("Message received: ", payload);
-      alert(`Notification: ${payload.notification?.title}`);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  return null;
-};
-
-
 export interface ValidMessage {
+  id: string;
   text: string;
   senderId: string;
   senderName: string;
@@ -133,16 +118,17 @@ export const watchNewMessagesForUser = (
     timer?: NodeJS.Timeout;
   }>();
 
-  const unsubscribe = onSnapshot(userChatsRef, (docSnapshot) => {
+  const unsubscribe = onSnapshot(userChatsRef, async (docSnapshot) => {
     // Skip local updates and empty docs
     if (docSnapshot.metadata.hasPendingWrites || !docSnapshot.exists()) return;
 
     const data = docSnapshot.data();
 
-    Object.entries(data).forEach(([chatId, chatData]) => {
+    await Promise.all(Object.entries(data).map(async ([chatId, chatData]) => {
       const chatInfo = chatData as {
         lastMessage?: ValidMessage;
         messageCount?: number;
+        chatName?: string;
       };
 
       // Validate structure
@@ -168,18 +154,62 @@ export const watchNewMessagesForUser = (
       // Clear existing timer
       if (currentState?.timer) clearTimeout(currentState.timer);
 
-      // Set new state with longer debounce
+      // Set new state with debounce
       state.set(chatId, {
         hash,
-        timer: setTimeout(() => {
+        timer: setTimeout(async () => {
           if (chatInfo.lastMessage!.senderId !== userId) {
             notificationCache.set(cacheKey, 'processed');
+            
+            // 1. Call the original handler
             onNewMessage(chatId, chatInfo.lastMessage!);
+            
+            // 2. Send push notification
+            try {
+              // Get recipient's FCM tokens
+              const tokensRef = collection(db, "users", userId, "fcmTokens");
+              const tokensSnap = await getDocs(tokensRef);
+              const tokens = tokensSnap.docs.map(doc => doc.data().token).filter(Boolean);
+
+              if (tokens.length > 0) {
+                // Get sender info
+                const senderRef = doc(db, "users", chatInfo.lastMessage!.senderId);
+                const senderSnap = await getDoc(senderRef);
+                const senderName = senderSnap.exists() 
+                  ? senderSnap.data().displayName || 'Someone'
+                  : 'Someone';
+
+                // Get chat name (if group chat)
+                const chatName = chatInfo.chatName || senderName;
+
+                await Promise.allSettled(
+                  tokens.map(token => 
+                    fetch("https://flo-proxy.vercel.app/api/send-notification", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        token,
+                        title: `New message in ${chatName}`,
+                        body: `${senderName}: ${chatInfo.lastMessage!.text.slice(0, 100)}`,
+                        data: {
+                          type: 'new_message',
+                          chatId,
+                          senderId: chatInfo.lastMessage!.senderId,
+                          messageId: chatInfo.lastMessage!.id
+                        }
+                      })
+                    }).catch(console.error)
+                  )
+                );
+              }
+            } catch (error) {
+              console.error('Push notification error:', error);
+            }
           }
           state.delete(chatId);
         }, 1000) // 1-second debounce
       });
-    });
+    }))
   });
 
   return () => {

@@ -40,23 +40,30 @@ const SendNotificationButton: React.FC = () => {
   
       // Send notification to each token
       await Promise.allSettled(
-        tokens.map((token) =>
-          fetch("https://flo-proxy.vercel.app/api/send-notification", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              token: token,
-              title: 'New Message',
-              body: 'You have a new notification!',
-              data: {
-                type: 'message',
-                chatId: '123'
-              }
-            })
-          })
-        )
+        tokens.map(async (token) => {
+          try {
+            const response = await fetch("https://flo-proxy.vercel.app/api/send-notification", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                token,
+                title: 'Mag on ka na boi',
+                body: 'You have a new notification!',
+                data: { type: 'message', chatId: '123' }
+              })
+            });
+      
+            if (!response.ok) {
+              const error = await response.json();
+              console.error('Notification failed for token:', token.slice(0, 6), error);
+              return { status: 'rejected', reason: error };
+            }
+            return response.json();
+          } catch (error) {
+            console.error('Network error for token:', token.slice(0, 6), error);
+            return { status: 'rejected', reason: error };
+          }
+        })
       );
   
 
