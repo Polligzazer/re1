@@ -26,8 +26,6 @@ export interface AppNotification {
   type?: string;
 }
 
-
-
 export const fetchItemDetails = async (reportId: string): Promise<Item | null> => {
   if (!reportId) return null;
 
@@ -106,6 +104,56 @@ export interface ValidMessage {
 }
 
 const notificationCache = new Map<string, string>();
+interface NotificationPayload {
+  token: string;
+  title: string;
+  body: string;
+  data?: Record<string, string>;
+}
+
+export const sendNotification = async (payload: NotificationPayload) => {
+  try {
+    const response = await fetch('https://flo-proxy.vercel.app/api/send-notification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token: payload.token,
+        title: payload.title,
+        body: payload.body,
+        data: payload.data || {},
+      }),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        responseData.message || `Notification failed: ${response.statusText}`
+      );
+    }
+
+    return responseData;
+  } catch (error) {
+    console.error('Notification Error:', {
+      payload,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    
+    // For user-facing errors
+    if (error instanceof Error) {
+      throw new Error(
+        error.message.includes('token')
+          ? 'Notification service unavailable. Please check your connection.'
+          : 'Failed to send notification. Please try again later.'
+      );
+    }
+    
+    throw error;
+  }
+};
+
 
 export const watchNewMessagesForUser = (
   userId: string,
@@ -185,10 +233,10 @@ export const watchNewMessagesForUser = (
                   tokens.map(token => 
                     fetch("https://flo-proxy.vercel.app/api/send-notification", {
                       method: "POST",
-                      headers: { "Content-Type": "application/json" },
+                      headers: { "Content-Type": "application/json", 'Authorization': 'Bearer YOUR_FCM_SERVER_KEY' },
                       body: JSON.stringify({
                         token,
-                        title: `New message in ${chatName}`,
+                        title: `${chatName} `,
                         body: `${senderName}: ${chatInfo.lastMessage!.text.slice(0, 100)}`,
                         data: {
                           type: 'new_message',
@@ -239,7 +287,7 @@ export const createNotification = async (
       const timeDiff = Date.now() - lastNotification.timestamp.toDate().getTime();
       
       // Block duplicates within 5 minutes
-      if (timeDiff < 300000) {
+      if (timeDiff < 300) {
         console.log("⏭️ Duplicate notification blocked");
         return;
       }

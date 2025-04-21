@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { auth, signInWithEmailAndPassword } from "../src/firebase";
+import { setupAndSaveFCMToken } from "../src/firebase";
 import "../css/login.css"
 
 const Login: React.FC = () => {
@@ -28,11 +29,16 @@ const Login: React.FC = () => {
     }
 
     try {
-     
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       await new Promise(resolve => setTimeout(resolve, 500));
       const user = userCredential.user;
       console.log("User logged in:", user);
+      try {
+        const fcmToken = await setupAndSaveFCMToken(user.uid); // Pass user ID
+        console.log("FCM token registered:", fcmToken);
+      } catch (fcmError) {
+        console.error("FCM Token registration failed (notifications might not work):", fcmError);
+      }
 
      
       const adminEmail = "admin.123456@meycauayan.sti.edu.ph";

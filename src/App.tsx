@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
-import { requestNotificationPermission, setupForegroundNotifications, auth, saveFCMToken  } from "./firebase"; 
+import { requestNotificationPermission, setupForegroundNotifications, auth } from "./firebase"; 
 import { onAuthStateChanged } from "firebase/auth";
 // import { SpeedInsights } from '@vercel/speed-insights/react';
 import Layout from "../components/Layout";
@@ -37,17 +37,6 @@ function App() {
     if (!currentUser) return <Navigate to="/login" />;
     return <>{children}</>;
   };
-
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      console.log("User logged in:", user.uid);
-  
-      const token = await requestNotificationPermission();
-      if (token) {
-        await saveFCMToken(user.uid, token);
-      }
-    }
-  });
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
