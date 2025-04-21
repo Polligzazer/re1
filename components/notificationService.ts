@@ -105,7 +105,6 @@ export interface ValidMessage {
   timestamp: { seconds: number; nanoseconds: number };
 }
 
-// Global cache to track notifications (survives component remounts)
 const notificationCache = new Map<string, string>();
 
 export const watchNewMessagesForUser = (

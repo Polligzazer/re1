@@ -2,7 +2,6 @@ import React, { useState } from "react";
 
 import { getAuth } from "firebase/auth";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
-// import { createNotification } from "../components/notificationService";
 
 const SendNotificationButton: React.FC = () => {
   const [loading, setLoading] = useState(false);

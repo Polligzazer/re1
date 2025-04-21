@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { useEffect } from "react";
 import { requestNotificationPermission, setupForegroundNotifications, auth, saveFCMToken  } from "./firebase"; 
 import { onAuthStateChanged } from "firebase/auth";
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Layout from "../components/Layout";
 import Signup from "../components/signup";
 import Login from "../components/login";
@@ -111,6 +112,7 @@ function App() {
         {/* Admin-only Routes */}
       </Routes>
     </Router>
+    
   );
 }
 
