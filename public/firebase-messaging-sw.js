@@ -11,14 +11,27 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  console.log("📩 Received background notification:", payload);
-
-  const { title, body, icon } = payload.notification;
-
-  self.registration.showNotification(title, {
+  const { title, body, data } = payload.data;
+  
+  return self.registration.showNotification(title, {
     body,
-    icon: icon || "/icon.png",
-    vibrate: [200, 100, 200],
-    badge: "/round.png",
+    icon: '/icon.png',
+    data,
+    actions: [{ action: 'open', title: 'Open Chat' }]
   });
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const { deepLink } = event.notification.data;
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then(clientList => {
+      for (const client of clientList) {
+        if (client.url === deepLink && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      return clients.openWindow(deepLink);
+    })
+  );
 });
