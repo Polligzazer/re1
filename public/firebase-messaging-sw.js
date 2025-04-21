@@ -21,17 +21,21 @@ messaging.onBackgroundMessage((payload) => {
   });
 });
 
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener('notificationclick', function(event) {
   event.notification.close();
-  const { deepLink } = event.notification.data;
+
+  // Navigate to `/home` or focus if already open
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then(clientList => {
+    clients.matchAll({ type: 'window' }).then(function(clientList) {
       for (const client of clientList) {
-        if (client.url === deepLink && 'focus' in client) {
+        if (client.url.includes('/home') && 'focus' in client) {
           return client.focus();
         }
       }
-      return clients.openWindow(deepLink);
+
+      if (clients.openWindow) {
+        return clients.openWindow('/home');
+      }
     })
   );
 });

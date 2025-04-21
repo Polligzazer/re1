@@ -74,7 +74,7 @@ const AdminApproval: React.FC = () => {
           const tokensSnap = await getDocs(tokensRef);
           const tokens = tokensSnap.docs.map(doc => doc.data().token).filter(Boolean);
   
-          if (tokens.length === 0) return;
+          if (tokens.length === 0) return null;
   
           // Send push notifications to all tokens
           return Promise.allSettled(
