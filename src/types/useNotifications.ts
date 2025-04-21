@@ -1,4 +1,4 @@
-import { messaging, db } from "../firebase";
+import { messaging } from "../firebase";
 import { getToken } from "firebase/messaging";
 
 

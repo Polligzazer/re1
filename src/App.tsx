@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
-import { requestNotificationPermission, setupForegroundNotifications, auth } from "./firebase"; 
-import { onAuthStateChanged } from "firebase/auth";
+import { requestNotificationPermission, setupForegroundNotifications } from "./firebase"; 
 // import { SpeedInsights } from '@vercel/speed-insights/react';
 import Layout from "../components/Layout";
 import Signup from "../components/signup";
