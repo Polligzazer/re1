@@ -11,7 +11,7 @@ const CompleteRegistration: React.FC = () => {
   const [step, setStep] = useState(1);
   const [userEmail, setUserEmail] = useState("");
   const [userUID, setUserUID] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",

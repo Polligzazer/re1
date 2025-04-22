@@ -68,7 +68,7 @@ const ClaimFormRequest: React.FC = () => {
     if (lostItemSnap.exists()) {
       const lostItemData = lostItemSnap.data();
       // Assuming the type is stored as 'type' field in the lost items collection
-      if (lostItemData?.type === "found") {
+      if (lostItemData?.type === "found" || lostItemData?.type === "lost") {
         setIsValidReference(true);
         setErrorMessage("");
       } else {
@@ -393,6 +393,9 @@ const ClaimFormRequest: React.FC = () => {
                 name="date"
                 value={formData.date}
                 max={new Date().toISOString().split("T")[0]}
+                min={new Date(new Date().setMonth(new Date().getMonth() - 5))
+                  .toISOString()
+                  .split("T")[0]}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 required
               />

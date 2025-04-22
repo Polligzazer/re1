@@ -265,7 +265,7 @@ export const createNotification = async (
       const timeDiff = Date.now() - lastNotification.timestamp.toDate().getTime();
       
       // Block duplicates within 5 minutes
-      if (timeDiff < 300000) {
+      if (timeDiff < 300) {
         console.log("⏭️ Duplicate notification blocked");
         return;
       }

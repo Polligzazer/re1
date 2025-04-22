@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "../css/Chatbot.css";
@@ -15,14 +13,14 @@ const Chatbot: React.FC = () => {
   const [showBubble, setShowBubble] = useState(true);
   const [messages, setMessages] = useState<{ text: string; sender: string; options?: string[] }[]>([]);
   const [currentTopic, setCurrentTopic] = useState<string | null>(null);
-  const [userInput, setUserInput] = useState("");
+  // const [userInput, setUserInput] = useState("");
   const [userName, setUserName] = useState<string>(""); 
   const [showMainOptionsFlag, setShowMainOptionsFlag] = useState(false);
   const [randomMessage, setRandomMessage] = useState<string>("");
 
   const chatContainerRef = useRef<HTMLDivElement>(null); 
-  const inputRef = useRef<HTMLInputElement>(null); 
-  const sendButtonRef = useRef<HTMLButtonElement>(null);
+  // const inputRef = useRef<HTMLInputElement>(null); 
+  // const sendButtonRef = useRef<HTMLButtonElement>(null);
   const chatAssistantRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
   const [imageSrc, setImageSrc] = useState(FLO3);
@@ -157,21 +155,21 @@ const Chatbot: React.FC = () => {
       }
     };
     
-    const handleSendMessage = () => {
-      if (userInput.trim() !== "") {
-        setMessages([...messages, { text: userInput, sender: "user" }, { text: "Please contact the Admin for more inquiries.", sender: "bot" }]);
-        setUserInput(""); 
-        if (inputRef.current) {
-          inputRef.current.focus(); 
-        }
-      }
-    };
+    // const handleSendMessage = () => {
+    //   if (userInput.trim() !== "") {
+    //     setMessages([...messages, { text: userInput, sender: "user" }, { text: "Please contact the Admin for more inquiries.", sender: "bot" }]);
+    //     setUserInput(""); 
+    //     if (inputRef.current) {
+    //       inputRef.current.focus(); 
+    //     }
+    //   }
+    // };
   
-    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement | HTMLButtonElement>) => {
-      if (event.key === "Enter") {
-        handleSendMessage();
-      }
-    };
+    // const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement | HTMLButtonElement>) => {
+    //   if (event.key === "Enter") {
+    //     handleSendMessage();
+    //   }
+    // };
     useEffect(() => {
         if (chatContainerRef.current) {
           chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;

@@ -45,31 +45,93 @@ const auth = getAuth(app);
 const messaging = getMessaging(app);
 export { messaging, getToken, onMessage };
 
+export const setupAndSaveFCMToken = async (userId: string) => {
+  try {
+    // 1. Get FCM Token
+    const token = await getFCMToken();
+    
+    if (!token) {
+      throw new Error("No FCM token available");
+    }
+
+    // 2. Save to Firestore
+    await setDoc(doc(db, "users", userId, "fcmTokens", token), {
+      token,
+      timestamp: new Date(),
+    });
+    
+    console.log("FCM Token saved successfully");
+    return token;
+  } catch (error) {
+    console.error("Error in FCM token setup:", error);
+    throw error;
+  }
+};
+
+// Helper function to get FCM token
+async function getFCMToken(): Promise<string | null> {
+  try {
+    const messaging = getMessaging(app);
+    
+    // Request notification permission
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      throw new Error("Notifications permission denied");
+    }
+
+    // Register service worker
+    const registration = await registerServiceWorker();
+    
+    // Get token with explicit service worker registration
+    const token = await getToken(messaging, {
+      serviceWorkerRegistration: registration,
+      vapidKey: "BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w"
+    });
+
+    return token;
+  } catch (error) {
+    console.error("Error getting FCM token:", error);
+    return null;
+  }
+}
+
+// Service worker registration
+async function registerServiceWorker(): Promise<ServiceWorkerRegistration> {
+  if (!("serviceWorker" in navigator)) {
+    throw new Error("Service workers not supported");
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.register(
+      "/firebase-messaging-sw.js"
+    );
+    return registration;
+  } catch (error) {
+    console.error("Service Worker registration failed:", error);
+    throw error;
+  }
+}
+
 export const requestNotificationPermission = async () => {
   try {
-    // Log current notification permission
     console.log("Current Notification Permission:", Notification.permission);
 
-    // Check if Notification API is available in the browser
     if (!("Notification" in window)) {
       throw new Error("This browser does not support notifications.");
     }
 
-    // If the permission is denied, throw an error
     if (Notification.permission === "denied") {
       console.error("❌ Notifications are blocked by the user.");
       alert("Notifications are blocked by the user. Please enable them in your browser settings.");
       throw new Error("Notifications are blocked by the user.");
     }
 
-    // If the permission is default, request it
     if (Notification.permission === "default") {
       console.log("📢 Requesting notification permission...");
 
       const permissionRequest = await Notification.requestPermission();
       console.log("Notification permission request response:", permissionRequest);
 
-      // Check if permission granted
       if (permissionRequest !== "granted") {
         console.error("❌ Notification permission not granted.");
         throw new Error("Notification permission not granted");
@@ -78,15 +140,12 @@ export const requestNotificationPermission = async () => {
       console.log("✅ Notification permission already granted.");
     }
 
-    // Initialize Firebase messaging (make sure Firebase is initialized)
-    const messaging = getMessaging(); // Ensure Firebase messaging is set up correctly
+    const messaging = getMessaging(); 
 
-    // Fetch token
     const token = await getToken(messaging, {
       vapidKey: "BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w",
     });
 
-    // Log the retrieved token
     if (token) {
       console.log("✅ Notification token:", token);
       return token;
@@ -108,18 +167,6 @@ export const setupForegroundNotifications = () => {
     });
   } else {
     console.error("❌ Firebase Messaging is not initialized!");
-  }
-};
-
-export const saveFCMToken = async (userId: string, token: string) => {
-  try {
-    await setDoc(doc(db, "users", userId, "fcmTokens", token), {
-      token,
-      timestamp: new Date(),
-    });
-    console.log("FCM Token saved successfully");
-  } catch (error) {
-    console.error("Error saving FCM token:", error);
   }
 };
 

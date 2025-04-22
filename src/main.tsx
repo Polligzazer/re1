@@ -8,7 +8,7 @@ import { AuthContextProvider } from "../components/Authcontext";
 
 createRoot(document.getElementById('root')!).render(
   <AuthContextProvider>
-  <ChatContextProvider>
+    <ChatContextProvider>
       <StrictMode>
         <App />
       </StrictMode>

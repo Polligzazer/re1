@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
-import { requestNotificationPermission, setupForegroundNotifications, auth, saveFCMToken  } from "./firebase"; 
-import { onAuthStateChanged } from "firebase/auth";
+import { requestNotificationPermission, setupForegroundNotifications } from "./firebase"; 
+// import { SpeedInsights } from '@vercel/speed-insights/react';
 import Layout from "../components/Layout";
 import Signup from "../components/signup";
 import Login from "../components/login";
@@ -25,8 +25,11 @@ import Profile from "../pages/profile";
 import ClaimApproval from "../pages/dashcomps/PendingClaimPage"
 import ReportApproval from "../pages/dashcomps/AdminApproval";
 import Claimed from "../pages/dashcomps/ClaimsPage"
+<<<<<<< HEAD
 import Hero from "../pages/heropage.tsx"
 import useLostItemApprovalListener from "../components/notificationService";
+=======
+>>>>>>> daf49633ca54cf469b8598672e8e0a5756ce33ae
 
 
 function App() {
@@ -37,17 +40,6 @@ function App() {
     if (!currentUser) return <Navigate to="/login" />;
     return <>{children}</>;
   };
-
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      console.log("User logged in:", user.uid);
-  
-      const token = await requestNotificationPermission();
-      if (token) {
-        await saveFCMToken(user.uid, token);
-      }
-    }
-  });
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -70,7 +62,6 @@ function App() {
   }, [currentUser]);
 
   
-  useLostItemApprovalListener();
   return (
     <Router>
       <Routes>
@@ -114,6 +105,7 @@ function App() {
         {/* Admin-only Routes */}
       </Routes>
     </Router>
+    
   );
 }
 

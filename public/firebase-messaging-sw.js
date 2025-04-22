@@ -11,14 +11,29 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  console.log("📩 Received background notification:", payload);
-
-  const { title, body, icon } = payload.notification;
-
-  self.registration.showNotification(title, {
+  const { title, body, data } = payload.data;
+  
+  return self.registration.showNotification(title, {
     body,
-    icon: icon || "/icon.png",
-    vibrate: [200, 100, 200],
-    badge: "/badge-icon.png",
+    icon: '/icon.png',
+    data
   });
+});
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then(function(clientList) {
+      for (const client of clientList) {
+        if (client.url.includes('/home') && 'focus' in client) {
+          return client.focus();
+        }
+      }
+
+      if (clients.openWindow) {
+        return clients.openWindow('/home');
+      }
+    })
+  );
 });

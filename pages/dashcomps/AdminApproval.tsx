@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../src/firebase";
-import { collection, getDocs, doc, getDoc, updateDoc, orderBy, query, writeBatch, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, updateDoc, orderBy, query, setDoc, serverTimestamp } from "firebase/firestore";
 import { createNotification } from "../../components/notificationService";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaChevronLeft } from "react-icons/fa";
@@ -55,14 +55,62 @@ const AdminApproval: React.FC = () => {
 
       const reportData = reportSnap.data();
       const type = reportData.type;
+      const notificationText = type === "lost" 
+        ? "A lost item report has been approved!" 
+        : "A found item report has been approved!";
+      const usersSnapshot = await getDocs(collection(db, "users"));
 
-      await createNotification(
-        "all",
-        type === "lost" ? "A lost item report has been approved!" : "A found item report has been approved!",
-        reportId
-      );
+      const notificationPromises = usersSnapshot.docs.map(async (userDoc) => {
+        try {
+          // Create regular notification
+          await createNotification(
+            userDoc.id,
+            notificationText,
+            reportId
+          );
+  
+          // Get user's FCM tokens
+          const tokensRef = collection(db, "users", userDoc.id, "fcmTokens");
+          const tokensSnap = await getDocs(tokensRef);
+          const tokens = tokensSnap.docs.map(doc => doc.data().token).filter(Boolean);
+  
+          if (tokens.length === 0) return null;
+  
+          // Send push notifications to all tokens
+          return Promise.allSettled(
+            tokens.map(async (token) => {
+              try {
+                const response = await fetch("https://flo-proxy.vercel.app/api/send-notification", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    token,
+                    title: "Report Approved",
+                    body: notificationText,
+                    data: { 
+                      type: "report_approved",
+                      reportId,
+                      itemType: type
+                    }
+                  })
+                });
+  
+                if (!response.ok) {
+                  const error = await response.json();
+                  console.error('Push failed for', userDoc.id, error);
+                }
+                return response.json();
+              } catch (error) {
+                console.error('Push error for', userDoc.id, error);
+              }
+            })
+          );
+        } catch (error) {
+          console.error('Notification error for', userDoc.id, error);
+        }
+      });
     
-
+      await Promise.all(notificationPromises);
       setReports((prevReports) => prevReports.filter((r) => r.id !== reportId));
       setIsApproved(true);  
       setLoading(false);  
@@ -71,37 +119,83 @@ const AdminApproval: React.FC = () => {
       alert("❗ Failed to approve the report.");
     }
   };
+
   const denyReport = async (reportId: string) => {
-    
     try {
       setLoading(true);
-      const reportRefr = doc(db, "lost_items", reportId)
-      await updateDoc(reportRefr, {status: "denied"});
-
-      const reportSnap = await getDoc(reportRefr);
-      if(!reportSnap.exists()){
+  
+      const reportRef = doc(db, "lost_items", reportId);
+      await updateDoc(reportRef, { status: "denied" });
+  
+      const reportSnap = await getDoc(reportRef);
+      if (!reportSnap.exists()) {
         alert("Report not found");
         return;
       }
-
-      const userId = reportSnap.data().userId; 
-      const batch = writeBatch(db);
-
+  
+      const reportData = reportSnap.data();
+      const userId = reportData.userId;
+  
+      if (!userId) {
+        console.error("❗ Report has no associated userId.");
+        return;
+      }
+  
+      // Create Firestore notification
       const notificationRef = doc(collection(db, "users", userId, "notifications"));
-      batch.set(notificationRef, {
+      await setDoc(notificationRef, {
         description: "Your report has been denied",
         isRead: false,
         timestamp: serverTimestamp(),
         relatedPostId: reportId,
       });
-
-      await batch.commit();
-
+  
+      // Get FCM tokens
+      const tokensRef = collection(db, "users", userId, "fcmTokens");
+      const tokensSnap = await getDocs(tokensRef);
+      const tokens = tokensSnap.docs.map(doc => doc.data().token).filter(Boolean);
+  
+      console.log("🔔 FCM tokens:", tokens);
+  
+      if (tokens.length > 0) {
+        await Promise.allSettled(
+          tokens.map(async (token) => {
+            try {
+              const response = await fetch("https://flo-proxy.vercel.app/api/send-notification", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  token,
+                  title: "Report Denied",
+                  body: "Your report has been denied by the admin.",
+                  data: {
+                    type: "report_denied",
+                    reportId,
+                  }
+                }),
+              });
+  
+              const resData = await response.json();
+  
+              if (!response.ok) {
+                console.error("❌ Push failed:", resData);
+              } else {
+                console.log("✅ Push sent:", resData);
+              }
+            } catch (err) {
+              console.error("❗ Push error:", err);
+            }
+          })
+        );
+      } else {
+        console.warn("⚠️ No FCM tokens found for user:", userId);
+      }
+  
       setReports((prevReports) => prevReports.filter((r) => r.id !== reportId));
     } catch (error) {
-      console.error(error);
-      alert("Deny error");
-    }finally{
+      console.error("❌ Error denying report:", error);
+      alert("Error denying report");
+    } finally {
       setLoading(false);
     }
   };

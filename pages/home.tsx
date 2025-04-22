@@ -208,6 +208,7 @@ const Home = () => {
   const allReports = sortByTimestamp(reports);
 
   return (
+<<<<<<< HEAD
     <div className="mt-4 mt-md-3">
       <div className="topcontent" style={{
         width:'100%'
@@ -444,6 +445,11 @@ const Home = () => {
         </div>  
       <div className=" d-flex flex-row justify-content-start ms-4 mb-4">
         
+=======
+    <div className="mt-4 mt-md-3 container">
+      <div className="d-flex flex-row justify-content-start ms-4 mb-4">
+      
+>>>>>>> daf49633ca54cf469b8598672e8e0a5756ce33ae
 
       <div className="  post-transition my-4 mt-5 d-flex align-items-center">
         <label htmlFor="sortOrder" style={{ fontFamily: "Poppins, sans-serif", fontSize: "14px", marginRight: "8px" }}>
