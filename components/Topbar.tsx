@@ -116,7 +116,6 @@ const Topbar = () => {
   }, [userId]);
   
   const handleNotificationClick = async (notif: AppNotification) => {
-<<<<<<< HEAD
     if (!userId) return;
     console.log("🔔 Notification clicked:", notif);
 
@@ -137,11 +136,9 @@ const Topbar = () => {
       } else {
         alert("Item details not found.");
       }
-=======
     if (!userId) {
       console.error("User ID is not available");
       return;
->>>>>>> daf49633ca54cf469b8598672e8e0a5756ce33ae
     }
   
     try {
@@ -642,6 +639,34 @@ const Topbar = () => {
     )}
   </ul>
 
+  {/* SHOW ONLY IF NOT ADMIN */}
+  {!isAdmin && (
+      <div
+        className="w-75 pt-3 mx-4 d-none d-md-flex"
+        style={{
+          borderTop: "0.5px solid #004097",
+        }}
+      >
+        <p
+          style={{
+            fontFamily: "Work Sans, sans-serif",
+            fontSize: "13px",
+          }}
+        >
+          For more question, inquires and suggestions
+          <a
+            href=""
+            style={{
+              textDecoration: "none",
+              color: "#3998ff",
+            }}
+          >
+            <br />
+            <br /> Message us
+          </a>
+        </p>
+      </div>
+    )}
   
 
   {/* LOGOUT DIV WITH BORDER-TOP */}
@@ -678,6 +703,6 @@ const Topbar = () => {
       </div>
     </div>
   );
-};
+}};
 
 export default Topbar;

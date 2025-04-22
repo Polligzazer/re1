@@ -25,11 +25,7 @@ import Profile from "../pages/profile";
 import ClaimApproval from "../pages/dashcomps/PendingClaimPage"
 import ReportApproval from "../pages/dashcomps/AdminApproval";
 import Claimed from "../pages/dashcomps/ClaimsPage"
-<<<<<<< HEAD
 import Hero from "../pages/heropage.tsx"
-import useLostItemApprovalListener from "../components/notificationService";
-=======
->>>>>>> daf49633ca54cf469b8598672e8e0a5756ce33ae
 
 
 function App() {
