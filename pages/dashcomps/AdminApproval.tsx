@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../src/firebase";
-import { collection, getDocs, doc, getDoc, updateDoc, orderBy, query, setDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, updateDoc, orderBy, query, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { createNotification } from "../../components/notificationService";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaChevronLeft } from "react-icons/fa";
@@ -201,29 +201,25 @@ const AdminApproval: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        // Create the query, ordering by "timestamp" in descending order
-        const reportsQuery = query(
-          collection(db, "lost_items"), // Reference to the collection
-          orderBy("timestamp", "desc")  // Ordering by timestamp in descending order
-        );
+    const reportsQuery = query(
+      collection(db, "lost_items"),
+      orderBy("timestamp", "desc")
+    );
   
-        const querySnapshot = await getDocs(reportsQuery);
-        const reportData = querySnapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() } as Report))
-          .filter((report) => report.status === "pendingreport");
+    const unsubscribe = onSnapshot(reportsQuery, (querySnapshot) => {
+      const reportData = querySnapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() } as Report))
+        .filter((report) => report.status === "pendingreport");
   
-        setReports(reportData);
-        setLoading(false);
-        fetchUserNames(reportData);
-      } catch (error) {
-        console.error("❗ Error fetching reports:", error);
-        setLoading(false);
-      }
-    };
+      setReports(reportData);
+      setLoading(false);
+      fetchUserNames(reportData);
+    }, (error) => {
+      console.error("❗ Error fetching reports in real-time:", error);
+      setLoading(false);
+    });
   
-    fetchReports();
+    return () => unsubscribe(); // Cleanup listener on unmount
   }, []);
 
   const fetchUserNames = async (reports: Report[]) => {

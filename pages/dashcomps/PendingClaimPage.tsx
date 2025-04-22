@@ -52,14 +52,14 @@ const AdminApproval: React.FC = () => {
   const { currentUser } = useContext(AuthContext);
 
   const [showReportModal, setShowReportModal] = useState(false);
-  const [showVerifyModal, setVerifyModal] = useState(false);
+  const [showVerifyModal, setVerifyModal] = useState(false); //send receipt final
 
   const [showDenyModal, setShowDenyModal] = useState(false); //deny
   const [reportToDeny, setReportToDeny] = useState<Report | null>(null);
 
   const [showEmailModal, setShowEmailModal] = useState(false); //email
   const [emailMessage, setEmailMessage] = useState("");
-  const [showConfirmModal, setShowConfirmModal] = useState(false); 
+  const [showConfirmModal, setShowConfirmModal] = useState(false); //verify email
   const [, setPendingClaims] = useState<Claim[]>([]);
   const [pendingClaimCount, setPendingClaimCount] = useState<number>(0);
 
@@ -108,14 +108,52 @@ const AdminApproval: React.FC = () => {
 
   const handleDenyClick = async (event: React.MouseEvent, report: Report) => {
     event.stopPropagation();
-
+  
+    // 1. Create Firestore notification
     await createNotification(
       report.userId,
       "Your claim request has been denied",
       report.id
     );
-
-
+  
+    // 2. Send Push Notification
+    try {
+      const tokensRef = collection(db, "users", report.userId, "fcmTokens");
+      const tokensSnap = await getDocs(tokensRef);
+      const tokens = tokensSnap.docs.map((doc) => doc.data().token).filter(Boolean);
+  
+      if (tokens.length > 0) {
+        await Promise.allSettled(
+          tokens.map(async (token) => {
+            try {
+              const response = await fetch("https://flo-proxy.vercel.app/api/send-notification", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  token,
+                  title: "Claim Denied",
+                  body: "Your claim request has been denied by the admin.",
+                  data: {
+                    type: "claim_denied",
+                    reportId: report.id,
+                  }
+                })
+              });
+  
+              if (!response.ok) {
+                console.error("❌ Push failed for user", report.userId);
+              }
+            } catch (pushErr) {
+              console.error("❗ Push error for user", report.userId, pushErr);
+            }
+          })
+        );
+      }
+    } catch (err) {
+      console.error("❗ Failed to send push notification:", err);
+    }
+  
+    // 3. Trigger modal
     setReportToDeny(report);
     setShowDenyModal(true);
   };
@@ -165,25 +203,62 @@ const AdminApproval: React.FC = () => {
   
       await sendEmail(report, receiptId, userEmail);
       console.log("receiptId:", receiptId); 
-
+  
       const reportWithReceipt = { ...report, receiptId };
       setSelectedReport(reportWithReceipt);
       console.log("🔍 reportWithReceipt:", JSON.stringify(reportWithReceipt, null, 2));
       console.log("🧾 Selected report set:", reportWithReceipt);
-
+  
       const claimRef = doc(db, "claim_items", report.id);
       await updateDoc(claimRef, { emailSent: true });
-
+  
       const updatedReport = { ...report, emailSent: true };
       setReports(prev => prev.map(r => r.id === report.id ? updatedReport : r));
-
+  
+      // 1. Firestore notification
       await createNotification(
         report.userId,
         "Receipt has been sent in the mail, claim your lost item.",
         report.id
       );
   
-     
+      // 2. Push notification
+      try {
+        const tokensRef = collection(db, "users", report.userId, "fcmTokens");
+        const tokensSnap = await getDocs(tokensRef);
+        const tokens = tokensSnap.docs.map((doc) => doc.data().token).filter(Boolean);
+  
+        if (tokens.length > 0) {
+          await Promise.allSettled(
+            tokens.map(async (token) => {
+              try {
+                const response = await fetch("https://flo-proxy.vercel.app/api/send-notification", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    token,
+                    title: "📬 Claim Receipt Sent",
+                    body: "Your receipt has been emailed. Please check and claim your item.",
+                    data: {
+                      type: "claim_receipt_sent",
+                      reportId: report.id,
+                    }
+                  })
+                });
+  
+                if (!response.ok) {
+                  console.error("❌ Push failed for user", report.userId);
+                }
+              } catch (pushErr) {
+                console.error("❗ Push error for user", report.userId, pushErr);
+              }
+            })
+          );
+        }
+      } catch (err) {
+        console.error("❗ Failed to send push notification:", err);
+      }
+  
       setVerifyModal(false);
       setLoading(false);
       setShowConfirmModal(true);
@@ -192,7 +267,6 @@ const AdminApproval: React.FC = () => {
       console.error("Error sending email:", error);
       alert("Error processing claim.");
     } finally {
-     
       setShowEmailModal(false);
     }
   };
