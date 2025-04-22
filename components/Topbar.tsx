@@ -123,9 +123,10 @@ const Topbar = () => {
      if (notif.chatId) {
       console.log(`➡️ Navigating to chatroom with ID: ${notif.chatId}`);
       navigate(`/inquiries/${notif.chatId}`);
-      } else {
-        console.warn("⚠️ Chat ID is missing in the notification.");
-      }
+      await markNotificationAsRead(userId, notif.id);
+    } else {
+      console.warn("⚠️ Chat ID is missing in the notification.");
+    }
     }
    
     if (notif.reportId) {
@@ -140,34 +141,34 @@ const Topbar = () => {
         console.error("User ID is not available");
         return;
       }
+    
+      try {
+        // Mark as read first for better UX (even if details fetch fails)
+        await markNotificationAsRead(userId, notif.id);
+        setNotifications(prev => 
+          prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n)
+        );
   
-    try {
-      // Mark as read first for better UX (even if details fetch fails)
-      await markNotificationAsRead(userId, notif.id);
-      setNotifications(prev => 
-        prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n)
-      );
-
-      if (notif.reportId) {
-        console.log(`Fetching details for report ID: ${notif.reportId}`);
-        const itemDetails = await fetchItemDetails(notif.reportId);
-        
-        if (!itemDetails) {
-          console.error("Item details not found for ID:", notif.reportId);
-          alert("The reported item could not be found. It may have been removed.");
-          return;
+        if (notif.reportId) {
+          console.log(`Fetching details for report ID: ${notif.reportId}`);
+          const itemDetails = await fetchItemDetails(notif.reportId);
+          
+          if (!itemDetails) {
+            console.error("Item details not found for ID:", notif.reportId);
+            alert("The reported item could not be found. It may have been removed.");
+            return;
+          }
+  
+          console.log("Retrieved item details:", itemDetails);
+          setSelectedItem(itemDetails);
+          setShowModal(true);
         }
-
-        console.log("Retrieved item details:", itemDetails);
-        setSelectedItem(itemDetails);
-        setShowModal(true);
+      } catch (error) {
+        console.error("Error handling notification click:", error);
+        alert("Failed to process this notification. Please try again.");
       }
-    } catch (error) {
-      console.error("Error handling notification click:", error);
-      alert("Failed to process this notification. Please try again.");
     }
   };
-  }
 
   return (
     <div>
@@ -640,34 +641,6 @@ const Topbar = () => {
     )}
   </ul>
 
-  {/* SHOW ONLY IF NOT ADMIN */}
-  {!isAdmin && (
-      <div
-        className="w-75 pt-3 mx-4 d-none d-md-flex"
-        style={{
-          borderTop: "0.5px solid #004097",
-        }}
-      >
-        <p
-          style={{
-            fontFamily: "Work Sans, sans-serif",
-            fontSize: "13px",
-          }}
-        >
-          For more question, inquires and suggestions
-          <a
-            href=""
-            style={{
-              textDecoration: "none",
-              color: "#3998ff",
-            }}
-          >
-            <br />
-            <br /> Message us
-          </a>
-        </p>
-      </div>
-    )}
   
 
   {/* LOGOUT DIV WITH BORDER-TOP */}
@@ -705,6 +678,5 @@ const Topbar = () => {
     </div>
   );
 };
-
 
 export default Topbar;
