@@ -8,14 +8,14 @@ interface Props {
 
 const StatusProgressBar: React.FC<Props> = ({ status, type, emailSent }) => {
   let progress = 0;
-  let progressColor = '#ffc107';
+  let progressColor = '#e8a627';
 
   if (status === 'pendingreport') {
     progress = 50;
-    progressColor = type === 'found' ? '#67d753' : '#59b9ff';
+    progressColor = type === 'found' ? '#e8a627' : '#e8a627';
   } else if (status === 'pendingclaim') {
     progress = emailSent ? 100 : 50;
-    progressColor = emailSent ? '#67d753' : '#ffc107';
+    progressColor = emailSent ? '#e8a627' : '#e8a627';
   }
 
   return (
@@ -31,7 +31,7 @@ const StatusProgressBar: React.FC<Props> = ({ status, type, emailSent }) => {
         role="progressbar"
         style={{
           width: `${progress}%`,
-          backgroundColor:' #e8a627',
+          backgroundColor:progressColor,
         }}
         aria-valuenow={progress}
         aria-valuemin={0}
