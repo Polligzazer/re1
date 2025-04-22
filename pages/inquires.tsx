@@ -7,20 +7,19 @@ import { useState, useEffect } from 'react';
 const Inquiries = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [showChat, setShowChat] = useState(window.innerWidth > 768);
-  const [autoSelected, setAutoSelected] = useState(false);  // Start correct for screen size
+  const [autoSelected, setAutoSelected] = useState(false); 
 
-  // ✅ Detect window resize, but don't toggle showChat unless needed
+  
   useEffect(() => {
     const handleResize = () => {
       const newWidth = window.innerWidth;
       setWindowWidth(newWidth);
 
-      // ✅ If switching to desktop mode (above 768px), show both by default
+  
       if (newWidth > 768) {
         setShowChat(true);
       }
-      // ✅ If switching back to mobile, do NOT toggle showChat automatically
-      // Leave it as is to avoid unexpected behavior
+     
     };
 
     window.addEventListener('resize', handleResize);
@@ -29,23 +28,23 @@ const Inquiries = () => {
 
   useEffect(() => {
     if (windowWidth > 768 && !autoSelected) {
-      handleSelectChat(); // Auto-select
-      setAutoSelected(true); // Prevent repeated auto-selection
+      handleSelectChat(); 
+      setAutoSelected(true);
     }
     if (windowWidth <= 768) {
-      setAutoSelected(false); // Reset when back to mobile
+      setAutoSelected(false);
     }
   }, [windowWidth, autoSelected]);
 
   const handleSelectChat = () => {
     if (windowWidth <= 768) {
-      setShowChat(true); // Show chat, hide sidebar
+      setShowChat(true);
     }
   };
 
   const handleBack = () => {
     if (windowWidth <= 768) {
-      setShowChat(false); // Go back to sidebar
+      setShowChat(false); 
     }
   };
 

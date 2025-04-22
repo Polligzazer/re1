@@ -26,6 +26,9 @@ export interface AppNotification {
   timestamp: number;
   reportId?: string;
   type?: string;
+  contextId?: string,
+  chatId?: string;
+
 }
 
 
@@ -242,7 +245,9 @@ export const watchNewMessagesForUser = (
 export const createNotification = async (
   userId: string,
   description: string,
-  contextId?: string
+  contextId?: string,
+  type?: string,
+  chatId?: string
 ) => {
   try {
     // Check if notification already exists
@@ -276,7 +281,9 @@ export const createNotification = async (
       description,
       isRead: false,
       timestamp: serverTimestamp(),
-      uid: notificationId
+      uid: notificationId,
+      type: type || null,          
+      chatId: chatId || null  
     });
 
     await batch.commit();

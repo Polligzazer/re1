@@ -26,10 +26,10 @@ const Lost: React.FC = () => {
   ];
 
   const categoryImages: { [key: string]: string } = {
-    "Gadgets": "../src/assets/cpIcon.png", 
-    "Personal Belongings":  "../src/assets/walletIcon.png",
-    "School Belongings":  "../src/assets/notebook (1).png",
-    "Others":  "../src/assets/othersIcon.png",
+    "Gadgets": "/assets/cpIcon.png", 
+    "Personal Belongings":  "/assets/walletIcon.png",
+    "School Belongings":  "/assets/notebook (1).png",
+    "Others":  "/assets/othersIcon.png",
   };
 
   
@@ -126,7 +126,7 @@ const Lost: React.FC = () => {
       setTimeout(() => {
         setSucess(false); 
         setShowModal(false)
-        navigate("/report"); 
+        navigate('/report?tab=pending');
       }, 2000); 
     }
 
@@ -283,7 +283,7 @@ const Lost: React.FC = () => {
                 download={fileName}
                 style={{ color: "#2169ac", fontSize:'12px', cursor: "pointer", textDecoration: "underline" }}
               >
-                {fileName}
+                File
               </a>
               
             )}
@@ -410,7 +410,7 @@ const Lost: React.FC = () => {
                       download={fileName}
                       style={{ color: "#2169ac", fontSize:'12px', cursor: "pointer", textDecoration: "underline" }}
                     >
-                      {fileName}
+                      File
                     </a>
                     
                   )}

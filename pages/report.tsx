@@ -26,12 +26,15 @@ const Report = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     console.log("Query params:", params.toString());
+    const tabParam = params.get("tab");
 
     const showClaimForm = params.get("claimForm");
     console.log("showClaimForm value:", showClaimForm);
 
     if (showClaimForm === "true") {
       setActiveTab("claimForm");
+    } else if (tabParam === "pending") {
+      setActiveTab("pendingClaims");
     }
   }, [location.search]);
 

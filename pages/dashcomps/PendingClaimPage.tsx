@@ -550,7 +550,7 @@ const AdminApproval: React.FC = () => {
                    }}>
                    <div>
                      <img className="img-cat"
-                       src={categoryImages[report.category] || '../src/assets/othersIcon.png'}
+                       src={categoryImages[report.category] || '/assets/othersIcon.png'}
                        alt={report.category}
                        
                      />

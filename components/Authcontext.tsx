@@ -15,14 +15,14 @@ interface AuthContextType {
   currentUser: ExtendedUser | null;
   loading: boolean;
   isAdmin: boolean;
-  refreshUser: (uid?: string) => Promise<void>; // 👈 Expose refreshUser in the context type
+  refreshUser: (uid?: string) => Promise<void>; 
 }
 
 export const AuthContext = createContext<AuthContextType>({
   currentUser: null,
   loading: true,
   isAdmin: false,
-  refreshUser: async () => {}, // 👈 Provide a default no-op
+  refreshUser: async () => {}, 
 });
 
 interface AuthProviderProps {
@@ -89,7 +89,7 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
     return () => unsubscribe();
   }, []);
 
-  // ✅ Added refreshUser function
+  
   const refreshUser = async (uid?: string): Promise<void> => {
     const userId = uid || auth.currentUser?.uid;
 
@@ -98,7 +98,7 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
       return;
     }
 
-    setLoading(true); // Optional: show loading state while refreshing
+    setLoading(true); 
 
     try {
       const userDocRef = doc(db, "users", userId);
@@ -127,7 +127,7 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
       console.error("❌ Error refreshing user:", error);
     }
 
-    setLoading(false); // End loading state after refreshing
+    setLoading(false); 
   };
 
   return (

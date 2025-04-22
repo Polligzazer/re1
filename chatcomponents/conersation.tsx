@@ -7,7 +7,7 @@ import ItemPreviewModal from '../components/ItemPreviewModal';
 import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import { db } from '../src/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { doc, collection, getDoc } from 'firebase/firestore';
 
 interface Message {
   id: string;
@@ -52,24 +52,17 @@ const Convo = ({ message, previousMessage, chatPartner }: ConvoProps) => {
 
 
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-          const querySnapshot = await getDocs(collection(db, 'lost_items'));
-          const fetchedReports = querySnapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data(),
-          })) as Report[];
-
-          setReports(fetchedReports);
-          console.log('Fetched Reports:', fetchedReports);
-      } catch (error) {
-          console.error('Error fetching reports:', error);
+  const fetchSingleReport = async (id: string) => {
+    try {
+      const reportDoc = await getDoc(doc(db, 'lost_items', id));
+      if (reportDoc.exists()) {
+        setSelectedReport({ id: reportDoc.id, ...reportDoc.data() } as Report);
+        setShowModal(true);
       }
+    } catch (error) {
+      console.error('Error fetching report:', error);
+    }
   };
-
-  fetchReports();
-}, []);
 
 useEffect(() => {
   if (message.validUntil) {
@@ -131,11 +124,7 @@ useEffect(() => {
   const handleBubbleClick = () => setShowTimestamp((prev) => !prev);
 
   const handleInquireClick = (reportId: string) => {
-    const matchedReport = reports.find(report => report.id === reportId);
-    if (matchedReport) {
-      setSelectedReport(matchedReport);
-      setShowModal(true);
-    }
+    fetchSingleReport(reportId);
   };
 
   return (

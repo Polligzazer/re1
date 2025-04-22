@@ -1,7 +1,7 @@
-import categoryImages from '../../src/categoryimage'; // adjust
+import categoryImages from '../../src/categoryimage'; 
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext } from 'react';
-import { db } from '../../src/firebase'; // Ensure correct import for Firebase
+import { db } from '../../src/firebase'; 
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { AuthContext } from '../../components/Authcontext';
 import { Modal, ProgressBar } from 'react-bootstrap';
@@ -31,6 +31,7 @@ interface Claim {
   status: string;
   emailSent: boolean;
   timestamp: Date;
+  type: string;
 }
 
 const PendingReports = () => {
@@ -57,7 +58,7 @@ const PendingReports = () => {
         const fetchedReports = reportsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
-          timestamp: (doc.data().timestamp?.toDate && doc.data().timestamp.toDate()) || new Date() // fallback just in case
+          timestamp: (doc.data().timestamp?.toDate && doc.data().timestamp.toDate()) || new Date() 
         })) as Report[];
   
         const claimsQuery = query(
@@ -76,10 +77,10 @@ const PendingReports = () => {
           (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
         );
   
-        // Update State
+      
         setPendingReports(fetchedReports);
         setPendingClaims(fetchedClaims);
-        setFilteredPending(combined); // <-- Add this state in your component
+        setFilteredPending(combined); 
       } catch (error) {
         console.error("❗ Error fetching pending data:", error);
       }
@@ -130,7 +131,7 @@ const PendingReports = () => {
               <div className="conimg justify-content-center">
                 <div style={{ borderRight: '1px solid white' }}>
                   <img className="img-cat"
-                    src={categoryImages[item.category] || '../src/assets/othersIcon.png'}
+                    src={categoryImages[item.category] || '/assets/othersIcon.png'}
                     alt={item.category}
                   />
                 </div>
@@ -227,12 +228,12 @@ const PendingReports = () => {
                 fontSize: "11.8px",
                 fontFamily: "Poppins, sans-serif",
                 backgroundColor: 
-                  item.status === 'pendingreport' ? '#59b9ff' :
+                  item.status === 'pendingreport' ? (item.type == 'found' ? '#67d753' : '#59b9ff') :
                   item.status === 'pendingclaim' ? (item.emailSent ? '#67d753' : '#ffc107') :
                   '#ffc107',
               }}
             >
-              {item.status === 'pendingreport' ? 'Under Review' :
+              {item.status === 'pendingreport' ?  (item.type == 'found' ? 'Surrender the item' : 'Under Review') :
                item.status === 'pendingclaim' ? (item.emailSent ? 'Item is ready to claim' : 'Verifying your request') :
                'Unknown Status'}
             </span>

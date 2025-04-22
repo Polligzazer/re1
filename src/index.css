@@ -6,7 +6,7 @@ html, body{
   flex-direction: column;
 }
 body {
-  background-image: url('./assets/FLObackground.png');
+  background-image: url('/assets/FLObackground.png');
   background-attachment: scroll;
   background-repeat: no-repeat;
   background-size: cover;

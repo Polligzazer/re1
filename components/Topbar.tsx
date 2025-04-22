@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import { AuthContext } from "../components/Authcontext";
@@ -18,17 +18,17 @@ import { Item } from "./types";
 import ItemPreviewModal from "./ItemPreviewModal";
 import "../css/topbar.css";
 
-import OptionIcon from "../src/assets/OptionIcon.png";
-import FLOLOGObg from "../src/assets/FLOLOGObg.png";
-import NotifIcon from "../src/assets/NotifIcon.png";
-import NotifPfpIcon from "../src/assets/notifpfpicon.png";
-import HomeIcon from "../src/assets/HomeIcon.png";
-import DashboardIcon from "../src/assets/dashboard.png";
-import ReportIcon from "../src/assets/reportIcon.png";
-import HistoryIcon from "../src/assets/historyIcon.png";
-import IIcon from "../src/assets/IIcon.png";
-import logOuticon from "../src/assets/logOutIcon.png";
-import cspfpicon from "../src/assets/cspfpicon.png";
+import OptionIcon from "/assets/OptionIcon.png";
+import FLOLOGObg from "/assets/FLOLOGObg.png";
+import NotifIcon from "/assets/NotifIcon.png";
+import NotifPfpIcon from "/assets/notifpfpicon.png";
+import HomeIcon from "/assets/HomeIcon.png";
+import DashboardIcon from "/assets/dashboard.png";
+import ReportIcon from "/assets/reportIcon.png";
+import HistoryIcon from "/assets/historyIcon.png";
+import IIcon from "/assets/IIcon.png";
+import logOuticon from "/assets/logOutIcon.png";
+import cspfpicon from "/assets/cspfpicon.png";
 
 
 
@@ -41,10 +41,29 @@ const Topbar = () => {
   const [hasUnread, setHasUnread] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
 
   const { isAdmin } = useContext(AuthContext);
   const userId = auth.currentUser?.uid;
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        sidebarRef.current &&
+        (event.target instanceof Node && !sidebarRef.current.contains(event.target))
+      ) {
+        setSidebarOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -81,7 +100,9 @@ const Topbar = () => {
     const handleNewMessage = (chatId: string, message: ValidMessage) => {
       if (message.senderId === userId) return;
       
-      createNotification(userId, `${message.senderName} sent a message`, chatId)
+      createNotification(
+        userId, `${message.senderName} sent a message`, 
+        undefined, "message", chatId)
         .then(() => console.log("Notification created"))
         .catch(console.error);
     };
@@ -96,7 +117,17 @@ const Topbar = () => {
   
   const handleNotificationClick = async (notif: AppNotification) => {
     if (!userId) return;
-  
+    console.log("🔔 Notification clicked:", notif);
+
+    if (notif.type === "message" && notif.chatId) {
+     if (notif.chatId) {
+      console.log(`➡️ Navigating to chatroom with ID: ${notif.chatId}`);
+      navigate(`/inquiries/${notif.chatId}`);
+    } else {
+      console.warn("⚠️ Chat ID is missing in the notification.");
+    }
+    }
+   
     if (notif.reportId) {
       const itemDetails = await fetchItemDetails(notif.reportId);
       if (itemDetails) {
@@ -118,7 +149,8 @@ const Topbar = () => {
     <div>
       <nav className="navbar ps-lg-4 fixed-top" 
       style={{
-        height:"14.8vh",
+        height:"7vw",
+        minHeight:'80px',
         backgroundColor:"#fafcff",
         borderBottom:"1.5px solid #dfe8f5"
       
@@ -266,7 +298,8 @@ const Topbar = () => {
 
       {/* SIDEBAR */}
       <div
-        className={`offcanvas offcanvas-start ${sidebarOpen ? "show" : ""}`}
+        ref={sidebarRef}
+        className={`custom-sidebar offcanvas offcanvas-start ${sidebarOpen ? "show" : ""}`}
         style={{
           width: "14.4vw",
           visibility: sidebarOpen ? "visible" : "hidden",
@@ -274,7 +307,7 @@ const Topbar = () => {
         }}
       >
         <div className="offcanvas-header text-white justify-content-start d-flex flex-row py-5">
-        <button
+        <button         
             type="button"
             className="btn align-self-center ps-lg-4 ps-0"
             onClick={() => setSidebarOpen(false)}
@@ -583,34 +616,7 @@ const Topbar = () => {
     )}
   </ul>
 
-  {/* SHOW ONLY IF NOT ADMIN */}
-  {!isAdmin && (
-    <div
-      className="w-75 pt-3 mx-4 d-none d-md-flex"
-      style={{
-        borderTop: "0.5px solid #004097",
-      }}
-    >
-      <p
-        style={{
-          fontFamily: "Work Sans, sans-serif",
-          fontSize: "13px",
-        }}
-      >
-        For more question, inquires and suggestions
-        <a
-          href=""
-          style={{
-            textDecoration: "none",
-            color: "#3998ff",
-          }}
-        >
-          <br />
-          <br /> Message us
-        </a>
-      </p>
-    </div>
-  )}
+  
 
   {/* LOGOUT DIV WITH BORDER-TOP */}
   <div

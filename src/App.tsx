@@ -22,10 +22,10 @@ import { AuthContext } from "../components/Authcontext";
 import { ReactNode, useContext } from "react";
 import Loading from "../components/Loading";
 import Profile from "../pages/profile";
-import Aboutus from "../pages/aboutUs";
 import ClaimApproval from "../pages/dashcomps/PendingClaimPage"
 import ReportApproval from "../pages/dashcomps/AdminApproval";
 import Claimed from "../pages/dashcomps/ClaimsPage"
+import Hero from "../pages/heropage.tsx"
 import useLostItemApprovalListener from "../components/notificationService";
 
 
@@ -74,14 +74,14 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path ="/" element={<Hero/>}/>
         {/* Public Routes */}
-        <Route path="/" element={<Signup />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/email-verified" element={<EmailVerified />} />
         <Route path="/complete-registration" element={<CompleteRegistration />} />
-        <Route path="/aboutus" element= {<Aboutus />}/>
         <Route path="/testload" element={<Loading />} />
 
         {/* Protected Routes */}
@@ -99,6 +99,7 @@ function App() {
           <Route path="/report/found" element={<Found />} />
           <Route path="/item-history" element={<ItemHistory />} />
           <Route path="/inquiries" element={<Inquiries />} />
+          <Route path="/inquiries/:chatId" element={<Inquiries/>} />
           <Route path="/profile" element={<Profile />} />
 
           {/* Admin */}

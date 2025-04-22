@@ -144,14 +144,14 @@ const SearchPage = () => {
   }, [filteredReports.length]);
 
   return (
-    <div className="search-container container mt-5 pt-5 d-flex">
+    <div className="search-container container mt-md-5 pt-3 mt-0 d-flex">
       <div className="filter-container container mt-4" style={{
         width:'20%'
       }}>
-        <button className="back-btn btn mb-4" onClick={() => navigate('/home')}>← Back</button>
+        <button className="back-btn btn text-start mb-4 fs-5" onClick={() => navigate('/home')}>← Back</button>
 
         {/* Filters */}
-        <div className="d-flex flex-column mb-4 fw-bold" 
+        <div className=" d-flex flex-column mb-4 fw-bold" 
         style={{ 
           color: "#2169ac", 
           zIndex:"2"
@@ -236,7 +236,7 @@ const SearchPage = () => {
         <p>No reports found.</p>
       ) : (
         
-        <div className="d-flex row row-cols-2 justify-content-center" 
+        <div className="search-result-c d-flex row row-cols-2 justify-content-center" 
           style={{
               maxHeight: "70vh",
               overflowY:"auto"
@@ -248,7 +248,7 @@ const SearchPage = () => {
                 style={{ borderRight: "1px solid white" }}
               >
                 <img
-                  src={categoryImages[report.category] || "../src/assets/othersIcon.png"}
+                  src={categoryImages[report.category] || "/assets/othersIcon.png"}
                   alt={report.category}
                   className="report-image"
                 />

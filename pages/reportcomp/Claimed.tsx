@@ -64,7 +64,7 @@ const Claimed = () => {
                       }}
                     >
                       <img
-                        src={categoryImages[item.category] || "../src/assets/othersIcon.png"}
+                        src={categoryImages[item.category] || "/assets/othersIcon.png"}
                         alt={item.category}
                         className="report-image"
                       />

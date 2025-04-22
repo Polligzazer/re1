@@ -5,11 +5,10 @@ import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "../css/Chatbot.css";
 
-import FLO1 from "../src/assets/1bFLO.png";
-// import FLO2 from "../src/assets/2FLO.png";
-import FLO3 from "../src/assets/3FLO.png";
-import FLO4 from "../src/assets/4bFLO.png";
-import FLO5 from "../src/assets/5FLO.png";
+import FLO1 from "/assets/1bFLO.png";
+import FLO3 from "/assets/3FLO.png";
+import FLO4 from "/assets/4bFLO.png";
+import FLO5 from "/assets/5FLO.png";
 
 const Chatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -323,7 +322,7 @@ const Chatbot: React.FC = () => {
       )}
       </div>
       {isOpen && (
-        <div className="shadow-lg flex flex-col" style={{
+        <div className="shadow-lg d-flex align-items-center flex-column" style={{
             backgroundColor:'#fafcff',
             borderRadius:'10px',
             
@@ -336,7 +335,8 @@ const Chatbot: React.FC = () => {
             fontFamily: 'DM Sans, sans-serif',
             fontWeight: 'bold',
             fontSize: '24.4px',
-            color:'#0f2c53'
+            color:'#0f2c53',
+            width:'100%'
           }}>
             <img src={FLO4} style={{
                 width:"38px",
@@ -346,10 +346,10 @@ const Chatbot: React.FC = () => {
             
           </div>
 
-          <div className="overflow-y-auto overflow-x-hidden p-2 rounded messages-scroll"
+          <div className="overflow-y-auto overflow-x-hidden p-0 rounded messages-scroll"
             style={{
-                height:'400px',
-                width:'400px'
+                height:'330px',
+                width:'300px'
             }}
            ref={chatContainerRef} >
             {messages.map((msg, index) => (
@@ -363,7 +363,7 @@ const Chatbot: React.FC = () => {
                 }}>
                 <pre className="p-1 m-0" style={{
                     width:'auto',
-                    maxWidth:'220px',
+                    maxWidth:'180px',
                     height:'auto',
                     fontFamily:"Work sans, sans-serif",
                     overflowX:'hidden',

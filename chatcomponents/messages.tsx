@@ -7,6 +7,7 @@ import { AuthContext } from '../components/Authcontext';
 import { ChatContext } from '../components/ChatContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
+import { useParams } from 'react-router-dom';
 
 
 interface MessageData {
@@ -37,6 +38,7 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
   const { currentUser } = useContext(AuthContext);
   const chatContext = useContext(ChatContext);
   const fetchedNamesRef = useRef<{ [uid: string]: string }>({});
+  const { chatId } = useParams();
 
   useEffect(() => {
     if (!currentUser?.uid) return;
@@ -84,9 +86,9 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
 
   useEffect(() => {
     const sorted = Object.entries(messages).sort((a, b) => {
-      const timestampA = a[1].lastActivity?.seconds || 0; // Use lastActivity timestamp
-      const timestampB = b[1].lastActivity?.seconds || 0; // Use lastActivity timestamp
-      return timestampB - timestampA; // Sort in descending order (latest first)
+      const timestampA = a[1].lastActivity?.seconds || 0;
+      const timestampB = b[1].lastActivity?.seconds || 0; 
+      return timestampB - timestampA; 
     });
     setSortedChats(sorted);
   }, [messages]);
@@ -118,7 +120,7 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
 
   return (
     <div className="messages" style={{ overflowY: 'auto' }}>
-       {isLoading ? ( // Show loading indicator if isLoading is true
+       {isLoading ? (
         <div>Loading messages...</div> 
       ) : (
         sortedChats.length === 0 ? (

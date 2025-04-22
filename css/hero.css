@@ -1,0 +1,650 @@
+.feature-carousel .swiper-slide {
+    transform: scale(0.7);
+    transition: transform 0.3s ease;
+    opacity: 0.5;
+  }
+  
+  .feature-carousel .swiper-slide-active {
+    transform: scale(1);
+    opacity: 1;
+    
+  }
+  
+  .feature-carousel .swiper-slide-prev,
+  .feature-carousel .swiper-slide-next {
+    transform: scale(0.85);
+    opacity: 0.8;
+  }
+  .slides{
+        width:200px;
+        height:200px;
+        background-color:#f5f9ff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  }
+  .icondiv{
+        height: 50%;
+    }
+  .icon{
+
+    font-size: 50px;
+    color:#004aad;
+  }
+
+  .line{
+        border-top:2px solid #ffd991;
+        width:50%;
+        height:10%;
+  }
+  .line1{
+    border-top:0.1px solid #ffd991;
+    width:80%;
+    height:10%;
+}
+
+  
+
+  .info{
+    height: 20%;
+  }
+
+  .personpic{
+    height:70%;
+    background-color: #fdf7ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+
+  .p1, .p2, .p3, .p4, .p5, .p6{
+    height:100%;
+  }
+  .emailform input{
+    border: none;
+    border-bottom: 1px solid black;
+    font-family: 'Poppins,' sans-serif;
+    background-color: transparent;
+    outline: none;
+    max-width: 300px;
+    height: 25px;
+    font-size: clamp(12px, 1vw, 14px);
+    color:black;
+  }
+
+  .message{
+    font-family:"Poppins", sans-serif;
+    font-size: clamp(9px, 0.5vw, 10px);
+    color:#2169ac;
+    background-color:#dfe8f5;
+    border:none;
+    border-radius:10px;
+    padding:10px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #2169ac #dfe8f5;
+    width: 30vw;
+    min-width: 150px;
+  }
+  .labelm{
+    font-size: clamp(12px, 1vw, 18px);
+  }
+
+  .submit{
+    font-family:"Poppins," sans-serif;
+    font-size: clamp(9px, 0.7vw, 12px);
+    color:white;
+    background-color:#2169ac;
+    border-radius:20px;
+    width: 15vw;
+    min-width: 100px;
+  }
+
+  .circlenavis1, .circlenavis2{
+    position:relative;
+    height:10.5vw;
+    width:10.5vw;
+    border-radius:50%;
+    background-color:#f1f7ff;
+  }
+
+  .circlenavis2{
+    right:0.5vw;
+  }
+
+  .navis1, .navis2{
+    width:10.5vw;
+    position:absolute;  
+  }
+  .navis1{
+    left:0.2vw;
+    top:0.1vw;
+  }
+  .navis2{
+      right:0.3vw;
+      top:0.1vw;
+
+  }
+  .vision{
+    margin-left: 48px;
+  }
+
+  .visiontitle, .missiontitle{
+ 
+      font-family:"DM sans," sans-serif;
+      color:#004097;
+      font-size: clamp(12px, 2vw, 19px);
+  }
+
+  /*sections*/
+
+  .section1{
+     height:39vw;
+  }
+  .section2, .section3, .section4{
+    height:43vw;
+    background-color:#fafcff;
+  }
+  .section5{
+      height:87vw;
+      background-color:#fafcff;
+      padding:20px;
+  }
+  
+
+  /*section1 essentials*/
+  .section1-text{
+    width:60%;
+  }
+
+  /*section2 essentials*/
+  .visiontextdiv, .missiondivtext{
+      width:80%;
+      height:45%;
+  }
+  .navisdivs1{
+     height:45%;
+     position:relative;
+  }
+  .buildingdiv{
+    width:40%;
+  }
+
+  /*section3 essentials*/
+  .thingdiv{
+     width:40%;
+  }
+  .mission{
+     width:60%;
+  }
+  .navisdivs2{
+    height:45%;
+    position:relative;
+  }
+
+  /*section4*/
+  .featurestext{
+    width:50%;
+    font-family:'Work sans,' sans-serif;
+  }
+  /*section5*/
+  .peopletitle{
+      width:100%;
+      height:30%;
+      font-family:'DM,' sans-serif;
+      color:#004097;
+  }
+  .info{
+    height: 20%;
+  }
+  .peoplesdiv{
+      width:100%;
+      height:70%;
+  }
+  .name{
+    font-family: 'Work sans', sans-serif;
+    font-weight: bold;
+    font-size: clamp(10px, 1vw, 18px);
+  }
+
+  .position{
+    font-size: clamp(10px, 1vw, 18px);
+  }
+  .person1, .person2, .person3, .person4, .person5, .person6{
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    height:25vw;
+    width: 23vw;
+    background-color:#f7faff;
+  }
+  @media (min-width: 992px ) and (max-width: 1439px){
+    .section2{
+      height: auto;    
+    }
+    .section3{
+      height: auto;
+    }
+    .visiontextdiv{
+      height:auto;
+    }
+    .missiondivtext{
+      height:auto;
+    }
+    .navisdivs1, .navisdivs2{
+      height: auto;
+    }
+  }
+  @media (min-width: 768px ) and (max-width: 991.9px){
+    /*sections*/
+    .section2{
+      height: auto;
+      padding:20px !important;
+    }
+    .section3{
+      height: auto;
+      padding:20px !important;
+    }
+    .section4{
+      height: auto;
+      padding: 20px;
+    }
+    .section5{
+      height: auto;
+    }
+    /*section1 essentials*/
+    .section1-text{
+      margin-left: 10px !important;
+    }
+    /*section2 essentials*/
+    .visiontextdiv{
+      height:auto;
+    }
+    .navisdivs1{
+      height: auto;
+      padding-top: 30px;
+      padding-bottom: 30px;
+    }
+    .buildingdiv{
+      margin-right: 0 !important;
+    }
+    .vision{
+      margin: 0;
+    }
+    /*section3 essentials*/
+    .thingdiv{
+      margin-left: 0 !important;
+    }
+    .mission{
+      margin: 0 !important;
+    }
+    .navisdivs2{
+      height: auto;
+      padding-top: 30px;
+      padding-bottom: 30px;
+    }
+    .missiondivtext{
+      height:auto;
+    }
+
+    /*section 4 essentials*/
+    .featurestext{
+      width: 90%;
+      font-size: clamp(12px, 2vw, 19px);
+    }
+
+    /*section 5 essentials*/
+    .peopletitle{
+      height:auto;
+      padding-top: 20px;
+      padding-bottom: 20px;
+    }
+    .info{
+      height: auto;
+    }
+    .peoplesdiv{
+      height:auto;
+    }
+    .person1, .person2, .person3, .person4, .person5, .person6{
+      min-height: 170px;
+    }
+    .personpic{
+      height: 50%;
+    }
+  } 
+    
+    @media (min-width: 576px) and (max-width:767px ){
+      /*sections*/
+      .section1{
+        height: auto;
+        padding-left: 0px !important;
+      }
+      .section2{
+        height: auto;
+        padding:20px !important;
+      }
+      .section3{
+        height: auto;
+        padding:20px !important;
+      }
+      .section4{
+        height: auto;
+        padding: 20px;
+      }
+      .section5{
+        height: auto;
+      }
+      /*section1 essentials*/
+      .section1-text{
+        margin-left: 10px !important;
+      }
+      /*section2 essentials*/
+      .visiontextdiv{
+        height:auto;
+      }
+      .navisdivs1{
+        height: auto;
+        padding-top: 30px;
+        padding-bottom: 30px;
+      }
+      .buildingdiv{
+        margin-right: 0 !important;
+      }
+      .vision{
+        margin: 0;
+      }
+      /*section3 essentials*/
+      .thingdiv{
+        margin-left: 0 !important;
+      }
+      .mission{
+        margin: 0 !important;
+      }
+      .navisdivs2{
+        height: auto;
+        padding-top: 30px;
+        padding-bottom: 30px;
+      }
+      .missiondivtext{
+        height:auto;
+      }
+
+      /*section 4 essentials*/
+      .featurestext{
+        width: 90%;
+        font-size: clamp(12px, 2vw, 19px);
+      }
+
+      /*section 5 essentials*/
+      .peopletitle{
+        height:auto;
+        padding-top: 20px;
+        padding-bottom: 20px;
+      }
+      .info{
+        height: auto;
+      }
+      .peoplesdiv{
+        height:auto;
+      }
+      .person1, .person2, .person3, .person4, .person5, .person6{
+        min-height: 170px;
+      }
+      .personpic{
+        height: 50%;
+      }
+    }
+  
+    @media (min-width: 426px) and (max-width:575.9px ){
+      .topbar{
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+      }
+      /*sections*/
+      .section1{
+        height: auto;
+        padding-left: 0px !important;
+      }
+      .section2{
+        height: auto;
+        padding:20px !important;
+      }
+      .section3{
+        height: auto;
+        padding:20px !important;
+      }
+      .section4{
+        height: auto;
+        padding: 20px;
+      }
+      .section5{
+        height: auto;
+      }
+      /*section1 essentials*/
+      .section1-text{
+        margin-left: 0 !important;
+        padding-right: 0 !important;
+        padding-left: 0 !important;
+      }
+      /*section2 essentials*/
+      .visiontextdiv{
+        height:auto;
+      }
+      .navisdivs1{
+        height: auto;
+        padding-top: 30px;
+        padding-bottom: 30px;
+      }
+      .buildingdiv{
+        margin-right: 0 !important;
+      }
+      .vision{
+        margin: 0;
+      }
+      /*section3 essentials*/
+      .thingdiv{
+        margin-left: 0 !important;
+      }
+      .mission{
+        margin: 0 !important;
+      }
+      .navisdivs2{
+        height: auto;
+        padding-top: 30px;
+        padding-bottom: 30px;
+      }
+      .missiondivtext{
+        height:auto;
+      }
+
+      /*section 4 essentials*/
+      .featurestext{
+        width: 90%;
+        font-size: clamp(12px, 2vw, 19px);
+      }
+
+      /*section 5 essentials*/
+      .peopletitle{
+        height:auto;
+        padding-top: 20px;
+        padding-bottom: 20px;
+      }
+      .info{
+        height: auto;
+      }
+      .peoplesdiv{
+        height:auto;
+        flex-direction: column !important;
+      }
+      .twodiv{
+        flex-direction: row !important;
+      }
+      .person1, .person2, .person3, .person4, .person5, .person6{
+        min-height: 170px;
+        height: 180px;
+        width: 170px;
+      }
+      .personpic{
+        height: 50%;
+      }
+      .circlediv{
+        display: none;
+      }
+      .peopledesc{
+        width: 80% !important;
+      }
+
+      .secdesc{
+        width: 70% !important;
+      }
+      .imgcontact{
+        display: none !important;
+      }
+      .formsdiv{
+        width: 80% !important;
+        justify-content: center !important;
+      }
+      .lastsection{
+        justify-content: center !important;
+      }
+      .message{
+        width: 250px;
+      }
+      .divsecondforms{
+        justify-items: center;
+      }
+    }
+    
+    @media (min-width: 320px) and (max-width: 425.9px){
+      .topbar{
+        padding: 0 !important;
+      }
+      .optionsbutton{
+        padding: 20px !important;
+        gap: 1px !important;
+      }
+      .logoimg{
+        padding: 20px !important;
+      }
+      /*sections*/
+      .section1{
+        height: auto;
+        padding-left: 0px !important;
+      }
+      .section2{
+        height: auto;
+        padding:20px !important;
+      }
+      .section3{
+        height: auto;
+        padding:20px !important;
+      }
+      .section4{
+        height: auto;
+        padding: 20px;
+      }
+      .section5{
+        height: auto;
+      }
+      /*section1 essentials*/
+      .section1-text{
+        margin-left: 0 !important;
+        padding-right: 0 !important;
+        padding-left: 0 !important;
+      }
+      /*section2 essentials*/
+      .visiontextdiv{
+        height:auto;
+        margin-left: 20px !important;
+      }
+      .navisdivs1{
+        height: auto;
+        padding-top: 30px;
+        padding-bottom: 30px;
+      }
+      .buildingdiv{
+        display: none !important;
+      }
+      .vision{
+        margin: 0;
+        width: 100% !important;
+      }
+      /*section3 essentials*/
+      .thingdiv{
+        display: none !important;
+      }
+      .mission{
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      .navisdivs2{
+        height: auto;
+        padding-top: 30px;
+        padding-bottom: 30px;
+      }
+      .missiondivtext{
+        height:auto;
+        margin-left: 20px !important;
+      }
+
+      /*section 4 essentials*/
+      .featurestext{
+        width: 90%;
+        font-size: clamp(12px, 2vw, 19px);
+      }
+
+      /*section 5 essentials*/
+      .peopletitle{
+        height:auto;
+        padding-top: 20px;
+        padding-bottom: 20px;
+      }
+      .info{
+        height: auto;
+      }
+      .peoplesdiv{
+        height:auto;
+        flex-direction: column !important;
+      }
+      .person1, .person2, .person3, .person4, .person5, .person6{
+        min-height: 170px;
+        height: 180px;
+        width: 170px;
+      }
+      .personpic{
+        height: 50%;
+      }
+      .circlediv{
+        display: none;
+      }
+      .peopledesc{
+        width: 80% !important;
+      }
+
+      .secdesc{
+        width: 70% !important;
+        margin-bottom: 0 !important;
+      }
+      .imgcontact{
+        display: none !important;
+      }
+      .formsdiv{
+        width: 80% !important;
+        justify-content: center !important;
+      }
+      .lastsection{
+        justify-content: center !important;
+      }
+      .message{
+        width: 250px;
+      }
+      .divsecondforms{
+        justify-items: center;
+      }
+      .circlediv{
+        display: none;
+      }
+    }

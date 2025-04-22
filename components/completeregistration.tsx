@@ -323,7 +323,7 @@ const CompleteRegistration: React.FC = () => {
         )}
       </div>  
       <div className="imgcustomshow" >
-        <img src="./src/assets/image.png" style={{
+        <img src="/assets/image.png" style={{
           maxWidth:'100%',
           height:'100%',
           objectFit:"cover"

@@ -1,7 +1,7 @@
-import cpIcon from '../src/assets/cpIcon.png';
-import walletIcon from '../src/assets/walletIcon.png';
-import notebookIcon from '../src/assets/notebook (1).png';
-import othersIcon from '../src/assets/othersIcon.png';
+import cpIcon from '/assets/cpIcon.png';
+import walletIcon from '/assets/walletIcon.png';
+import notebookIcon from '/assets/notebook (1).png';
+import othersIcon from '/assets/othersIcon.png';
 
 const categoryImages: { [key: string]: string } = {
   "Gadgets": cpIcon,

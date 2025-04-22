@@ -101,42 +101,52 @@ const Input = () => {
 
       const batch = writeBatch(db);
       
-      // Update main chat document
+    
       const chatRef = doc(db, 'chats', data.chatId);
       batch.update(chatRef, {
         messages: arrayUnion(finalMessage),
         timestamp: serverTimestamp(),
       });
   
-      // Prepare chat updates
+     
       const lastMessage = {
         text: text || "Sent a file",
         senderId: currentUser.uid,
-        senderName: currentUser.firstName || "Unknown User", // Add sender name
+        senderName: currentUser.firstName || "Unknown User", 
         timestamp: serverTimestamp()
       };
   
-      // Update receiver's chat document only
+     
       const receiverUserChatRef = doc(db, "userChats", data.user.uid);
       batch.update(receiverUserChatRef, {
         [`${data.chatId}.lastMessage`]: lastMessage,
         [`${data.chatId}.userInfo`]: {
           uid: currentUser.uid,
-          name: currentUser.firstName // Ensure name is stored
+          name: currentUser.firstName 
         },
         [`${data.chatId}.messageCount`]: increment(1)
       });
+
+      const senderUserChatRef = doc(db, "userChats", currentUser.uid);
+      batch.update(senderUserChatRef, {
+        [`${data.chatId}.lastMessage`]: lastMessage,
+        [`${data.chatId}.userInfo`]: {
+          uid: data.user.uid,
+        },
+        [`${data.chatId}.messageCount`]: increment(1)
+      });
+
+      
   
       await batch.commit();
       console.log('Message committed successfully');
   
-      // Reset UI state
       setText("");
       setFile(null);
   
     } catch (error) {
       console.error("Message send failed:", error);
-      // Add error recovery logic here
+     
     }
   };
 

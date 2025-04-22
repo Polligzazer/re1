@@ -304,7 +304,7 @@ const AdminApproval: React.FC = () => {
                           borderRight:'1px solid white'
                         }}>
                           <img className="img-cat"
-                            src={categoryImages[report.category] || '../src/assets/othersIcon.png'}
+                            src={categoryImages[report.category] || '/assets/othersIcon.png'}
                             alt={report.category}
                             
                           />

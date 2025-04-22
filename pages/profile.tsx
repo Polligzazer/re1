@@ -5,7 +5,6 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import PrivacyPreviewModal from "../components/privacypolicy";
 
-
 const Profile: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [reportCount, setReportCount] = useState(0);
@@ -65,75 +64,77 @@ const Profile: React.FC = () => {
   // };
 
   return (
-    <div className="mt-5" style={{paddingTop:"5vw"}}>
-
-      <div className="pb-3 ms-2">
-        <img src="../../src/assets/notifpfpicon.png" className="rounded-circle"
+    <div className="mt-5 pt-5">
+      <div className="d-flex pb-3 ms-2 flex-row flex-column flex-sm-row justify-content-center align-items-center justify-content-lg-start">
+        <img src="public\assets\notifpfpicon.png" className="rounded-circle"
           style={{
-            width: "7vw"
+            width: "clamp(70px, 2vw, 120px)",
+            minWidth: "50px",
           }} />
-        <span className="ps-3"
+        <span className="d-flex ps-3 align-items-center pt-3 pt-sm-0"
           style={{
-            fontSize:"3vw",
+            fontSize: "clamp(30px, 2vw, 35px)",
             color: "#0e5cc5",
             fontFamily: "Poppins, sans-serif"
-          }}>{user.firstName}  {user.middleInitial}  {user.lastName}</span>
+          }}>{user.firstName}  {user.middleInitial}  {user.lastName}
+        </span>
       </div>
 
-      <div className="d-flex flex-column gap-5">
-        <div className="d-flex flex-row p-3"
+      <div className="d-flex flex-column align-items-center align-items-lg-start">
+        <div className="d-flex flex-column pt-3 pb-3"
           style={{
             color: "#0e5cc5",
             fontSize: "clamp(20px, 3vw, 15px)",
             fontFamily: "Work Sans, sans-serif",
-            gap: "1.5vw"
+            gap:"0.5px"
           }}>
-          <div className="">
-
+          <div>
             <li> <span className="">Role: </span> <span> {user.role}</span> </li>
             {user.role === "student" && (
               <>
-                <div className="">
+                <div>
                   <li> <span> <span>Section & Year: </span>{user.yearSection}</span> </li>
                 </div>
               </>
             )}
+          </div>
+          <div>
+            <li> <span> School ID:</span> <span> {user.schoolId}</span> </li>
+          </div>
 
-          </div>
-          <div className="ms-5">
-            <li> <span className="">School ID:</span> <span> {user.schoolId}</span> </li>
-            <li> <span> <span>Contact info:</span> {user.contact}</span> </li>
-          </div>
+         <div>
+           <li> <span> <span>Contact info:</span> {user.contact}</span> </li>
+         </div> 
         </div>
 
-        <div className="d-flex flex-column flex-md-row" style={{gap: "5vw"}}>
-          <div className="d-flex flex-column flex-md-row align-items-center w-50">
-            <div className="d-flex flex-column flex-md-row w-100" style={{gap: "3vw"}}>
+        <div className="d-flex flex-column flex-lg-row flex-md-column align-items-sm-center w-100" style={{gap: "5vw"}}>
+          <div className="d-flex flex-column flex-md-row align-items-center">
+            <div className="d-flex flex-column align-items-sm-center flex-md-row" style={{gap: "3vw"}}>
               <div
                 className="ps-4 pt-1 pb-3"
                 style={{
-                width: "60%",
+                width: "clamp(305px, 3vw, 30px)",
+                minWidth: "200px",
                 border: "2px solid #bfbdbc",
                 borderRadius: "10px",
                 fontSize: "clamp(10px, 2vw, 15px)",
                 fontFamily: "Work Sans, sans-serif",
+                boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.2)"
                 }}>
 
               <div className="d-flex justify-content-between align-items-center pt-3">
                 <span
                   style={{
-                    fontSize: "2vw",
+                    fontSize: "clamp(30px, 2vw, 50px)",
                     fontWeight: "bold",
                     color: "#0e5cc5",
                   }}> {reportCount}
                 </span>
 
                 <img
-                  src="../../src/assets/profilereport.png"
-                  alt=""
-                  className="pb-4 me-4"
+                  src="public\assets\Reporticonbutred.png" alt="" className="pb-4 me-4"
                   style={{
-                    width: "2.5vw",
+                    width: "clamp(35px, 3vw, 30px)",
                     minWidth: "15px",
                     height: "auto",
                   }} />
@@ -145,30 +146,31 @@ const Profile: React.FC = () => {
                   fontSize: "clamp(20px, 3vw, 20px)"
                 }}>Total reports</span>
             </div>
+
             <div
               className="ps-4 pt-1 pb-3"
               style={{
-                width: "60%",
+                width: "clamp(305px, 3vw, 30px)",
+                minWidth: "200px",
                 border: "2px solid #bfbdbc",
                 borderRadius: "10px",
                 fontFamily: "Work Sans, sans-serif",
+                boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.2)"
               }}>
 
               <div className="d-flex justify-content-between align-items-center pt-3">
                 <span
                   style={{
-                    fontSize: "2vw",
+                    fontSize: "clamp(30px, 2vw, 50px)",
                     fontWeight: "bold",
                     color: "#0e5cc5",
                   }}> {claimCount}
                 </span>
 
                 <img
-                  src="../../src/assets/profileclaim.png"
-                  alt=""
-                  className="pb-4 me-3"
+                  src="public\assets\Walletwcheck.png" alt="" className="pb-4 me-3"
                   style={{
-                    width: "2.5vw",
+                    width: "clamp(45px, 3vw, 30px)",
                     minWidth: "15px",
                     height: "auto",
                   }} />
@@ -180,18 +182,18 @@ const Profile: React.FC = () => {
                   fontSize: "clamp(20px, 3vw, 20px)"
                 }}>Total claimed</span>
             </div>
-                </div>
+           </div>
           </div>
 
 
-          <div className="d-flex flex-column align-items-center" style={{width: "50vw"}}>
-            <div className="d-flex flex-column w-75 align-items-center">
+          <div className="d-flex flex-column align-items-center">
+            <div className="flex-column align-items-center justify-content-center" >
               <div className="pb-4">
               <button
                 onClick={() => setShowModal(true)}
                 className="btn text-start"
                 style={{
-                  width: "27vw",
+                  width: "clamp(250px, 2vw, 300px)",
                   borderRadius: "20px",
                   fontFamily: "Work Sans, sans-serif",
                   fontSize: "clamp(20px, 3vw, 20px)",
@@ -205,10 +207,10 @@ const Profile: React.FC = () => {
 
             <div className="pb-4">
               <button
-                onClick={() => navigate("/aboutus")}
+                onClick={() => navigate("/")}
                 className="btn text-start"
                 style={{
-                  width: "27vw",
+                  width: "clamp(250px, 2vw, 300px)",
                   borderRadius: "20px",
                   fontFamily: "Work Sans, sans-serif",
                   fontSize: "clamp(20px, 3vw, 20px)",
@@ -225,7 +227,7 @@ const Profile: React.FC = () => {
                 onClick={() => navigate("/reset-password")}
                 className="btn text-start"
                 style={{
-                  width: "27vw",
+                  width: "clamp(250px, 2vw, 300px)",
                   borderRadius: "20px",
                   fontFamily: "Work Sans, sans-serif",
                   fontSize: "clamp(20px, 3vw, 20px)",

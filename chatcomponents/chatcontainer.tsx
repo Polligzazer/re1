@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import '../css/inquiries.css';
+import { useParams } from 'react-router-dom'; 
 import { useChatContext } from '../components/ChatContext';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../src/firebase';
@@ -18,9 +19,17 @@ interface Message {
 const ChatContainer = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const virtuosoRef = useRef<VirtuosoHandle>(null); 
-  const { data } = useChatContext();
+  const { data, dispatch } = useChatContext();
+  const { chatId } = useParams(); 
   const [loading, setLoading] = useState(true);
   
+  useEffect(() => {
+    console.log("Current chatId from URL:", chatId);
+    if (chatId && chatId !== data.chatId) {
+      console.log("Dispatching change chat action with new chatId:", chatId);
+      dispatch({ type: 'CHANGE_CHAT', payload: { chatId } });
+    }
+  },  [chatId, data.chatId, dispatch]);
 
   useEffect(() => {
     if (!data.chatId) {

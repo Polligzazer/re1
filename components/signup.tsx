@@ -121,7 +121,7 @@ const Signup: React.FC = () => {
         >
           <img
             className="FLOlogo bg-transparent"
-            src="../src/assets/FLOLOGObg.png"
+            src="/assets/FLOLOGObg.png"
             style={{
               width: "100%",
               maxWidth: "282px",

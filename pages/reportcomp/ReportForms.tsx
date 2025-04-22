@@ -27,7 +27,7 @@ const ReportForms: React.FC = () => {
           <div className="mdbtn d-flex flex-column flex-md-row">  
             <div className="imgdiv" style={{     
             }}>
-              <img className="img" src="../src/assets/cpIcon.png"/>
+              <img className="img" src="/assets/cpIcon.png"/>
             </div>
            <span className=" rtext p-4 px-2"> Report <br/>Lost Item </span>
            </div>
@@ -72,7 +72,7 @@ const ReportForms: React.FC = () => {
           <div className="mdbtn d-flex flex-column flex-md-row">    
             <div className="imgdiv" style={{     
             }}>
-              <img className="img" src="../src/assets/cpIcon.png"/>
+              <img className="img" src="/assets/cpIcon.png"/>
             </div>
             
            <span className="rtext p-4 px-2"> Report <br/>Found Item </span>
@@ -116,7 +116,7 @@ const ReportForms: React.FC = () => {
            <div className="mdbtn d-flex flex-column flex-md-row">    
             <div className="imgdiv" style={{     
             }}>
-              <img className="img" src="../src/assets/cpIcon.png"/>
+              <img className="img" src="/assets/cpIcon.png"/>
             </div>
            <span className="rtext p-4 px-2"> Claim <br/>Your Item </span>
            </div>

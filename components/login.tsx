@@ -116,7 +116,7 @@ const Login: React.FC = () => {
         }}
         >
           Don't have an account?{" "}
-          <Link to="/" className="text-primary fw-bold" style={{
+          <Link to="/signup" className="text-primary fw-bold" style={{
             textDecoration:'none',
           }}>Signup</Link>
         </p>

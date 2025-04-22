@@ -12,6 +12,7 @@ import "../css/report.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileCirclePlus } from '@fortawesome/free-solid-svg-icons';
 import ConfirmationModal from "./ConfirmationModal";
+import { Modal } from "react-bootstrap";
 
 const ClaimFormRequest: React.FC = () => {
   const navigate = useNavigate();
@@ -25,10 +26,10 @@ const ClaimFormRequest: React.FC = () => {
   ];
 
   const categoryImages: { [key: string]: string } = {
-    "Gadgets": "../src/assets/cpIcon.png",
-    "Personal Belongings":  "../src/assets/walletIcon.png",
-    "School Belongings":  "../src/assets/noteIcon.png",
-    "Others":  "../src/assets/othersIcon.png",
+    "Gadgets": "/assets/cpIcon.png",
+    "Personal Belongings":  "/assets/walletIcon.png",
+    "School Belongings":  "/assets/noteIcon.png",
+    "Others":  "/assets/othersIcon.png",
   };
 
   const [formData, setFormData] = useState({
@@ -45,6 +46,7 @@ const ClaimFormRequest: React.FC = () => {
 
   const [fileName, setFileName] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [userUID, setUserUID] = useState<string | null>(null);
   const [isValidReference, setIsValidReference] = useState<boolean | null>(null);
@@ -137,6 +139,9 @@ const ClaimFormRequest: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
     
+    setLoading(true); 
+    setShowLoadingModal(true);
+
     try {
       const uploadedFile = await apwstorage.createFile(
         APPWRITE_STORAGE_BUCKET_ID, 
@@ -151,6 +156,9 @@ const ClaimFormRequest: React.FC = () => {
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("❗ Failed to upload file. Please try again.");
+    }finally {
+      setLoading(false); 
+      setShowLoadingModal(false);
     }
   };
  
@@ -184,7 +192,7 @@ const ClaimFormRequest: React.FC = () => {
       setTimeout(() => {
         setSucess(false); 
         setShowModal(false)
-        navigate("/inquiries"); 
+        navigate('/report?tab=pending');
       }, 2000); 
     }
   };
@@ -315,7 +323,7 @@ const ClaimFormRequest: React.FC = () => {
                 download={fileName}
                 style={{ color: "#2169ac", fontSize:'12px', cursor: "pointer", textDecoration: "underline" }}
               >
-                {fileName}
+                File
               </a>
               
             )}
@@ -466,7 +474,7 @@ const ClaimFormRequest: React.FC = () => {
                        download={fileName}
                        style={{ color: "#2169ac", fontSize:'12px', cursor: "pointer", textDecoration: "underline" }}
                      >
-                       {fileName}
+                       File
                      </a>
                      
                    )}
@@ -536,6 +544,38 @@ const ClaimFormRequest: React.FC = () => {
         loading={loading}
         success={success}
       />
+       <Modal show={showLoadingModal} onHide={() => setShowLoadingModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{loading ? "Uploading..." : "File Upload Complete"}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {loading ? (
+            <div className="d-flex justify-content-center align-items-center flex-column">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Uploading...</span>
+              </div>
+              <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+                Uploading your file...
+              </span>
+            </div>
+          ) : (
+            <div className="d-flex justify-content-center align-items-center flex-column">
+              <div className="check-container pb-1">
+                <div className="check-background">
+                  <svg viewBox="0 0 65 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 25L27.3077 44L58.5 7" stroke="white" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </div>
+              <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+                File uploaded successfully!
+              </span>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+        </Modal.Footer>
+      </Modal>
     </div>
     
   );
