@@ -127,12 +127,17 @@ const Topbar = () => {
         console.warn("⚠️ Chat ID is missing in the notification.");
       }
     }
-   
-    if (notif.reportId) {
-      const itemDetails = await fetchItemDetails(notif.reportId);
+    console.log("Full Notification Object:", JSON.stringify(notif, null, 2));
+    if (notif.contextId) {
+      console.log("✅ Report ID exists:", notif.reportId);
+      console.log("📄 Report-type notification detected.");
+     console.log(`🔍 Fetching item details for report ID: ${notif.reportId}`);
+      const itemDetails = await fetchItemDetails(notif.contextId);
       if (itemDetails) {
+        console.log("✅ Item details fetched:", itemDetails);
         setSelectedItem(itemDetails);
         setShowModal(true);
+        console.log("🪟 Modal opened with selected item.");
       } else {
         alert("Item details not found.");
       }
@@ -315,10 +320,10 @@ const Topbar = () => {
       </nav>
 
       <ItemPreviewModal
-                show={showModal}
-                onClose={() => setShowModal(false)}
-                item={selectedItem}
-            />
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          item={selectedItem}
+      />
 
       {/* SIDEBAR */}
       <div
@@ -671,35 +676,35 @@ const Topbar = () => {
   
 
   {/* LOGOUT DIV WITH BORDER-TOP */}
-  <div
-  className="mt-auto m-lg-2 pt-3"
-  style={{
-    borderTop: isAdmin ? "0.5px solid #004097" : "none",
-  }}
->
-  <button
-    onClick={handleLogout}
-    className="btn text-start w-100"
+    <div
+    className="mt-auto m-lg-2 pt-3"
     style={{
-      color: "#3998ff",
-      fontFamily: "Work Sans, sans-serif",
-      fontSize: "14.2px",
-      opacity: "68%",
+      borderTop: isAdmin ? "0.5px solid #004097" : "none",
     }}
   >
-    <img
-      src={logOuticon}
+    <button
+      onClick={handleLogout}
+      className="btn text-start w-100"
       style={{
-        width: "21.8px",
-        height: "21.8px",
-        marginRight: "10px",
-        marginBottom: "5px",
+        color: "#3998ff",
+        fontFamily: "Work Sans, sans-serif",
+        fontSize: "14.2px",
+        opacity: "68%",
       }}
-    />
-    <span className="d-none d-md-inline">Logout</span>
-  </button>
-</div>
-</div>
+    >
+      <img
+        src={logOuticon}
+        style={{
+          width: "21.8px",
+          height: "21.8px",
+          marginRight: "10px",
+          marginBottom: "5px",
+        }}
+      />
+      <span className="d-none d-md-inline">Logout</span>
+    </button>
+  </div>
+  </div>
 
       </div>
     </div>

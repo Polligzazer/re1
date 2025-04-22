@@ -207,7 +207,7 @@ const Profile: React.FC = () => {
 
             <div className="pb-4">
               <button
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/", { state: { from: "profile" } })}
                 className="btn text-start"
                 style={{
                   width: "clamp(250px, 2vw, 300px)",
