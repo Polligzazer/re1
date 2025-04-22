@@ -127,11 +127,7 @@ const Topbar = () => {
         console.warn("⚠️ Chat ID is missing in the notification.");
       }
     }
-    console.log("Full Notification Object:", JSON.stringify(notif, null, 2));
     if (notif.contextId) {
-      console.log("✅ Report ID exists:", notif.reportId);
-      console.log("📄 Report-type notification detected.");
-     console.log(`🔍 Fetching item details for report ID: ${notif.reportId}`);
       const itemDetails = await fetchItemDetails(notif.contextId);
       if (itemDetails) {
         console.log("✅ Item details fetched:", itemDetails);
