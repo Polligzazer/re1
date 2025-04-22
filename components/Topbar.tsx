@@ -123,9 +123,9 @@ const Topbar = () => {
      if (notif.chatId) {
       console.log(`➡️ Navigating to chatroom with ID: ${notif.chatId}`);
       navigate(`/inquiries/${notif.chatId}`);
-    } else {
-      console.warn("⚠️ Chat ID is missing in the notification.");
-    }
+      } else {
+        console.warn("⚠️ Chat ID is missing in the notification.");
+      }
     }
    
     if (notif.reportId) {
@@ -136,10 +136,10 @@ const Topbar = () => {
       } else {
         alert("Item details not found.");
       }
-    if (!userId) {
-      console.error("User ID is not available");
-      return;
-    }
+      if (!userId) {
+        console.error("User ID is not available");
+        return;
+      }
   
     try {
       // Mark as read first for better UX (even if details fetch fails)
@@ -167,6 +167,7 @@ const Topbar = () => {
       alert("Failed to process this notification. Please try again.");
     }
   };
+  }
 
   return (
     <div>
@@ -703,6 +704,7 @@ const Topbar = () => {
       </div>
     </div>
   );
-}};
+};
+
 
 export default Topbar;

@@ -1,4 +1,4 @@
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
@@ -32,9 +32,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 const HeroPage: React.FC = () => {
     const navigate = useNavigate();
 
-    const handleNavigateToHome = () => {
-        navigate("/");
-      };
+    // const handleNavigateToHome = () => {
+    //     navigate("/");
+    //   };
     
     const handleNavigateToLogin = () => {
         navigate("/login");

@@ -7,7 +7,6 @@ import { AuthContext } from '../components/Authcontext';
 import { ChatContext } from '../components/ChatContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
-import { useParams } from 'react-router-dom';
 
 
 interface MessageData {
@@ -38,7 +37,6 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
   const { currentUser } = useContext(AuthContext);
   const chatContext = useContext(ChatContext);
   const fetchedNamesRef = useRef<{ [uid: string]: string }>({});
-  const { chatId } = useParams();
 
   useEffect(() => {
     if (!currentUser?.uid) return;

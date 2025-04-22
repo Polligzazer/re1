@@ -7,7 +7,7 @@ import ItemPreviewModal from '../components/ItemPreviewModal';
 import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import { db } from '../src/firebase';
-import { doc, collection, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface Message {
   id: string;
@@ -47,7 +47,6 @@ const Convo = ({ message, previousMessage, chatPartner }: ConvoProps) => {
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [reports, setReports] = useState<Report[]>([]);
   const [isExpired, setIsExpired] = useState(false);
 
 
