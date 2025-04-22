@@ -152,7 +152,13 @@ const Topbar = () => {
       setNotifications(prev => 
         prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n)
       );
-
+  
+      if (notif.type === "message" && notif.chatId) {
+        console.log(`➡️ Navigating to chatroom with ID: ${notif.chatId}`);
+        navigate(`/inquiries/${notif.chatId}`);
+        return;
+      }
+  
       if (notif.reportId) {
         console.log(`Fetching details for report ID: ${notif.reportId}`);
         const itemDetails = await fetchItemDetails(notif.reportId);
@@ -162,7 +168,7 @@ const Topbar = () => {
           alert("The reported item could not be found. It may have been removed.");
           return;
         }
-
+  
         console.log("Retrieved item details:", itemDetails);
         setSelectedItem(itemDetails);
         setShowModal(true);
@@ -171,6 +177,7 @@ const Topbar = () => {
       console.error("Error handling notification click:", error);
       alert("Failed to process this notification. Please try again.");
     }
+    
   };
   }
 
@@ -645,34 +652,6 @@ const Topbar = () => {
     )}
   </ul>
 
-  {/* SHOW ONLY IF NOT ADMIN */}
-  {!isAdmin && (
-      <div
-        className="w-75 pt-3 mx-4 d-none d-md-flex"
-        style={{
-          borderTop: "0.5px solid #004097",
-        }}
-      >
-        <p
-          style={{
-            fontFamily: "Work Sans, sans-serif",
-            fontSize: "13px",
-          }}
-        >
-          For more question, inquires and suggestions
-          <a
-            href=""
-            style={{
-              textDecoration: "none",
-              color: "#3998ff",
-            }}
-          >
-            <br />
-            <br /> Message us
-          </a>
-        </p>
-      </div>
-    )}
   
 
   {/* LOGOUT DIV WITH BORDER-TOP */}
