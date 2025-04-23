@@ -118,9 +118,32 @@ const Topbar = () => {
   const handleNotificationClick = async (notif: AppNotification) => {
     if (!userId) return;
     console.log("🔔 Notification clicked:", notif);
+
+    if (notif.type === "message" && notif.chatId) {
+     if (notif.chatId) {
+      console.log(`➡️ Navigating to chatroom with ID: ${notif.chatId}`);
+      navigate(`/inquiries/${notif.chatId}`);
+      } else {
+        console.warn("⚠️ Chat ID is missing in the notification.");
+      }
+    }
+    if (notif.contextId) {
+      const itemDetails = await fetchItemDetails(notif.contextId);
+      if (itemDetails) {
+        console.log("✅ Item details fetched:", itemDetails);
+        setSelectedItem(itemDetails);
+        setShowModal(true);
+        console.log("🪟 Modal opened with selected item.");
+      } else {
+        alert("Item details not found.");
+      }
+      if (!userId) {
+        console.error("User ID is not available");
+        return;
+      }
   
     try {
-      // Mark as read right away before navigation/modal
+      // Mark as read first for better UX (even if details fetch fails)
       await markNotificationAsRead(userId, notif.id);
       setNotifications(prev => 
         prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n)
@@ -150,7 +173,9 @@ const Topbar = () => {
       console.error("Error handling notification click:", error);
       alert("Failed to process this notification. Please try again.");
     }
+    
   };
+  }
 
   return (
     <div>
@@ -298,10 +323,10 @@ const Topbar = () => {
       </nav>
 
       <ItemPreviewModal
-                show={showModal}
-                onClose={() => setShowModal(false)}
-                item={selectedItem}
-            />
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          item={selectedItem}
+      />
 
       {/* SIDEBAR */}
       <div
@@ -626,39 +651,40 @@ const Topbar = () => {
   
 
   {/* LOGOUT DIV WITH BORDER-TOP */}
-  <div
-  className="mt-auto m-lg-2 pt-3"
-  style={{
-    borderTop: isAdmin ? "0.5px solid #004097" : "none",
-  }}
->
-  <button
-    onClick={handleLogout}
-    className="btn text-start w-100"
+    <div
+    className="mt-auto m-lg-2 pt-3"
     style={{
-      color: "#3998ff",
-      fontFamily: "Work Sans, sans-serif",
-      fontSize: "14.2px",
-      opacity: "68%",
+      borderTop: isAdmin ? "0.5px solid #004097" : "none",
     }}
   >
-    <img
-      src={logOuticon}
+    <button
+      onClick={handleLogout}
+      className="btn text-start w-100"
       style={{
-        width: "21.8px",
-        height: "21.8px",
-        marginRight: "10px",
-        marginBottom: "5px",
+        color: "#3998ff",
+        fontFamily: "Work Sans, sans-serif",
+        fontSize: "14.2px",
+        opacity: "68%",
       }}
-    />
-    <span className="d-none d-md-inline">Logout</span>
-  </button>
-</div>
-</div>
+    >
+      <img
+        src={logOuticon}
+        style={{
+          width: "21.8px",
+          height: "21.8px",
+          marginRight: "10px",
+          marginBottom: "5px",
+        }}
+      />
+      <span className="d-none d-md-inline">Logout</span>
+    </button>
+  </div>
+  </div>
 
       </div>
     </div>
   );
 };
+
 
 export default Topbar;

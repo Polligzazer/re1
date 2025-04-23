@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
@@ -31,10 +31,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const HeroPage: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const fromProfile = location.state?.from === "profile";
 
-    // const handleNavigateToHome = () => {
-    //     navigate("/");
-    //   };
+     const handleNavigateToHome = () => {
+         navigate("/");
+       };
     
     const handleNavigateToLogin = () => {
         navigate("/login");
@@ -79,6 +81,17 @@ const HeroPage: React.FC = () => {
             }}
             >
                 <button 
+                   onClick={handleNavigateToHome}
+                   style={{
+                       backgroundColor:'transparent', 
+                       outline:'none', 
+                       border:'none',
+                       color:'#0e5cc5',
+                       fontSize:'13.9px'
+                   }}> 
+                   Home
+               </button>
+                <button  
                     style={{
                         backgroundColor:'transparent', 
                         outline:'none', 
@@ -88,25 +101,31 @@ const HeroPage: React.FC = () => {
                     }}> Company 
                 </button>
                 <button 
-                    onClick={handleNavigateToLogin}
+                     onClick={handleNavigateToLogin}
                     style={{
                         backgroundColor:'transparent', 
                         outline:'none', 
                         border:'none',
                         color:'#0e5cc5',
                         fontSize:'13.9px'
-                    }}> Login
+                    }}> Login 
                 </button>
-                <button 
-                     onClick={handleNavigateback}
+                {fromProfile && (
+                    <button
+                    onClick={handleNavigateback}
                     style={{
-                        backgroundColor:'transparent', 
-                        outline:'none', 
-                        border:'none',
-                        color:'#0e5cc5',
-                        fontSize:'13.9px'
-                    }}> Back 
-                </button>
+                        backgroundColor: '#0e5cc5',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '6px 12px',
+                        fontSize: '13.9px',
+                        marginLeft: '20px'
+                    }}
+                    >
+                    Back to Profile
+                    </button>
+                )}
             </div>
         </div>
         <div
