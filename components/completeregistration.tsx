@@ -188,8 +188,15 @@ const CompleteRegistration: React.FC = () => {
   return (
     <div className="main d-flex justify-content-start align-items-center px-5">
       <div className="regcontainer p-3 mb-5">
-      <p className="welcometoflo p-0 m-0 ">Welcome to FLO</p>
-          <p className="wewouldlike ">We would like to know you better, fill in the following below</p>
+        <p className="welcometoflo p-0 m-0"
+          style={{
+            fontSize: "clamp(25px, 2vw, 45px)",
+
+          }}>Welcome to FLO</p>
+        <p className="wewouldlike"
+          style={{
+            fontSize: "clamp(14px, 1.3vw, 19px)"
+          }}>We would like to know you better, fill in the following below</p>
         
       <div className="progress-bar">
         {[1, 2, 3].map((num) => (
@@ -203,52 +210,51 @@ const CompleteRegistration: React.FC = () => {
         </div>  
         
       {step === 1 && (
-        <div className="p-3 d-flex flex-column">
-        <div className="p-3 d-flex flex-row">  
-          <input
-            className="regFname me-4"
-            type="text"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            required
-            placeholder="First Name"
-            aria-label="First Name"
-          />
-          <input
-            className="regMinitial me-4"
-            type="text"
-            name="middleInitial"
-            value={formData.middleInitial}
-            onChange={handleChange}
-            placeholder="MI"
-            aria-label="Middle Initial"
-          />
-          <input
-            className="regLname"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
-            required
-            placeholder="Last Name"
-            aria-label="Last Name"
-          />
-        </div>
-        <div className="p-3 d-flex flex-row">  
-          
-          <input
-            className="regcontact"
-            type="text"
-            name="contact"
-            value={formData.contact}
-            onChange={handleChange}
-            required
-            placeholder="Contact Number"
-            aria-label="Contact Number"
-          />
+          <div className="textfields3 p-3 d-flex flex-column">
+            <div className="textfields p-3 d-flex flex-column flex-md-row">
+              <input
+                className="regFname me-4"
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                placeholder="First Name"
+                aria-label="First Name"
+              />
+              <input
+                className="regMinitial me-4"
+                type="text"
+                name="middleInitial"
+                value={formData.middleInitial}
+                onChange={handleChange}
+                placeholder="MI"
+                aria-label="Middle Initial"
+              />
+              <input
+                className="regLname"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+                placeholder="Last Name"
+                aria-label="Last Name"
+              />
+            </div>
+            <div className="textfields2 p-3 d-flex flex-row">
+              <input
+                className="regcontact"
+                type="text"
+                name="contact"
+                value={formData.contact}
+                onChange={handleChange}
+                required
+                placeholder="Contact Number"
+                aria-label="Contact Number"
+              />
           </div>
           <div>
-              <button className="regnext1 p-1 px-4 rounded-5" onClick={() => {
+              <button className="regnext1 p-1 mt-2 px-4 rounded-5" onClick={() => {
                 setStep(2)
                 handleButtonClick()
               }}> Next </button>
@@ -257,8 +263,8 @@ const CompleteRegistration: React.FC = () => {
       )}
 
       {step === 2 && (
-        <div className="mt-3">
-          <select className="selectroledrop" name="role" value={formData.role} onChange={handleChange} required aria-label="Select Role">
+          <div className="mt-3 px-2">
+            <select className="selectroledrop" name="role" value={formData.role} onChange={handleChange} required aria-label="Select Role">
             <option value="">Select Role</option>
             <option value="faculty">Faculty</option>
             <option value="staff">Staff</option>
@@ -268,7 +274,7 @@ const CompleteRegistration: React.FC = () => {
           {formData.role === "student" && (
             <>
               <select
-                className="selectstrand mx-3"
+                  className="selectstrand mx-3"
                 name="strandOrCourse"
                 value={formData.strandOrCourse}
                 onChange={handleChange}
@@ -285,21 +291,21 @@ const CompleteRegistration: React.FC = () => {
                 <option value="BSHM">BSHM (Tertiary)</option>
                 <option value="BSIT">BSIT (Tertiary)</option>
                 <option value="BSCPE">BSCPE (Tertiary)</option>
-              </select>
+                </select>
 
               <input
-                className="selectyear"
-                type="text"
-                name="yearSection"
-                value={formData.yearSection}
-                onChange={handleChange}
-                placeholder="Year & Section (e.g., MAWD-12A)"
-                required
-                aria-label="Year and Section"
-              />
+                  className="selectyear"
+                  type="text"
+                  name="yearSection"
+                  value={formData.yearSection}
+                  onChange={handleChange}
+                  placeholder="Year & Section"
+                  required
+                  aria-label="Year and Section"
+                />    
             </>
           )}
-        <div className="mt-3 align-items-center justify-content-start d-flex">
+            <div className="mt-3">
           <button className="regprevious me-2 p-1 px-4 rounded-5" onClick={() => {
                 setStep(1)
                 handleButtonReset()
@@ -312,13 +318,13 @@ const CompleteRegistration: React.FC = () => {
       )}
 
       {step === 3 && (
-        <div>
-          <p className="regreview "> Please review your details before submitting</p>
-          <button className="regprevious2 me-2 p-1 px-4  rounded-5" onClick={() => {
+          <div>
+            <p className="regreview"> Please review your details before submitting</p>
+            <button className="regprevious2 me-2 p-1 px-4 rounded-5" onClick={() => {
                 setStep(2)
                 handleButtonReset()
               }}>Previous</button>
-          <button className="regsubmit p-1 px-4  rounded-5" onClick={handleSubmit}>Submit</button>
+            <button className="regsubmit p-1 px-4 rounded-5" onClick={handleSubmit}>Submit</button>
         </div>
         )}
       </div>  

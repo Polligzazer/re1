@@ -35,21 +35,35 @@
     color:#0e5cc5;
     font-size: clamp(30px, 2vw, 42px);
     font-family:"DM Sans", sans-serif;
-} .wewouldlike {
+}
+
+.wewouldlike {
     color:#0e5cc5;
     font-size: clamp(17px, 1vw, 27px);
     font-family:"Poppins", sans-serif;
 }
-.regFname, .regMinitial, .regLname, .regcontact, .selectroledrop, .regprevious, .selectstrand, .selectyear{
+.regFname,
+.regMinitial,
+.regLname,
+.regcontact,
+.regprevious,
+.selectroledrop,
+.selectstrand,
+.selectyear {
     border:none;
+    outline: none;
     padding:0.5%;
     background-color: transparent;
     font-family:"Poppins", sans-serif;
-    font-size: clamp(13px, 1vw, 27px);
+    font-size: clamp(12px, 1vw, 22px);
     border-bottom: 1px solid #0e5cc5;
     color: black;
 }
 
+.selectroledrop,
+.selectstrand {
+    border: 1px solid #0e5cc5;
+}
 .regreview{
     font-size: clamp(15px, 1.3vw, 27px);
 }
@@ -59,34 +73,25 @@ input:focus{
     border-top:none !important;
     border-left: none !important;
     border-right: none !important;
-    border-bottom: 1px solid #0e5cc5;
 }
 .regMinitial {
     width:10%;
 }
 
-.regFname{
+.regFname,
+.regLname {
     width: 35%;
 }
-.regLname{
-    width: 35%;
-}
 
-.selectyear{
-    width:11%;
-}
-
-.regFname:hover, .regMinitial:hover, .regLname:hover, .regcontact:hover, .selectroledrop:hover,
-.regprevious:hover, .selectstrand:hover, .selectyear:hover {
-    border:1px solid #2169ac;
-    border-radius: 2%;
-}
-
-.regnext1, .regnext2, .regprevious {
+.regnext1,
+.regnext2,
+.regprevious,
+.regprevious2,
+.regsubmit {
    color: white;
    background-color: #2169ac;
    border: none;
-   
+    font-size: clamp(11px, 1vw, 20px);
   
 }
 
@@ -102,9 +107,7 @@ input:focus{
     color: white;
     background-color: #2169ac;
     border: none;
-   
 
-   
 }
 
 .regsubmit {
@@ -114,7 +117,6 @@ input:focus{
     padding: 0.4%;
     padding-left: 3%;
     padding-right: 3%;
-
 }
 
 .regsubmit:hover {
@@ -149,7 +151,47 @@ input:focus{
       
 }
 @media (max-width: 768px) {
+    .regcontainer {
+            width: 100%;
+            text-align: center;
+        }
+    
+        .regFname,
+        .regMinitial,
+        .regLname,
+        .regcontact {
+            width: 50%;
+            margin: 0% !important;
+            margin-bottom: 8px !important;
+            margin-left: 5px !important;
+            margin-right: 5px !important;
+        }
+    
+        .selectroledrop,
+        .selectstrand {
+            margin-bottom: 6px !important;
+        }
+    
+        .textfields {
+            align-items: center;
+            padding: 0% !important;
+        }
+    
+        .textfields2 {
+            justify-content: center;
+            padding: 0% !important;
+        }
     .imgcustomshow{
         display: none;
     }
+}
+@media (max-width: 576px) {
+
+    .regFname,
+    .regMinitial,
+    .regLname,
+    .regcontact {
+        width: 68%;
+    }
+
 }
