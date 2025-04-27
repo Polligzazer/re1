@@ -110,11 +110,24 @@ const AdminApproval: React.FC = () => {
     event.stopPropagation();
   
     // 1. Create Firestore notification
-    
+    setReportToDeny(report);
+    setShowDenyModal(true);
+  };
+
+  const confirmDenyReport = async () => {
+    if (!reportToDeny) return;
   
-    // 2. Send Push Notification
+    await denyReport(reportToDeny.id);
+
+    await createNotification(
+      reportToDeny.userId,
+      "Your claim request has been denied",
+      reportToDeny.id
+    );
+  
+    // Push notification logic
     try {
-      const tokensRef = collection(db, "users", report.userId, "fcmTokens");
+      const tokensRef = collection(db, "users", reportToDeny.userId, "fcmTokens");
       const tokensSnap = await getDocs(tokensRef);
       const tokens = tokensSnap.docs.map((doc) => doc.data().token).filter(Boolean);
   
@@ -131,16 +144,16 @@ const AdminApproval: React.FC = () => {
                   body: "Your claim request has been denied by the admin.",
                   data: {
                     type: "claim_denied",
-                    reportId: report.id,
+                    reportId: reportToDeny.id,
                   }
                 })
               });
   
               if (!response.ok) {
-                console.error("❌ Push failed for user", report.userId);
+                console.error("❌ Push failed for user", reportToDeny.userId);
               }
             } catch (pushErr) {
-              console.error("❗ Push error for user", report.userId, pushErr);
+              console.error("❗ Push error for user", reportToDeny.userId, pushErr);
             }
           })
         );
@@ -149,17 +162,9 @@ const AdminApproval: React.FC = () => {
       console.error("❗ Failed to send push notification:", err);
     }
   
-    // 3. Trigger modal
-    setReportToDeny(report);
-    setShowDenyModal(true);
-  };
-
-  const confirmDenyReport = () => {
-    if (reportToDeny) {
-      denyReport(reportToDeny.id);
-      setShowDenyModal(false);
-      setReportToDeny(null);
-    }
+    // 3. Reset modal state
+    setShowDenyModal(false);
+    setReportToDeny(null);
   };
 
   const fetchUserEmail = async (userId: string): Promise<string> => {
