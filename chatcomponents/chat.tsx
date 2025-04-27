@@ -7,6 +7,7 @@ import { useChatContext } from '../components/ChatContext';
 
 interface ChatProps {
   onBack?: () => void;
+  selectedUser: any;
 }
 
 const Chat = ({ onBack }: ChatProps) => {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext, useRef, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import '../css/inquiries.css';
 import 'font-awesome/css/font-awesome.min.css';
 import { db } from '../src/firebase';
@@ -26,6 +27,8 @@ interface MessageData {
 
 interface MessagesProps {
   onChatSelect?: () => void;
+  onChatroomSelect?: (chatId: string) => void; 
+  selectedUserId: string | null;
 }
 
 const Messages = ({ onChatSelect }: MessagesProps) => {
@@ -37,6 +40,14 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
   const { currentUser } = useContext(AuthContext);
   const chatContext = useContext(ChatContext);
   const fetchedNamesRef = useRef<{ [uid: string]: string }>({});
+  const { chatId } = useParams();
+  const prevSelectedUserId = useRef<string | null>(null); 
+  
+ const navigate = useNavigate();
+
+ function createChatId(uid1: string, uid2: string) {
+  return uid1 > uid2 ? uid1 + uid2 : uid2 + uid1;
+}
 
   useEffect(() => {
     if (!currentUser?.uid) return;
@@ -81,36 +92,58 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
     return () => unsub();
   }, [currentUser?.uid]);
 
-
   useEffect(() => {
     const sorted = Object.entries(messages).sort((a, b) => {
-      const timestampA = a[1].lastActivity?.seconds || 0;
-      const timestampB = b[1].lastActivity?.seconds || 0; 
-      return timestampB - timestampA; 
+      // Get timestamps (fall back to 0 if undefined)
+      const timestampA = a[1].lastMessage?.timestamp || a[1].lastActivity?.seconds || 0;
+      const timestampB = b[1].lastMessage?.timestamp || b[1].lastActivity?.seconds || 0;
+  
+      return timestampB - timestampA; // Sort in descending order
     });
     setSortedChats(sorted);
   }, [messages]);
 
-    useEffect(() => {
-      if (!currentUser?.uid || currentUser?.isAdmin) return;
-      if (sortedChats.length > 0) {
-        const latestChat = sortedChats[0][1];
-        const currentSelected = chatContext?.data.user?.uid;
-        if (latestChat.userInfo.uid !== currentSelected) {
-            chatContext?.dispatch({ type: 'CHANGE_USER', payload: latestChat.userInfo });
-            setSelectedUserId(latestChat.userInfo.uid);
-            onChatSelect?.();
-        }
-      }
-    }, [sortedChats, chatContext, selectedUserId, onChatSelect, currentUser]);
 
+    useEffect(() => {
+      if (!chatId || !sortedChats.length) return;
+    
+      const matchedChat = sortedChats.find(([key]) => key === chatId);
+      if (!matchedChat) {
+        console.warn('No matching chat found for chatId:', chatId);
+        return; // Early return if no chat is found
+      }
+    
+      const userInfo = matchedChat[1].userInfo;
+      if (!userInfo?.uid) return; // Early return if no userInfo
+      
+      if (userInfo.uid !== prevSelectedUserId.current) {
+        console.log('Switching user based on chatId from URL:', chatId);
+        chatContext?.dispatch({ type: 'CHANGE_USER', payload: userInfo });
+        setSelectedUserId(userInfo.uid);
+        prevSelectedUserId.current = userInfo.uid; // Update reference
+        onChatSelect?.();
+      }
+    }, [chatId, sortedChats, chatContext, selectedUserId, onChatSelect, currentUser]);
 
     const handleSelect = useCallback((userInfo: MessageData['userInfo']) => {
-      if (!currentUser?.uid) return;
+      if (!currentUser?.uid) {
+        return;
+      }
+      const newChatId = createChatId(currentUser.uid, userInfo.uid);
+    
+      if (!newChatId) {
+        console.log("Generated chatId is invalid:", newChatId);
+        return;
+      }
+      navigate(`/inquiries/${newChatId}`);
       chatContext?.dispatch({ type: 'CHANGE_USER', payload: userInfo });
+      prevSelectedUserId.current = userInfo.uid;
       setSelectedUserId(userInfo.uid);
-      onChatSelect?.();
-  }, [chatContext, onChatSelect, currentUser]);
+      if (onChatSelect) {
+        onChatSelect();
+      }
+      
+    }, [chatContext, onChatSelect, currentUser, navigate]);
 
   if (!currentUser?.uid) return <div>Loading user...</div>;
 

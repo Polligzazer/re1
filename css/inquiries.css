@@ -8,7 +8,6 @@
   max-height: 90%;
   border-radius: 10px;
   padding: none;
-  margin: none;
   column-gap: 10px;
   align-self:center;
   
@@ -19,7 +18,8 @@
   display: flex;
   align-items: start;
   justify-content: center;
-  height:30%;
+  height:auto;
+  width: 100%;
   border-radius: 10px;
   padding: none;
   margin: none;
@@ -33,7 +33,7 @@
 .chat{
   width:70%;
   border:1px solid #004aad;
-  height:37rem;
+  height:36rem;
   background-color: #f1f7ff;
   border-radius: 23px;
 }
@@ -41,7 +41,7 @@
 .sidebar{
   width:30%;
   border:1px solid #004aad;
-  height:37rem;
+  height:36rem;
   background-color: #f1f7ff;
   border-radius: 23px;  
   

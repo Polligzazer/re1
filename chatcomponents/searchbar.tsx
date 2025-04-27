@@ -156,6 +156,23 @@ const SearchBar = ({ onChatSelect }: SearchBarProps) => {
         await setDoc(chatRef, { messages: [] });
       }
   
+      const currentUserChatsRef = doc(db, "userChats", currentUser.uid);
+      const selectedUserChatsRef = doc(db, "userChats", selectedUser.uid);
+      
+      const currentUserChatsSnap = await getDoc(currentUserChatsRef);
+      const selectedUserChatsSnap = await getDoc(selectedUserChatsRef);
+  
+      if (currentUserChatsSnap.exists() && selectedUserChatsSnap.exists()) {
+        const currentUserChats = currentUserChatsSnap.data();
+        const selectedUserChats = selectedUserChatsSnap.data();
+  
+        // If chat already exists in userChats for both users, don't create it again
+        if (currentUserChats[combinedId] || selectedUserChats[combinedId]) {
+          console.log("Chatroom already exists, skipping creation.");
+          return; // Chat already exists, no need to continue
+        }
+      }
+
       const formattedSelectedUser = {
         date: serverTimestamp(),
         userInfo: {

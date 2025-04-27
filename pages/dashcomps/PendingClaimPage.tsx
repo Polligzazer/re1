@@ -110,11 +110,7 @@ const AdminApproval: React.FC = () => {
     event.stopPropagation();
   
     // 1. Create Firestore notification
-    await createNotification(
-      report.userId,
-      "Your claim request has been denied",
-      report.id
-    );
+    
   
     // 2. Send Push Notification
     try {

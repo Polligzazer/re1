@@ -156,7 +156,7 @@ const useFirebaseNotifications = () => {
   useEffect(() => {
     const unsubscribe = onMessage(messaging, (payload) => {
       console.log("Message received: ", payload);
-      alert(`Notification: ${payload.notification?.title}`);
+     
     });
 
     return () => unsubscribe();
