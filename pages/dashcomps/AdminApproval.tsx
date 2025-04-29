@@ -110,10 +110,10 @@ const AdminApproval: React.FC = () => {
         }
       });
     
-      await Promise.all(notificationPromises);
       setReports((prevReports) => prevReports.filter((r) => r.id !== reportId));
       setIsApproved(true);  
       setLoading(false);  
+      Promise.all(notificationPromises);
     } catch (error) {
       console.error("❗ Error approving report:", error);
       alert("❗ Failed to approve the report.");
@@ -147,7 +147,7 @@ const AdminApproval: React.FC = () => {
         description: "Your report has been denied",
         isRead: false,
         timestamp: serverTimestamp(),
-        relatedPostId: reportId,
+        reportId,
       });
   
       // Get FCM tokens

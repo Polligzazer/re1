@@ -37,38 +37,44 @@ const UserList = () => {
     if (!auth.currentUser) {
       return alert("No user is signed in.");
     }
-
+  
     if (!window.confirm("Are you sure you want to delete this user and all their data?")) {
       return;
     }
-
+  
     try {
-      // Get fresh ID token
       const token = await auth.currentUser.getIdToken(true);
       if (!token) throw new Error("Not authenticated");
-
-      // Call Vercel serverless function
+  
       const res = await fetch('https://flo-proxy.vercel.app/api/delete-user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ uid: userId }),
+        credentials: 'include', // Important for CORS with credentials
       });
-
+  
       if (!res.ok) {
-        const { error } = await res.json();
-        throw new Error(error || res.statusText);
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || res.statusText);
       }
-
-      // Update local state
-      setUsers((prev) => prev.filter((u) => u.id !== userId));
-
-      alert("User and all their data have been deleted.");
-    } catch (err: any) {
+  
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      alert("User deleted successfully");
+    } catch (err) {
       console.error("Delete failed:", err);
-      alert("Error deleting user: " + err.message);
+      
+      // Proper error handling with type checking
+      let errorMessage = "Failed to delete user";
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+  
+      alert(`Error: ${errorMessage}`);
     }
   };
 

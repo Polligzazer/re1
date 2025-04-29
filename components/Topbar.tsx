@@ -118,32 +118,9 @@ const Topbar = () => {
   const handleNotificationClick = async (notif: AppNotification) => {
     if (!userId) return;
     console.log("🔔 Notification clicked:", notif);
-
-    if (notif.type === "message" && notif.chatId) {
-     if (notif.chatId) {
-      console.log(`➡️ Navigating to chatroom with ID: ${notif.chatId}`);
-      navigate(`/inquiries/${notif.chatId}`);
-      } else {
-        console.warn("⚠️ Chat ID is missing in the notification.");
-      }
-    }
-    if (notif.contextId) {
-      const itemDetails = await fetchItemDetails(notif.contextId);
-      if (itemDetails) {
-        console.log("✅ Item details fetched:", itemDetails);
-        setSelectedItem(itemDetails);
-        setShowModal(true);
-        console.log("🪟 Modal opened with selected item.");
-      } else {
-        alert("Item details not found.");
-      }
-      if (!userId) {
-        console.error("User ID is not available");
-        return;
-      }
   
     try {
-      // Mark as read first for better UX (even if details fetch fails)
+      // Always mark as read first for every type
       await markNotificationAsRead(userId, notif.id);
       setNotifications(prev => 
         prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n)
@@ -152,30 +129,39 @@ const Topbar = () => {
       if (notif.type === "message" && notif.chatId) {
         console.log(`➡️ Navigating to chatroom with ID: ${notif.chatId}`);
         navigate(`/inquiries/${notif.chatId}`);
-        return;
+        return; // return early so no more code runs
+      }
+  
+      if (notif.contextId) {
+        const itemDetails = await fetchItemDetails(notif.contextId);
+        if (itemDetails) {
+          console.log("✅ Item details fetched:", itemDetails);
+          setSelectedItem(itemDetails);
+          setShowModal(true);
+          console.log("🪟 Modal opened with selected item.");
+        } else {
+          alert("Item details not found.");
+        }
       }
   
       if (notif.reportId) {
         console.log(`Fetching details for report ID: ${notif.reportId}`);
         const itemDetails = await fetchItemDetails(notif.reportId);
-        
         if (!itemDetails) {
           console.error("Item details not found for ID:", notif.reportId);
           alert("The reported item could not be found. It may have been removed.");
           return;
         }
-  
         console.log("Retrieved item details:", itemDetails);
         setSelectedItem(itemDetails);
         setShowModal(true);
       }
+  
     } catch (error) {
       console.error("Error handling notification click:", error);
       alert("Failed to process this notification. Please try again.");
     }
-    
   };
-  }
 
   return (
     <div>

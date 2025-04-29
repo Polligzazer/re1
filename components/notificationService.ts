@@ -154,9 +154,7 @@ export const watchLostItemApprovals = () => {
 
 const useFirebaseNotifications = () => {
   useEffect(() => {
-    const unsubscribe = onMessage(messaging, (payload) => {
-      console.log("Message received: ", payload);
-      alert(`Notification: ${payload.notification?.title}`);
+    const unsubscribe = onMessage(messaging, (_payload) => {
     });
 
     return () => unsubscribe();
@@ -181,16 +179,13 @@ export const watchNewMessagesForUser = (
   onNewMessage: (chatId: string, message: ValidMessage) => void
 ): Unsubscribe => {
   const userChatsRef = doc(db, "userChats", userId);
-  const state = new Map<string, { 
-    hash: string;
-    timer?: NodeJS.Timeout;
-  }>();
+  const state = new Map<string, { hash: string; timer?: NodeJS.Timeout }>();
 
   const unsubscribe = onSnapshot(userChatsRef, (docSnapshot) => {
-    // Skip local updates and empty docs
     if (docSnapshot.metadata.hasPendingWrites || !docSnapshot.exists()) return;
 
     const data = docSnapshot.data();
+    if (!data) return;
 
     Object.entries(data).forEach(([chatId, chatData]) => {
       const chatInfo = chatData as {
@@ -198,39 +193,69 @@ export const watchNewMessagesForUser = (
         messageCount?: number;
       };
 
+      const lastMessage = chatInfo.lastMessage;
+
       // Validate structure
-      if (!chatInfo?.lastMessage?.text || 
-          !chatInfo?.lastMessage?.senderId ||
-          typeof chatInfo.messageCount !== 'number') return;
+      if (
+        !lastMessage?.text ||
+        !lastMessage.senderId ||
+        typeof chatInfo.messageCount !== "number"
+      ) {
+        return;
+      }
 
-      // Create enhanced unique hash
-      const hash = `${chatInfo.messageCount}-${
-        chatInfo.lastMessage.senderId
-      }-${chatInfo.lastMessage.timestamp.seconds}-${
-        chatInfo.lastMessage.timestamp.nanoseconds
-      }`;
-
-      // Global cache check
+      // Generate unique hash for the message
+      const hash = `${chatInfo.messageCount}-${lastMessage.senderId}-${lastMessage.timestamp.seconds}-${lastMessage.timestamp.nanoseconds}`;
       const cacheKey = `${userId}|${chatId}|${hash}`;
-      if (notificationCache.has(cacheKey)) return;
 
-      // Local state check
+      // Skip if already processed globally or in local state
+      if (notificationCache.has(cacheKey)) return;
       const currentState = state.get(chatId);
       if (currentState?.hash === hash) return;
 
-      // Clear existing timer
+      // Clear existing debounce timer if present
       if (currentState?.timer) clearTimeout(currentState.timer);
 
-      // Set new state with longer debounce
+      // Set new state with debounce to avoid rapid duplicates
       state.set(chatId, {
         hash,
-        timer: setTimeout(() => {
-          if (chatInfo.lastMessage!.senderId !== userId) {
-            notificationCache.set(cacheKey, 'processed');
-            onNewMessage(chatId, chatInfo.lastMessage!);
+        timer: setTimeout(async () => {
+          // Only notify if the message is from someone else
+          if (lastMessage.senderId !== userId) {
+            notificationCache.set(cacheKey, "processed");
+
+            // Trigger frontend callback (UI update)
+            onNewMessage(chatId, lastMessage);
+
+            // 🔔 Send Push Notification using fetch
+            try {
+              const response = await fetch("/api/send-notification", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  toUserId: userId,
+                  title: `New message from ${lastMessage.senderName}`,
+                  body: lastMessage.text,
+                  chatId,
+                }),
+              });
+
+              if (!response.ok) {
+                const errorData = await response.json();
+                console.error("🚨 Push notification failed:", errorData);
+              } else {
+                console.log(`✅ Push notification sent for chatId: ${chatId}`);
+              }
+            } catch (err) {
+              console.error("🚨 Error sending push notification:", err);
+            }
           }
+
+          // Clean up state after processing
           state.delete(chatId);
-        }, 1000) // 1-second debounce
+        }, 500), // 0.5s debounce for faster response
       });
     });
   });
