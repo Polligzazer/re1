@@ -1,6 +1,5 @@
 import { db } from "../src/firebase";
 import {
-  getFirestore,
   collection,
   doc,
   getDoc,
@@ -10,7 +9,6 @@ import {
   orderBy,
   query,
   getDocs,
-  collectionGroup,
   Unsubscribe,
   writeBatch,
   serverTimestamp,
@@ -22,7 +20,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { useEffect } from "react";
 import { messaging, onMessage } from "../src/firebase";
 import { Item } from "./types";
-import { deleteToken } from "firebase/messaging";
 
 export interface AppNotification {
   id: string;
@@ -193,7 +190,7 @@ export interface ValidMessage {
 };
 
 // Global cache to track notifications (survives component remounts)
-const notificationCache = new Set<string>();
+const lastMessageMap = new Map<string, string>();
 
 export function watchNewMessagesForUser(
   userId: string,
@@ -224,16 +221,21 @@ export function watchNewMessagesForUser(
     for (const [chatId, raw] of Object.entries(chats)) {
       const lastMessage = raw.lastMessage as ValidMessage | undefined;
       if (!lastMessage?.text || lastMessage.senderId === userId) continue;
-
-      const key = `${userId}|${chatId}|${lastMessage.text}|${lastMessage.timestamp.seconds}|${lastMessage.timestamp.nanoseconds}`;
-      if (notificationCache.has(key)) continue;
-      notificationCache.add(key);
-      
+    
+      const messageId = `${lastMessage.text}|${lastMessage.timestamp.seconds}|${lastMessage.timestamp.nanoseconds}`;
+      const previousMessageId = lastMessageMap.get(chatId);
+    
+      if (messageId === previousMessageId) continue; // Skip duplicates
+      lastMessageMap.set(chatId, messageId); // Track new message
+    
+      // Fetch sender and send notification
       try {
         const senderDocRef = doc(db, "users", lastMessage.senderId);
-        console.log(lastMessage.senderId);
         const senderSnap = await getDoc(senderDocRef);
-        const senderName = senderSnap.exists() ? senderSnap.data().firstName && senderSnap.data().lastName || "Unknown" : "Unknown";
+        const senderName = senderSnap.exists()
+          ? `${senderSnap.data().firstName || ""} ${senderSnap.data().lastName || ""}`.trim() || "Unknown"
+          : "Unknown";
+    
         onNewMessage(chatId, lastMessage);
         console.log("[📨 Incoming Message]", chatId, lastMessage);
         if (currentToken) {

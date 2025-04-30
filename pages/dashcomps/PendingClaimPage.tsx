@@ -1,7 +1,8 @@
 import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import emailjs from "emailjs-com";
-import { db } from "../../src/firebase";
+import { createNotification, sendPushNotification } from "../../components/notificationService";
+import { db, getFCMToken } from "../../src/firebase";
 import { onSnapshot, collection, doc, where, addDoc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy, writeBatch } from "firebase/firestore";
 import categoryImages from "../../src/categoryimage";
 import { FaChevronLeft } from "react-icons/fa";
@@ -10,7 +11,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle, faUser, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Button, Form, Spinner } from "react-bootstrap";
-import { createNotification } from "../../components/notificationService";
 import "../../css/ModalProgress.css";
 import "../../css/PendingClaimDash.css"
 import "../../css/loading.css"
@@ -115,7 +115,8 @@ const AdminApproval: React.FC = () => {
 
   const confirmDenyReport = async () => {
     if (!reportToDeny) return;
-  
+    const currentToken = await getFCMToken();
+    if (!currentToken) { console.warn("⚠️ No FCM token available—skipping push"); return; }
     await denyReport(reportToDeny.id);
 
     await createNotification(
@@ -124,42 +125,13 @@ const AdminApproval: React.FC = () => {
       reportToDeny.id
     );
   
-    // Push notification logic
-    try {
-      const tokensRef = collection(db, "users", reportToDeny.userId, "fcmTokens");
-      const tokensSnap = await getDocs(tokensRef);
-      const tokens = tokensSnap.docs.map((doc) => doc.data().token).filter(Boolean);
-  
-      if (tokens.length > 0) {
-        await Promise.allSettled(
-          tokens.map(async (token) => {
-            try {
-              const response = await fetch("https://flo-proxy.vercel.app/api/send-notification", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  token,
-                  title: "Claim Denied",
-                  body: "Your claim request has been denied by the admin.",
-                  data: {
-                    type: "claim_denied",
-                    reportId: reportToDeny.id,
-                  }
-                })
-              });
-  
-              if (!response.ok) {
-                console.error("❌ Push failed for user", reportToDeny.userId);
-              }
-            } catch (pushErr) {
-              console.error("❗ Push error for user", reportToDeny.userId, pushErr);
-            }
-          })
-        );
-      }
-    } catch (err) {
-      console.error("❗ Failed to send push notification:", err);
-    }
+    if (currentToken) {
+      await sendPushNotification({
+        title: "Denied claim request",
+        body: "Your claim request has been denied by the admin, inquire for more details.",
+        url: "/home",
+      });
+    };
   
     // 3. Reset modal state
     setShowDenyModal(false);
@@ -185,6 +157,9 @@ const AdminApproval: React.FC = () => {
   const handleSendEmail = async (report: Report) => {
     if (!selectedReport) return;
     setLoading(true);
+
+    const currentToken = await getFCMToken();
+    if (!currentToken) { console.warn("⚠️ No FCM token available—skipping push"); return; }
   
     try {
       const userEmail = await fetchUserEmail(report.userId);
@@ -221,42 +196,12 @@ const AdminApproval: React.FC = () => {
         "Receipt has been sent in the mail, claim your lost item.",
         report.id
       );
-  
-      // 2. Push notification
-      try {
-        const tokensRef = collection(db, "users", report.userId, "fcmTokens");
-        const tokensSnap = await getDocs(tokensRef);
-        const tokens = tokensSnap.docs.map((doc) => doc.data().token).filter(Boolean);
-  
-        if (tokens.length > 0) {
-          await Promise.allSettled(
-            tokens.map(async (token) => {
-              try {
-                const response = await fetch("https://flo-proxy.vercel.app/api/send-notification", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    token,
-                    title: "📬 Claim Receipt Sent",
-                    body: "Your receipt has been emailed. Please check and claim your item.",
-                    data: {
-                      type: "claim_receipt_sent",
-                      reportId: report.id,
-                    }
-                  })
-                });
-  
-                if (!response.ok) {
-                  console.error("❌ Push failed for user", report.userId);
-                }
-              } catch (pushErr) {
-                console.error("❗ Push error for user", report.userId, pushErr);
-              }
-            })
-          );
-        }
-      } catch (err) {
-        console.error("❗ Failed to send push notification:", err);
+      if (currentToken) {
+        await sendPushNotification({
+          title: "Claim your item",
+          body: "Claim receipt has been sent to your mail. Claim your belonging in the lost and found. ",
+          url: "/home",
+        });
       }
   
       setVerifyModal(false);
@@ -274,11 +219,11 @@ const AdminApproval: React.FC = () => {
   const handleConfirmClaim = async () => {
     if (!selectedReport) {
       console.error("❌ No selected report found.");
-      return;
-    }
-    
+      return; }
     setLoading(true);
-  
+    const currentToken = await getFCMToken();
+    if (!currentToken) { console.warn("⚠️ No FCM token available—skipping push"); return; }
+
     try {
       const reportRef = doc(db, "claim_items", selectedReport.id);
       const claimSnap = await getDoc(reportRef);
@@ -287,6 +232,7 @@ const AdminApproval: React.FC = () => {
         alert("❗ Claim not found.");
         return;
       }
+      
   
       const claimData = claimSnap.data();
       const referencePostId = claimData.referencePostId;
@@ -324,6 +270,13 @@ const AdminApproval: React.FC = () => {
         relatedPostId: referencePostId,
         type: "claim_success"
       });
+      if (currentToken) {
+        await sendPushNotification({
+          title: "Item claimed successfully",
+          body: "Your requested item has been claimed successfully",
+          url: "/home",
+        });
+      }
   
       if(lostItemSnap.data().type === "found"){
         const posterNotificationRef = doc(collection(db, "users", originalPosterId, "notifications"));
@@ -334,6 +287,13 @@ const AdminApproval: React.FC = () => {
           relatedPostId: referencePostId,
           type: "item_claimed"
         });
+        if (currentToken) {
+          await sendPushNotification({
+            title: "Reported item claimed",
+            body: "Your reported item has been claimed by a user.",
+            url: "/home",
+          });
+        }
       }
   
       // 4. Execute all operations atomically
