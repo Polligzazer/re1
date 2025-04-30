@@ -81,12 +81,13 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
     return () => unsub();
   }, [currentUser?.uid]);
 
-
   useEffect(() => {
     const sorted = Object.entries(messages).sort((a, b) => {
-      const timestampA = a[1].lastActivity?.seconds || 0;
-      const timestampB = b[1].lastActivity?.seconds || 0; 
-      return timestampB - timestampA; 
+      // Use lastActivity or date if lastActivity is missing
+      const timestampA = a[1].lastActivity?.seconds || a[1].date?.seconds || 0; // Fallback to 'date' if 'lastActivity' is missing
+      const timestampB = b[1].lastActivity?.seconds || b[1].date?.seconds || 0; // Same for b
+
+      return timestampB - timestampA; // Sort in descending order
     });
     setSortedChats(sorted);
   }, [messages]);

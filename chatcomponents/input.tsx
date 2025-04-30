@@ -73,11 +73,16 @@ const Input = () => {
 
     try {
       let fileUrl: string | null = null;
+      let fileType: string | null = null;
 
       if (file) {
         try {
           const response = await apwstorage.createFile(APPWRITE_STORAGE_BUCKET_ID, ID.unique(), file);
-          fileUrl = apwstorage.getFilePreview(APPWRITE_STORAGE_BUCKET_ID, response.$id);
+          const fileId = response.$id;
+          fileUrl = apwstorage.getFileView(APPWRITE_STORAGE_BUCKET_ID, fileId);
+
+          const fileInfo = await apwstorage.getFile(APPWRITE_STORAGE_BUCKET_ID, fileId);
+          fileType = fileInfo.mimeType; // e.g., 'video/mp4', 'image/png', etc.
         } catch (uploadError) {
           console.error("Appwrite upload failed:", uploadError);
           return;
@@ -85,7 +90,7 @@ const Input = () => {
       }
 
       const finalMessage = fileUrl
-        ? { ...messageData, img: fileUrl }
+        ? { ...messageData, img: fileUrl, fileType }
         : messageData;
 
       const batch = writeBatch(db);
