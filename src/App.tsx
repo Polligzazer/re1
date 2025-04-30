@@ -1,6 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
-import { requestNotificationPermission, setupForegroundNotifications } from "./firebase"; 
+import { setupAndSaveFCMToken, migrateLegacyTokens, requestNotificationPermission, onMessageListener  } from "./firebase";
+import { toast } from "react-toastify";
+import { watchNewMessagesForUser } from "../components/notificationService";
+import { initForegroundNotifications } from "./types/notifications";
 // import { SpeedInsights } from '@vercel/speed-insights/react';
 import Layout from "../components/Layout";
 import Signup from "../components/signup";
@@ -22,10 +25,12 @@ import { AuthContext } from "../components/Authcontext";
 import { ReactNode, useContext } from "react";
 import Loading from "../components/Loading";
 import Profile from "../pages/profile";
-import ClaimApproval from "../pages/dashcomps/PendingClaimPage"
+import ClaimApproval from "../pages/dashcomps/PendingClaimPage";
 import ReportApproval from "../pages/dashcomps/AdminApproval";
-import Claimed from "../pages/dashcomps/ClaimsPage"
-import Hero from "../pages/heropage.tsx"
+import Claimed from "../pages/dashcomps/ClaimsPage";
+import Hero from "../pages/heropage.tsx";
+
+import { registerServiceWorker } from "./types/serviceWorker";
 
 
 function App() {
@@ -38,25 +43,56 @@ function App() {
   };
 
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/firebase-messaging-sw.js")
-        .then((registration) => {
-          console.log("✅ Service Worker registered:", registration);
-        })
-        .catch((error) => {
-          console.error("❌ Service Worker registration failed:", error);
-        });
-    }
+    onMessageListener()
+      .then((payload) => {
+        const title = payload?.notification?.title || payload?.data?.title;
+        const body = payload?.notification?.body || payload?.data?.body;
+  
+        toast.info(`${title}: ${body}`);
+      })
+      .catch(err => console.log('Failed to receive message: ', err));
   }, []);
 
   useEffect(() => {
-    if (currentUser) {
-      requestNotificationPermission();
-      setupForegroundNotifications();
-    }
-  }, [currentUser]);
+    registerServiceWorker()
+      .then((reg) => {
+        console.log("✅ Service Worker registered:", reg);
 
+        // Handle foreground FCM messages via the SDK
+        initForegroundNotifications();
+
+        // Ask permission & save token
+        return requestNotificationPermission();
+      })
+      .then((token) => {
+        console.log("🔔 Notification permission granted, token:", token);
+      })
+      .catch((err) => {
+        console.error("⚠️ FCM setup error:", err);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    setupAndSaveFCMToken(currentUser.uid)
+      .then(() => migrateLegacyTokens(currentUser.uid))
+      .catch((err) => {
+        console.error("⚠️ Token migration error:", err);
+      });
+
+    const unsubscribe = watchNewMessagesForUser(
+      currentUser.uid,
+      (chatId, message) => {
+        // your in-app toast logic here
+        console.log(`New message in ${chatId}:`, message.text);
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [currentUser]);
   
   return (
     <Router>
@@ -106,3 +142,4 @@ function App() {
 }
 
 export default App;
+

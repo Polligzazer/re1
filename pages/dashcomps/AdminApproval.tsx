@@ -88,9 +88,7 @@ const AdminApproval: React.FC = () => {
                     title: "Report Approved",
                     body: notificationText,
                     data: { 
-                      type: "report_approved",
-                      reportId,
-                      itemType: type
+                      url: "/home",
                     }
                   })
                 });
@@ -169,8 +167,7 @@ const AdminApproval: React.FC = () => {
                   title: "Report Denied",
                   body: "Your report has been denied by the admin.",
                   data: {
-                    type: "report_denied",
-                    reportId,
+                    url: "/home",
                   }
                 }),
               });
