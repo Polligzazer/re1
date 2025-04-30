@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { ID } from "appwrite";
 import { apwstorage, APPWRITE_STORAGE_BUCKET_ID } from "../src/appwrite";
-import { db, storage } from "../src/firebase";
+import { db } from "../src/firebase";
 import {
   doc,
   updateDoc,
