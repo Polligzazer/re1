@@ -11,7 +11,6 @@ import {
   increment,
   writeBatch,
 } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { v4 as uuid } from "uuid";
 import { useChatContext } from "../components/ChatContext";
 import { AuthContext } from "../components/Authcontext";
