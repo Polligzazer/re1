@@ -76,23 +76,13 @@ const Input = () => {
       let fileUrl: string | null = null;
 
       if (file) {
-        const storageRef = ref(storage, uuid());
-        const uploadTask = uploadBytesResumable(storageRef, file);
-
-        await new Promise((resolve, reject) => {
-          uploadTask.on(
-            'state_changed',
-            null,
-            (error) => {
-              console.error('Upload error:', error);
-              reject(error);
-            },
-            async () => {
-              fileUrl = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(fileUrl);
-            }
-          );
-        });
+        try {
+          const response = await apwstorage.createFile(APPWRITE_STORAGE_BUCKET_ID, ID.unique(), file);
+          fileUrl = apwstorage.getFilePreview(APPWRITE_STORAGE_BUCKET_ID, response.$id);
+        } catch (uploadError) {
+          console.error("Appwrite upload failed:", uploadError);
+          return;
+        }
       }
 
       const finalMessage = fileUrl

@@ -38,42 +38,51 @@ const UserList = () => {
       return alert("No user is signed in.");
     }
   
+    if (userId === auth.currentUser.uid) {
+      return alert("You cannot delete your own account.");
+    }
+  
     if (!window.confirm("Are you sure you want to delete this user and all their data?")) {
       return;
     }
   
     try {
-      const token = await auth.currentUser.getIdToken(true);
-      if (!token) throw new Error("Not authenticated");
+      const tokenResult = await auth.currentUser.getIdToken();
+      console.log("Firebase ID Token:", tokenResult); // Debug log
+      if (!tokenResult) throw new Error("Not authenticated");
   
-      const res = await fetch('https://flo-proxy.vercel.app/api/delete-user', {
+      const response = await fetch('https://flo-proxy.vercel.app/api/delete-user', {
         method: 'POST',
+        mode: 'cors',
+        credentials: 'include', // iuiRequired for CORS + auth
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${tokenResult}`,
         },
         body: JSON.stringify({ uid: userId }),
-        credentials: 'include', // Important for CORS with credentials
       });
   
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || res.statusText);
+      if (!response.ok) {
+        let errorMessage = "Failed to delete user";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData?.error || response.statusText;
+        } catch {
+          errorMessage = response.statusText || "Unknown error occurred";
+        }
+        throw new Error(errorMessage);
       }
   
       setUsers(prev => prev.filter(u => u.id !== userId));
       alert("User deleted successfully");
     } catch (err) {
       console.error("Delete failed:", err);
-      
-      // Proper error handling with type checking
       let errorMessage = "Failed to delete user";
       if (err instanceof Error) {
         errorMessage = err.message;
       } else if (typeof err === 'string') {
         errorMessage = err;
       }
-  
       alert(`Error: ${errorMessage}`);
     }
   };
