@@ -36,10 +36,7 @@ const AdminApproval: React.FC = () => {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reporterName, setReporterName] = useState('');
-<<<<<<< HEAD
   const [modalStatus, setModalStatus] = useState<'idle' | 'loading' | 'approved'>('idle');
-=======
->>>>>>> 4cdeb116788d2bd9347fdb9fdaeeade9dade83df
 
   const approveReport = async (reportId: string) => {
     try {
@@ -94,13 +91,10 @@ const AdminApproval: React.FC = () => {
       });
     
       setReports((prevReports) => prevReports.filter((r) => r.id !== reportId));
-<<<<<<< HEAD
       setModalStatus('approved'); 
-=======
       setIsApproved(true);  
       setLoading(false);  
       Promise.all(notificationPromises);
->>>>>>> 4cdeb116788d2bd9347fdb9fdaeeade9dade83df
     } catch (error) {
       console.error("❗ Error approving report:", error);
       alert("❗ Failed to approve the report.");

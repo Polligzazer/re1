@@ -146,102 +146,71 @@ const Topbar = () => {
     };
   }, [userId]);
   
- const handleNotificationClick = async (notif: AppNotification) => {
-  if (!userId) {
-    console.error("⚠️ User ID is missing, cannot handle notification.");
-    return;
-  }
-  
-  console.log("🔔 Notification clicked:", notif);
-  
-  try {
-    console.log(`📝 Marking notification ${notif.id} as read...`);
-    await markNotificationAsRead(userId, notif.id);
-    setNotifications(prev =>
-      prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n)
-    );
-    console.log(`✅ Notification ${notif.id} marked as read.`);
-    
-    if (notif.type === "message" && notif.chatId) {
-      console.log(`➡️ Navigating to chatroom with ID: ${notif.chatId}`);
-      
-      const [userA, userB] = notif.chatId.split('_'); 
-      const targetUserId = userA === userId ? userB : userA; 
-      
-      const targetUser = { id: targetUserId, displayName: `User ${targetUserId}` }; 
-      
-      dispatch({ type: "CHANGE_USER", payload: targetUser });
-      navigate(`/inquiries/${notif.chatId}`);
+  const handleNotificationClick = async (notif: AppNotification) => {
+    if (!userId) {
+      console.error("⚠️ User ID is missing, cannot handle notification.");
       return;
     }
-
-    if (notif.contextId) {
-      console.log("🔎 Fetching item details for context ID:", notif.contextId);
-      const itemDetails = await fetchItemDetails(notif.contextId);
-      
-      if (itemDetails) {
-        console.log("✅ Item details fetched:", itemDetails);
-        setSelectedItem(itemDetails);
-        setShowModal(true);
-      } else {
-        console.error("❌ Failed to fetch item details for context ID:", notif.contextId);
-        alert("The related item could not be found. It may have been removed.");
-      }
-      return;
-    }
-    if (notif.reportId) {
-      console.log(`🔎 Fetching details for report ID: ${notif.reportId}`);
-      const itemDetails = await fetchItemDetails(notif.reportId);
-      
-      if (itemDetails) {
-        console.log("✅ Retrieved item details:", itemDetails);
-        const handleNotificationClick = async (notif: AppNotification) => {
-          if (!userId) return;
-          console.log("🔔 Notification clicked:", notif);
-        
+  
+    console.log("🔔 Notification clicked:", notif);
+  
     try {
-      // Always mark as read first for every type
+      console.log(`📝 Marking notification ${notif.id} as read...`);
       await markNotificationAsRead(userId, notif.id);
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n)
       );
+      console.log(`✅ Notification ${notif.id} marked as read.`);
   
       if (notif.type === "message" && notif.chatId) {
+        console.log(`➡️ Navigating to chatroom with ID: ${notif.chatId}`);
+  
+        const [userA, userB] = notif.chatId.split('_');
+        const targetUserId = userA === userId ? userB : userA;
+  
+        const targetUser = { id: targetUserId, displayName: `User ${targetUserId}` };
+  
+        dispatch({ type: "CHANGE_USER", payload: targetUser });
         navigate(`/inquiries/${notif.chatId}`);
         return;
       }
   
       if (notif.contextId) {
+        console.log("🔎 Fetching item details for context ID:", notif.contextId);
         const itemDetails = await fetchItemDetails(notif.contextId);
+  
         if (itemDetails) {
+          console.log("✅ Item details fetched:", itemDetails);
           setSelectedItem(itemDetails);
           setShowModal(true);
-          console.log("🪟 Modal opened with selected item.");
         } else {
-          alert("Item details not found.");
+          console.error("❌ Failed to fetch item details for context ID:", notif.contextId);
+          alert("The related item could not be found. It may have been removed.");
         }
+        return;
       }
   
       if (notif.reportId) {
+        console.log(`🔎 Fetching details for report ID: ${notif.reportId}`);
         const itemDetails = await fetchItemDetails(notif.reportId);
-        if (!itemDetails) {
-          alert("The reported item could not be found. It may have been removed.");
-          return;
-        }
-        setSelectedItem(itemDetails);
-        setShowModal(true);
-      } else {
-        console.warn("⚠️ Notification type not recognized or missing fields:", notif);
-        console.error("❌ Item details not found for ID:", notif.reportId);
-        alert("The reported item could not be found. It may have been removed.");
-      }
-      return;
-  } catch (error) {
-    console.error("Error handling notification click:", error);
-    alert("Failed to process this notification. Please try again.");
-  }
-  };
   
+        if (itemDetails) {
+          console.log("✅ Retrieved item details:", itemDetails);
+          setSelectedItem(itemDetails);
+          setShowModal(true);
+        } else {
+          console.error("❌ Item details not found for ID:", notif.reportId);
+          alert("The reported item could not be found. It may have been removed.");
+        }
+        return;
+      }
+  
+      console.warn("⚠️ Notification type not recognized or missing fields:", notif);
+    } catch (error) {
+      console.error("Error handling notification click:", error);
+      alert("Failed to process this notification. Please try again.");
+    }
+  };
   
   return (
     <div>
