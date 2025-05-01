@@ -482,7 +482,7 @@ const Home = () => {
     </div>
   );
 
-  function renderSection(title: string, reportList: Report[], key: string) {
+  function renderSection(title: string, reportList: Report[], key: string, ) {
     return (
       <div style={{ width: "100%", maxWidth: "100vw", marginBottom: "60px", position: "relative", textAlign: "start" }}>
         <p style={{ 

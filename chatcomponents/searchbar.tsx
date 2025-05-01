@@ -269,6 +269,7 @@ const SearchBar = ({ onChatSelect }: SearchBarProps) => {
         </>
       ) : (
         <button
+        disabled
           className="w-100 p-2 mb-3"
           onClick={() => {
             if (adminUser) {

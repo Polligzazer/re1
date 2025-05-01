@@ -27,6 +27,7 @@ import {
   faTasks,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { motion } from "framer-motion";
 
 
 const HeroPage: React.FC = () => {
@@ -130,7 +131,12 @@ const HeroPage: React.FC = () => {
         </div>
         <div
             className="ps-lg-5 justify-content-center align-items-center section1 d-flex flex-row" >
-            <div className=" section1-text d-flex ms-5 p-5 flex-column">
+            <motion.div 
+                className=" section1-text d-flex ms-5 p-5 flex-column"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
                 <p 
                     style={{
                         fontFamily:'DM sans, sans-serif',
@@ -150,8 +156,10 @@ const HeroPage: React.FC = () => {
                         fontSize:'clamp(10px, 1vw, 15px)'
                     }}>
                 Reporting and retrieving lost belongings secure, simpler, faster, and more transparent than ever.</p>
-                <button
+                <motion.button
                     onClick={handleNavigateToSignup}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     className="p-2"
                     style={{
                         border:'none',
@@ -164,12 +172,15 @@ const HeroPage: React.FC = () => {
                         fontSize:'clamp(8px, 1vw, 16px',
                         boxShadow: '0 -8px 8px -4px #7cc5fd, 0 8px 8px -4px #7cc5fd' 
                     }}
-                > Get Started</button>
-            </div>
-            <div 
+                > Get Started</motion.button>
+            </motion.div>
+            <motion.div 
                 className='circlediv'
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
                 style={{position:'relative', width:'40%'}}>
-                <div 
+                <motion.div 
                     className="c1"
                     style={{
                         position:'absolute',
@@ -181,9 +192,12 @@ const HeroPage: React.FC = () => {
                         minHeight:'', 
                         background: 'linear-gradient(180deg, #bdf3ff, #1e60bb)',                       
                     }}
+                    initial={{ y: -50, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.1 }}
                 >
-                </div>
-                <div 
+                </motion.div>
+                <motion.div 
                     className="c2"
                     style={{
                         position:'absolute',
@@ -195,10 +209,13 @@ const HeroPage: React.FC = () => {
                         minHeight:'', 
                         background: 'linear-gradient(180deg, #bdf3ff, #1e60bb)',  
                     }}
+                    initial={{ y: -50, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.3 }}
                 >
 
-                </div>
-                <div 
+                </motion.div>
+                <motion.div 
                     className="c3"
                     style={{
                         position:'absolute',
@@ -209,21 +226,32 @@ const HeroPage: React.FC = () => {
                         width:'9vw',
                         minHeight:'', 
                         background: 'linear-gradient(180deg, #bdf3ff, #1e60bb)',  
-                    }}    
+                    }}
+                    initial={{ y: -50, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.5 }}    
                 >
 
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </div>
         <div
             className=" section2 d-flex flex-row p-5">
-            <div
+            <motion.div
                 className="vision"
                 style={{
                     width:'60%'
                 }}
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                viewport={{ once: true }}
             >
-                <div
+                <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.3 }}
+                    viewport={{ once: true }}
                     className="navisdivs1 mx-4 m-0 d-flex align-items-center">
                     <div 
                         className="circlenavis1">
@@ -235,8 +263,12 @@ const HeroPage: React.FC = () => {
                             }}
                         />
                     </div>
-                </div>
-                <div
+                </motion.div>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                    viewport={{ once: true }}
                     className="visiontextdiv mx-5">
                     <p className="fw-bold visiontitle">Our Vision</p>
                     <p 
@@ -248,8 +280,12 @@ const HeroPage: React.FC = () => {
                     We envision a community where lost belongings don’t stay lost for long—a place where technology bridges the gap between people and their misplaced 
                     items. Our Lost and Found web application is built to streamline and modernize the recovery process, transforming confusion into clarity and disconnection into reconnection.
                     </p>                   
-                </div>
-                <div
+                </motion.div>
+                <motion.div
+                    initial={{ width: 0 }}
+                    whileInView={{ width: '70%' }}
+                    transition={{ duration: 1, delay: 0.8 }}
+                    viewport={{ once: true }}
                     className=""
                     style={{
                         borderTop:'2px solid #ffd991',
@@ -257,9 +293,13 @@ const HeroPage: React.FC = () => {
                         height:'10%'
                     }}
                     >
-                </div>
-            </div>
-            <div
+                </motion.div>
+            </motion.div>
+            <motion.div
+                 initial={{ opacity: 0, x: 50 }}
+                 whileInView={{ opacity: 1, x: 0 }}
+                 transition={{ duration: 0.8, ease: "easeOut" }}
+                 viewport={{ once: true }}
                 className=" buildingdiv d-flex justify-content-center align-items-center me-5">
                 <img
                     src={about1}
@@ -267,11 +307,15 @@ const HeroPage: React.FC = () => {
                         height:'30vw'
                     }}
                 />
-            </div>
+            </motion.div>
         </div>
         <div
             className=" section3 border d-flex flex-row p-5">
-            <div
+            <motion.div
+                 initial={{ opacity: 0, x: -50 }}
+                 whileInView={{ opacity: 1, x: 0 }}
+                 transition={{ duration: 0.8, ease: "easeOut" }}
+                 viewport={{ once: true }}
                 className="thingdiv d-flex justify-content-center align-items-center ms-5">
                 <img
                     src={about2}
@@ -279,10 +323,18 @@ const HeroPage: React.FC = () => {
                         height:'30vw'
                     }}
                 />
-            </div>
-            <div
+            </motion.div>
+            <motion.div
+                 initial={{ opacity: 0, x: 50 }}
+                 whileInView={{ opacity: 1, x: 0 }}
+                 transition={{ duration: 0.8, ease: "easeOut" }}
+                 viewport={{ once: true }}
                 className="mission me-5">
-                <div
+                <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      whileInView={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 1, delay: 0.3 }}
+                      viewport={{ once: true }}
                     className="navisdivs2 mx-4 m-0 d-flex justify-content-end align-items-center" >
                     <div 
                         className="circlenavis2">
@@ -290,8 +342,12 @@ const HeroPage: React.FC = () => {
                             className="navis2"
                             src={FLO13}/>
                     </div>
-                </div>
-                <div
+                </motion.div>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                    viewport={{ once: true }}
                     className="missiondivtext mx-5">
                     <p 
                         className="missiontitle fw-bold"
@@ -310,8 +366,12 @@ const HeroPage: React.FC = () => {
                     By centralizing info p-4rmation and offering accessible tools, we aim to reduce the time, stress,
                     and uncertainty that often come with losing something valuable.                   
                     </p>                   
-                </div>
-                <div
+                </motion.div>
+                <motion.div
+                     initial={{ width: 0 }}
+                     whileInView={{ width: '70%' }}
+                     transition={{ duration: 1, delay: 0.8 }}
+                     viewport={{ once: true }}
                     className=""
                     style={{
                         borderTop:'2px solid #ffd991',
@@ -319,13 +379,17 @@ const HeroPage: React.FC = () => {
                         height:'10%'
                     }}
                     >
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
             
         </div>
         <div
             className="justify-content-center align-items-center section4 d-flex flex-column">   
-            <div
+            <motion.div
+                initial={{ opacity: 0, y: -30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                viewport={{ once: true }}
                 className="d-flex text-center justify-content-center align-items-center flex-column"
                 style={{
                     width:'100%',
@@ -339,13 +403,21 @@ const HeroPage: React.FC = () => {
                         fontSize:'clamp(25px, 3vw, 35px)'
                     }}
                 >Features</p>
-                <p
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.3 }}
+                    viewport={{ once: true }}
                     className="featurestext">
                 Discover powerful tools designed to make reporting, 
                 searching, and claiming lost items fast, secure,
-                 and hassle-free. FLO is built for ease, transparency, and real results.</p>
-            </div>
-            <div 
+                 and hassle-free. FLO is built for ease, transparency, and real results.</motion.p>
+            </motion.div>
+            <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.6 }}
+                viewport={{ once: true }}
                 className=""
                 style={{
                     height:'50%',
@@ -430,7 +502,7 @@ const HeroPage: React.FC = () => {
                         <div className="line"></div>
                     </SwiperSlide>
                 </Swiper>
-            </div>  
+            </motion.div>  
         </div>
         <div
             className="d-flex justify-content-end align-items-center"
@@ -446,91 +518,121 @@ const HeroPage: React.FC = () => {
                 fontSize:'18px' 
             }}
         >
-           <p style={{width:'50%', fontSize:'clamp(12px, 1.5vw, 18px)'}} className="px-5 secdesc text-center">Your data is securely handled, ensuring safe and trustworthy exchanges within the community.</p>
-        </div>    
+           <motion.p 
+                style={{ width: '50%', fontSize: 'clamp(12px, 1.5vw, 18px)' }} 
+                className="px-5 secdesc text-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1 }}
+                viewport={{ once: true }}
+            >
+                Your data is securely handled, ensuring safe and trustworthy exchanges within the community.
+            </motion.p>
+          </div>    
         <div
             className="border mt-3 justify-content-center align-items-center section5 d-flex flex-column"> 
             <div
                 className="peopletitle d-flex text-center justify-content-center align-items-center flex-column">
-                <p
+                <motion.p
                     style={{
-                        fontSize:'clamp(25px, 3vw, 35px)'
+                        fontSize: 'clamp(25px, 3vw, 35px)',
                     }}
-                >We are the people behind FLO</p>
-                <p
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1 }}
+                    viewport={{ once: true }}
+                >
+                    We are the people behind FLO
+                </motion.p>
+                <motion.p
                     className="peopledesc"
                     style={{
-                        width:'50%',
-                        fontFamily:'Work sans, sans-serif',
-                         fontSize:'clamp(12px, 1.5vw, 18px)'
+                        width: '50%',
+                        fontFamily: 'Work sans, sans-serif',
+                        fontSize: 'clamp(12px, 1.5vw, 18px)',
                     }}
-                >Discover powerful tools designed to make reporting, 
-                searching, and claiming lost items fast, secure,
-                 and hassle-free. FLO is built for ease, transparency, and real results.</p>
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.2 }}
+                    viewport={{ once: true }}
+                >
+                    Discover powerful tools designed to make reporting, searching, and claiming lost items fast, secure,
+                    and hassle-free. FLO is built for ease, transparency, and real results.
+                </motion.p>
             </div>
-            <div
-                className="peoplesdiv d-flex gap-5 justify-content-center align-items-center flex-row">
+            <motion.div
+                className="peoplesdiv d-flex gap-5 justify-content-center align-items-center flex-row"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.5 }}
+                viewport={{ once: true }}
+            >
                 <div className="twodiv flex-column d-flex gap-5">
-                    <div className="person1">
+                    <motion.div className="person1" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.6 }}>
                         <div className="personpic">
-                            <img className="p6" src={p6}/>
+                            <img className="p6" src={p6} />
                         </div>
                         <div className="info p-4">
                             <p className="mb-0 name">John Christian Lomotan</p>
                             <p className="position">General Manager</p>
                         </div>
-                    </div>
-                    <div className="person4">
+                    </motion.div>
+                    
+                    <motion.div className="person4" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.7 }}>
                         <div className="personpic">
-                            <img className="p2" src={p2}/>
+                            <img className="p2" src={p2} />
                         </div>
                         <div className="info p-4">
                             <p className="mb-0 name">Rain Andrei Aquino</p>
                             <p className="position">Customer Support</p>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
-                <div className="twodiv flex-column d-flex gap-5"> 
-                    <div className="person2">
+                
+                <div className="twodiv flex-column d-flex gap-5">
+                    <motion.div className="person2" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.8 }}>
                         <div className="personpic">
-                            <img className="p1" src={p1}/>
+                            <img className="p1" src={p1} />
                         </div>
                         <div className="info p-4">
                             <p className="mb-0 name">Aezekiel Matthew Licardo</p>
                             <p className="position">Technical Manager</p>
                         </div>
-                    </div>
-                     <div className="person3">
+                    </motion.div>
+
+                    <motion.div className="person3" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.9 }}>
                         <div className="personpic">
-                            <img className="p4" src={p4}/>
+                            <img className="p4" src={p4} />
                         </div>
                         <div className="info p-4">
                             <p className="mb-0 name">Sam Gabriel Arias</p>
                             <p className="position">Operational Manager</p>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
+                
                 <div className="twodiv flex-column d-flex gap-5">
-                    <div className="person5">
+                    <motion.div className="person5" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.8, delay: 1 }}>
                         <div className="personpic">
-                            <img className="p5" src={p5}/>
+                            <img className="p5" src={p5} />
                         </div>
                         <div className="info p-4">
                             <p className="mb-0 name">Justin Cloud Tomaquin</p>
                             <p className="position">Finance Manager</p>
-                        </div>    
-                    </div>
-                    <div className="person6">
+                        </div>
+                    </motion.div>
+
+                    <motion.div className="person6" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.8, delay: 1.1 }}>
                         <div className="personpic">
-                            <img className="p3" src={p3}/>
+                            <img className="p3" src={p3} />
                         </div>
                         <div className="info p-4">
                             <p className="mb-0 name">Aug John Lie Mosende</p>
                             <p className="position">Legal support</p>
                         </div>
-                    </div>
-                </div> 
-            </div>
+                    </motion.div>
+                </div>
+            </motion.div>
         </div>  
         <div
             className="lastsection justify-content-center align-items-center d-flex flex-row"
@@ -539,44 +641,61 @@ const HeroPage: React.FC = () => {
                 minHeight:'500px',
                 backgroundColor:'white'
            }}> 
-           <div
-           className="formsdiv d-flex justify-content-end" 
-            style={{
-                width:'50%'
-            }}
-           >
-                <div 
+           <motion.div
+                className="formsdiv d-flex justify-content-end"
+                style={{
+                    width: '50%',
+                }}
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1 }}
+                viewport={{ once: true }}
+            >
+                <div
                     className="divsecondforms"
                     style={{
-                    width:'80%'
-                }}>
-                    <p style={{fontFamily:'DM sans, sans-serif', fontSize:'clamp(12px, 1.5vw ,26px)'}}>For more questions, inquiries, and suggestions</p>
+                        width: '80%',
+                    }}
+                >
+                    <p
+                        style={{
+                            fontFamily: 'DM sans, sans-serif',
+                            fontSize: 'clamp(12px, 1.5vw, 26px)',
+                        }}
+                    >
+                        For more questions, inquiries, and suggestions
+                    </p>
                     <form className="emailform d-flex flex-column">
-                        <input className="my-2" type="text" placeholder="Name"/>
-                        <input className="my-2" type="email" placeholder="Email" required/>
+                        <input className="my-2" type="text" placeholder="Name" />
+                        <input className="my-2" type="email" placeholder="Email" required />
                         <label className="mt-2 labelm">Message</label>
                         <textarea
                             required
                             className="message my-2"
                             rows={4}
-                            placeholder="Enter a your message" 
+                            placeholder="Enter your message"
                         />
                         <button className="submit p-2 my-2">Submit</button>
                     </form>
                 </div>
-           </div>
-           <div 
+            </motion.div>
+            <motion.div
                 className="imgcontact d-flex justify-content-center"
                 style={{
-                    width:'40%',
-                }}>
-                <img 
+                    width: '40%',
+                }}
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1 }}
+                viewport={{ once: true }}
+            >
+                <img
                     src={contactbg}
                     style={{
-                        width:'80%',
+                        width: '80%',
                     }}
-                />    
-            </div>
+                />
+            </motion.div>
         </div>  
         <div
             style={{height:'1vw'}}

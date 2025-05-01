@@ -99,6 +99,13 @@ font-weight:bold;
   border: 1px solid #2169ac;
   transition: background-color 0.3s, color 0.3s;
 }
+.form-controli{
+  width: 15rem;
+  border-radius: 7px;
+  background-color: #dfe8f5;
+  border: 1px solid #2169ac;
+  color: black;
+}
 
 @media (max-width: 768px) {
 
@@ -110,5 +117,10 @@ font-weight:bold;
 
   .chat{
       width: 100%;
+  }
+}
+@media (min-width: 320px) and (max-width: 425.9px){
+  .form-controli{
+    width:10rem ;
   }
 }

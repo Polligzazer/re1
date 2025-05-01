@@ -157,7 +157,8 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
         sortedChats.length === 0 ? (
           <div>No conversations yet.</div>
         ) : (
-          sortedChats.map(([key, msg]) => {
+          sortedChats .filter(([_, msg]) => msg.lastMessage?.text?.trim())
+          .map(([key, msg]) => {
             const isActive = chatContext?.data.user?.uid === msg.userInfo.uid;
             const userDisplayName = msg.userInfo.name || 'Unknown';
             const lastName = userDisplayName.split(' ').slice(-1)[0]

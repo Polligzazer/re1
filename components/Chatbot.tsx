@@ -17,7 +17,7 @@ const Chatbot: React.FC = () => {
   const [userName, setUserName] = useState<string>(""); 
   const [showMainOptionsFlag, setShowMainOptionsFlag] = useState(false);
   const [randomMessage, setRandomMessage] = useState<string>("");
-
+  const [isTyping, setIsTyping] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null); 
   // const inputRef = useRef<HTMLInputElement>(null); 
   // const sendButtonRef = useRef<HTMLButtonElement>(null);
@@ -26,7 +26,13 @@ const Chatbot: React.FC = () => {
   const [imageSrc, setImageSrc] = useState(FLO3);
   const chatIconRef = useRef<HTMLButtonElement | null>(null);
   const [hoverMessage, setHoverMessage] = useState("");
+  const endOfMessagesRef = useRef<HTMLDivElement>(null);
   
+  useEffect(() => {
+  if (endOfMessagesRef.current) {
+    endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+  }
+}, [messages, isTyping]);
   
   const PopUPmessages = [
     "Navis is here! How may I help you?",
@@ -290,11 +296,15 @@ const Chatbot: React.FC = () => {
         ? ["🔙 Go back to Options", "🏠 Go back to Main Options"]
         : [];
 
+        setIsTyping(true);
+        setTimeout(() => {
         setMessages((prev) => [
         ...prev,
         { text: choice, sender: "user" },
         { text: response, sender: "bot", options: [...subOptions, ...backButtons] },
         ]);
+        setIsTyping(false);
+      }, 800);
      };
 
      const resetChatbot = () => {
@@ -358,6 +368,7 @@ const Chatbot: React.FC = () => {
                 style={{
                     borderRadius:'15px',
                     backgroundColor: msg.sender === "user" ?  '#e3ecf7' : '#e3ecf7',
+                    maxWidth:'230px',
                 }}>
                 <pre className="p-1 m-0" style={{
                     width:'auto',
@@ -383,7 +394,7 @@ const Chatbot: React.FC = () => {
                             ? showMainOptions()
                             : handleMainSelection(option)
                         }
-                        className="mt-1 d-flex flex-column p-2 text-sm custom-button"
+                        className="mt-1 d-flex flex-column p-2 text-start text-sm custom-button"
                         
                       >
                         {option}
@@ -394,6 +405,14 @@ const Chatbot: React.FC = () => {
               </div>
               </div>
             ))}
+            {isTyping && (
+              <div className="typing-indicator">
+                <div className="dot"></div>
+                <div className="dot"></div>
+                <div className="dot"></div>
+              </div>
+            )}
+              <div ref={endOfMessagesRef} />
           </div>
 
           

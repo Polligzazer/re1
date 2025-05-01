@@ -43,11 +43,10 @@ const UserList = () => {
     }
 
     try {
-      // Get fresh ID token
+
       const token = await auth.currentUser.getIdToken(true);
       if (!token) throw new Error("Not authenticated");
 
-      // Call Vercel serverless function
       const res = await fetch('https://flo-proxy.vercel.app/api/delete-user', {
         method: 'POST',
         headers: {
@@ -62,7 +61,6 @@ const UserList = () => {
         throw new Error(error || res.statusText);
       }
 
-      // Update local state
       setUsers((prev) => prev.filter((u) => u.id !== userId));
 
       alert("User and all their data have been deleted.");
@@ -72,7 +70,6 @@ const UserList = () => {
     }
   };
 
-  // Improved filtering logic
   const searchLower = searchTerm.toLowerCase();
   const filteredUsers = users.filter((user) => 
     user.firstName?.toLowerCase().includes(searchLower) ||

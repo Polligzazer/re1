@@ -216,16 +216,10 @@ const Input = () => {
       <input
         type="text"
         placeholder="Type message or attach file..."
-        className="form-control p-3"
+        className="form-controli p-1 px-2"
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        style={{
-          width: "20rem",
-          borderRadius: "7px",
-          backgroundColor: "#dfe8f5",
-          border: "1px solid #2169ac",
-        }}
       />
 
       <input type="file" id="fileInput" className="d-none" onChange={handleFileChange} />

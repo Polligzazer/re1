@@ -4,6 +4,8 @@ import { auth, db } from "../src/firebase";
 import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import "../css/completeregistration.css";
+import { motion } from 'framer-motion';
+import { Modal } from "react-bootstrap";
 
 const CompleteRegistration: React.FC = () => {
   const navigate = useNavigate();
@@ -12,6 +14,7 @@ const CompleteRegistration: React.FC = () => {
   const [userEmail, setUserEmail] = useState("");
   const [userUID, setUserUID] = useState<string | null>(null);
   const [_loading, setLoading] = useState(false);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -87,6 +90,7 @@ const CompleteRegistration: React.FC = () => {
     }
 
     try {
+      setShowLoadingModal(true);
       setLoading(true);
 
       const requiredFields = ["firstName", "lastName", "contact", "role"];
@@ -102,7 +106,7 @@ const CompleteRegistration: React.FC = () => {
         }
       }
 
-      // Save user data in 'users' collection
+      
       const userRef = doc(db, "users", userUID);
       await setDoc(userRef, {
         ...formData,
@@ -110,30 +114,25 @@ const CompleteRegistration: React.FC = () => {
         uid: userUID,
       });
 
-      // Initialize their userChats document (empty at start)
       const userChatsRef = doc(db, "userChats", userUID);
       await setDoc(userChatsRef, {});
 
-      // OPTIONAL: Automatically create a chat with admin user
-      const adminUID = "rWU1JksUQzUhGX42FueojcWo9a82"; // Replace with your actual admin UID
+      const adminUID = "rWU1JksUQzUhGX42FueojcWo9a82"; 
       const combinedId =
         userUID > adminUID ? userUID + adminUID : adminUID + userUID;
 
-      // Check if the chat already exists
       const chatRef = doc(db, "chats", combinedId);
       const chatSnap = await getDoc(chatRef);
 
       if (!chatSnap.exists()) {
-        // Create the chat document with an empty messages array
         await setDoc(chatRef, { messages: [] });
 
-        // Update userChats for both user and admin
         await updateDoc(doc(db, "userChats", userUID), {
           [combinedId]: {
             userInfo: {
               uid: adminUID,
-              displayName: "Admin", // Use admin display name
-              photoURL: "", // Optional admin profile photo
+              displayName: "Admin", 
+              
             },
             date: serverTimestamp(),
           },
@@ -143,25 +142,27 @@ const CompleteRegistration: React.FC = () => {
           [combinedId]: {
             userInfo: {
               uid: userUID,
-              displayName: formData.lastName, // Or full name
-              photoURL: "", // Optional photo
+              displayName: formData.lastName,
+              
             },
             date: serverTimestamp(),
           },
         });
       }
 
-      // 🔄 Call refreshUser after registration complete
+     
       await refreshUser(userUID);
 
       console.log("✅ Registration and chat setup complete.");
-      navigate("/home");
+      setLoading(false);
+      setTimeout(() => {
+        setShowLoadingModal(false);
+        navigate("/home");
+      }, 1000); 
     } catch (error) {
       console.error("❌ Error during registration:", error);
       alert("An error occurred.");
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   const [progress, setProgress] = useState(11);
@@ -188,16 +189,28 @@ const CompleteRegistration: React.FC = () => {
   return (
     <div className="main d-flex justify-content-start align-items-center px-5">
       <div className="regcontainer p-3 mb-5">
-        <p className="welcometoflo p-0 m-0"
+      <motion.p
+          className="welcometoflo p-0 m-0"
           style={{
             fontSize: "clamp(25px, 2vw, 45px)",
-
-          }}>Welcome to FLO</p>
-        <p className="wewouldlike"
+          }}
+          initial={{ opacity: 0, scale: 0.8 }} 
+          animate={{ opacity: 1, scale: 1 }} 
+          transition={{ duration: 0.3 }}
+        >
+          Welcome to FLO
+        </motion.p>
+        <motion.p
+          className="wewouldlike"
           style={{
             fontSize: "clamp(14px, 1.3vw, 19px)"
-          }}>We would like to know you better, fill in the following below</p>
-        
+          }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          We would like to know you better, fill in the following below
+        </motion.p>
       <div className="progress-bar">
         {[1, 2, 3].map((num) => (
           <div key={num} className={`progress-step ${step >= num ? "active" : ""}`}></div>
@@ -210,7 +223,13 @@ const CompleteRegistration: React.FC = () => {
         </div>  
         
       {step === 1 && (
-          <div className="textfields3 p-3 d-flex flex-column">
+          <motion.div
+            className="textfields3 p-3 d-flex flex-column"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <div className="textfields p-3 d-flex flex-column flex-md-row">
               <input
                 className="regFname me-4"
@@ -259,11 +278,17 @@ const CompleteRegistration: React.FC = () => {
                 handleButtonClick()
               }}> Next </button>
           </div>   
-        </div>
+        </motion.div>
       )}
 
       {step === 2 && (
-          <div className="mt-3 px-2">
+          <motion.div
+            className="mt-3 px-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <select className="selectroledrop" name="role" value={formData.role} onChange={handleChange} required aria-label="Select Role">
             <option value="">Select Role</option>
             <option value="faculty">Faculty</option>
@@ -314,29 +339,72 @@ const CompleteRegistration: React.FC = () => {
                 setStep(3)
                 handleButtonClick()}}>Next</button>
         </div>
-        </div>
+        </motion.div>
       )}
 
       {step === 3 && (
-          <div>
+         <motion.div
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 1 }}
+           exit={{ opacity: 0 }}
+           transition={{ duration: 0.5 }}
+         >
             <p className="regreview"> Please review your details before submitting</p>
             <button className="regprevious2 me-2 p-1 px-4 rounded-5" onClick={() => {
                 setStep(2)
                 handleButtonReset()
               }}>Previous</button>
             <button className="regsubmit p-1 px-4 rounded-5" onClick={handleSubmit}>Submit</button>
-        </div>
+        </motion.div>
         )}
       </div>  
-      <div className="imgcustomshow" >
-        <img src="/assets/image.png" style={{
-          maxWidth:'100%',
-          height:'100%',
-          objectFit:"cover"
-        }}/>
-
-      </div>
+      <motion.div
+        className="imgcustomshow"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+      >
+        <img
+          src="/assets/image.png"
+          style={{
+            maxWidth: '100%',
+            height: '100%',
+            objectFit: "cover",
+          }}
+        />
+      </motion.div>
+      <Modal show={showLoadingModal} onHide={() => setShowLoadingModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{_loading ? "Registering..." : "Registration Complete"}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {_loading ? (
+            <div className="d-flex justify-content-center align-items-center flex-column">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+                Registering your account...
+              </span>
+            </div>
+          ) : (
+            <div className="d-flex justify-content-center align-items-center flex-column">
+              <div className="check-container pb-1">
+                <div className="check-background">
+                  <svg viewBox="0 0 65 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 25L27.3077 44L58.5 7" stroke="white" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </div>
+              <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+                Registered successfully!
+              </span>
+            </div>
+          )}
+        </Modal.Body>
+      </Modal>
     </div>
+    
   );
 };
 

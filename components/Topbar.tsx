@@ -160,7 +160,7 @@ const Topbar = () => {
         setShowModal(true);
       } else {
         console.error("❌ Failed to fetch item details for context ID:", notif.contextId);
-        alert("The related item could not be found.");
+        alert("The related item could not be found. It may have been removed.");
       }
       return;
     }
@@ -369,7 +369,7 @@ const Topbar = () => {
           style={{
             overflow:"hidden"
           }}>
-  <ul className="nav flex-column py-4 mb-lg-3 justify-content-center align-items-center w-100">
+  <ul className="nav flex-column pb-1 pt-4 mb-lg-3 justify-content-center align-items-center w-100">
     {isAdmin ? (
       <>
         <li className="nav-item text-center w-100">
@@ -662,7 +662,7 @@ const Topbar = () => {
 
   {/* LOGOUT DIV WITH BORDER-TOP */}
     <div
-    className="mt-auto m-lg-2 pt-3"
+    className=" m-lg-2 pt-1"
     style={{
       borderTop: isAdmin ? "0.5px solid #004097" : "none",
     }}

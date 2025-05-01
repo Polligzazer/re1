@@ -35,17 +35,18 @@ const AdminApproval: React.FC = () => {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reporterName, setReporterName] = useState('');
-
+  const [modalStatus, setModalStatus] = useState<'idle' | 'loading' | 'approved'>('idle');
 
   const approveReport = async (reportId: string) => {
     try {
-      setLoading(true);
+      setModalStatus('loading'); 
       console.log("🔄 Fetching report data...");
       
       const reportRef = doc(db, "lost_items", reportId);
       const reportSnap = await getDoc(reportRef);
   
       if (!reportSnap.exists()) {
+        setModalStatus('idle'); 
         alert("❗ Report not found.");
         return;
       }
@@ -112,8 +113,7 @@ const AdminApproval: React.FC = () => {
     
       await Promise.all(notificationPromises);
       setReports((prevReports) => prevReports.filter((r) => r.id !== reportId));
-      setIsApproved(true);  
-      setLoading(false);  
+      setModalStatus('approved'); 
     } catch (error) {
       console.error("❗ Error approving report:", error);
       alert("❗ Failed to approve the report.");
@@ -520,93 +520,91 @@ const AdminApproval: React.FC = () => {
             }}
           >
 
-               {loading ? (
-                  <div className="d-flex justify-content-center align-items-center mt-5">
-                    <Spinner animation="border" role="status">
-                      <span className="visually-hidden">Sending email...</span>
-                    </Spinner>
-                    <span className="ms-1"> Processing...</span>
+          {modalStatus === 'loading' && (
+              <div className="d-flex justify-content-center align-items-center mt-5">
+                <Spinner animation="border" role="status">
+                  <span className="visually-hidden">Sending email...</span>
+                </Spinner>
+                <span className="ms-1"> Processing...</span>
+              </div>
+            )}
+
+            {modalStatus === 'approved' && (
+              <div className="d-flex justify-content-center align-items-center m-2 me-3">
+                <div className="check-container pb-1">
+                  <div className="check-background">
+                    <svg viewBox="0 0 65 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7 25L27.3077 44L58.5 7" stroke="white" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   </div>
-                ) : isApproved ? (
-                
-                  <div className="d-flex justify-content-center align-items-center m-2 me-3">
-            
-                  <div className="check-container pb-1">
-                    <div className="check-background">
-                      <svg viewBox="0 0 65 51" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M7 25L27.3077 44L58.5 7" stroke="white" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" />
-                      </svg>
-                    </div>
-                    
-                  </div>
-              
-                    <span className="ms-1"> Report Approved</span>
-                  </div>
-                ) : (
-                  <>
-            
-              <p><strong>Item: </strong>{selectedReport.item} ({selectedReport.category})</p>
-              <p><strong>Location:</strong> {selectedReport.location} </p>
-              <p><strong>Date of Lost:</strong> {selectedReport.date}</p>
+                </div>
+                <span className="ms-1"> Report Approved</span>
+              </div>
+            )}
+
+            {modalStatus === 'idle' && (
+              <>
+                <p><strong>Item: </strong>{selectedReport.item} ({selectedReport.category})</p>
+                <p><strong>Location:</strong> {selectedReport.location}</p>
+                <p><strong>Date of Lost:</strong> {selectedReport.date}</p>
               </>
-                )}
+            )}
           </Modal.Body>
           <Modal.Footer className="d-flex justify-content-between pb-1 flex-column align-items-start">
-          {isApproved ? (
-          
-            <div className="d-flex ms-auto pt-1">
-              <Button
-                variant="secondary"
-                onClick={() => setShowModal(false)}
-                style={{
-                  backgroundColor: "#2c6dc2",
-                  color: "white",
-                  fontSize: "13px",
-                  outline: "none",
-                  border: "none",
-                  fontFamily: "Poppins, sans-serif",
-                }}
-              >
-                Close
-              </Button>
-            </div>
-          ) : (
-            <div className="d-flex gap-2 ms-auto">
-              <Button 
-                variant="danger" 
-                onClick={() => {
-                  if (selectedReport) {
-                    denyReport(selectedReport.id);
-                    setShowModal(false);
-                  }
-                }}
-                style={{
-                  backgroundColor: '#e86b70',
-                  color: 'white',
-                  fontSize: '13px',
-                  outline: 'none',
-                  border: 'none',
-                  fontFamily: "Poppins, sans-serif",
-                }}
-              >
-                Deny
-              </Button>
-              <Button 
-                onClick={() => approveReport(selectedReport.id)}
-                disabled={loading}
-                style={{
-                  backgroundColor: '#67d753',
-                  color: 'white',
-                  fontSize: '13px',
-                  outline: 'none',
-                  border: 'none',
-                  fontFamily: "Poppins, sans-serif",
-                }}
-              >
-                {loading ? "Processing..." : "Approve"}
-              </Button>
-            </div>
-          )}
+            {modalStatus === 'approved' ? (
+              <div className="d-flex ms-auto pt-1">
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowModal(false)}
+                  style={{
+                    backgroundColor: "#2c6dc2",
+                    color: "white",
+                    fontSize: "13px",
+                    outline: "none",
+                    border: "none",
+                    fontFamily: "Poppins, sans-serif",
+                  }}
+                >
+                  Close
+                </Button>
+              </div>
+            ) : (
+              <div className="d-flex gap-2 ms-auto">
+                <Button 
+                  variant="danger" 
+                  onClick={() => {
+                    if (selectedReport) {
+                      denyReport(selectedReport.id);
+                      setShowModal(false);
+                    }
+                  }}
+                  style={{
+                    backgroundColor: '#e86b70',
+                    color: 'white',
+                    fontSize: '13px',
+                    outline: 'none',
+                    border: 'none',
+                    fontFamily: "Poppins, sans-serif",
+                  }}
+                >
+                  Deny
+                </Button>
+                <Button 
+                  onClick={() => approveReport(selectedReport.id)}
+                  disabled={modalStatus === 'loading'}
+                  style={{
+                    backgroundColor: '#67d753',
+                    color: 'white',
+                    fontSize: '13px',
+                    outline: 'none',
+                    border: 'none',
+                    fontFamily: "Poppins, sans-serif",
+                  }}
+                >
+                  {modalStatus === 'loading' ? "Processing..." : "Approve"}
+                </Button>
+              </div>
+            )}
           </Modal.Footer>
         </Modal>
       )}
@@ -637,29 +635,29 @@ const AdminApproval: React.FC = () => {
             fontSize: "16.4px",
           }}
         >  
-         {loading ? (
-          <div className="d-flex justify-content-center align-items-center mt-5">
-            <Spinner animation="border" role="status">
-              <span className="visually-hidden">Sending email...</span>
-            </Spinner>
-            <span className="ms-1"> Processing...</span>
-          </div>
-        ) : isApproved ? (
-         
-          <div className="d-flex justify-content-center align-items-center m-2 me-3">
-    
-          <div className="check-container pb-1">
-            <div className="check-background">
-              <svg viewBox="0 0 65 51" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7 25L27.3077 44L58.5 7" stroke="white" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </div>
-            
-          </div>
-      
-            <span className="ms-1"> Report Approved</span>
-          </div>
-        ) : (
+         {modalStatus === 'loading' && (
+              <div className="d-flex justify-content-center align-items-center mt-5">
+                <Spinner animation="border" role="status">
+                  <span className="visually-hidden">Sending email...</span>
+                </Spinner>
+                <span className="ms-1"> Processing...</span>
+              </div>
+        )}
+
+        {modalStatus === 'approved' && (
+              <div className="d-flex justify-content-center align-items-center m-2 me-3">
+                <div className="check-container pb-1">
+                  <div className="check-background">
+                    <svg viewBox="0 0 65 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7 25L27.3077 44L58.5 7" stroke="white" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                </div>
+                <span className="ms-1"> Report Approved</span>
+              </div>
+        )}
+
+        {modalStatus === 'idle' && (
           <>
           <p><strong>Item:</strong> {selectedReport.item} ({selectedReport.category})</p>
           <p><strong>Location found:</strong> {selectedReport.location}</p>
@@ -673,7 +671,7 @@ const AdminApproval: React.FC = () => {
         )}
         </Modal.Body>
         <Modal.Footer className="d-flex justify-content-between pb-1 flex-column align-items-start">
-            {isApproved ? (
+          {modalStatus === 'approved' ? (
           
             <div className="d-flex ms-auto pt-1">
               <Button
@@ -725,7 +723,7 @@ const AdminApproval: React.FC = () => {
                   fontFamily: "Poppins, sans-serif",
                 }}
               >
-                {loading ? "Processing..." : "Confirm Surrender & Approve"}
+                 {modalStatus === 'loading' ? "Processing..." : "Confirm Surrender & Approve"}
               </Button>
             </div>
           )}
