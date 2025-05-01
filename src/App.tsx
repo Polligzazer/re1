@@ -33,7 +33,7 @@ import Hero from "../pages/heropage.tsx";
 
 function App() {
   const { currentUser, loading } = useContext(AuthContext);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [ _hasInteracted, setHasInteracted] = useState(false);
 
   const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     if (loading) return <Loading />;
