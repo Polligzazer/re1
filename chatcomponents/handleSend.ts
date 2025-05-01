@@ -13,6 +13,8 @@ export const handleSend = async (
     if (!customText?.trim()) return;
     if (!currentUser?.uid || !chatData.chatId || !chatData.user?.uid) return; // Ensure user exists
 
+    const displayName = currentUser.firstName + currentUser.lastName;
+
     const inquiryLink = reportId
     ? `Inquiry about Report ID: ${reportId}`
     : '';
@@ -57,7 +59,7 @@ export const handleSend = async (
             [`${chatData.chatId}.timestamp`]: serverTimestamp(),
             [`${chatData.chatId}.userInfo`]: {
                 uid: currentUser.uid,
-                name: currentUser.displayName,
+                name: displayName,
             },
         });
 

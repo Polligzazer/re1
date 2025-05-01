@@ -419,7 +419,7 @@ const Topbar = () => {
          
         </div>
 
-        <div className="offcanvas-body p-0  d-flex flex-column h-100" 
+        <div className="offcanvas-body p-0 d-flex flex-column h-100" 
           style={{
             overflow:"hidden"
           }}>
@@ -430,7 +430,7 @@ const Topbar = () => {
           <NavLink
             to="/home"
             className={({ isActive }) =>
-              `nav-link ${isActive ? "active py-4" : "py-4"}`
+              `nav-link d-flex gap-2 justify-content-center align-items-center ${isActive ? "active py-4" : "py-4"}`
             }
             onClick={() => setSidebarOpen(false)}
             style={({ isActive }) => ({
@@ -447,7 +447,6 @@ const Topbar = () => {
               style={{
                 width: "21.8px",
                 height: "20.3px",
-                marginRight: "10px",
                 marginBottom: "5px",
               }}
             />
@@ -458,7 +457,7 @@ const Topbar = () => {
           <NavLink
             to="/dashboard"
             className={({ isActive }) =>
-              `nav-link ${isActive ? "active py-4" : "py-4"}`
+              `nav-link d-flex gap-2 justify-content-center align-items-center ${isActive ? "active py-4" : "py-4"}`
             }
             onClick={() => setSidebarOpen(false)}
             style={({ isActive }) => ({
@@ -475,7 +474,6 @@ const Topbar = () => {
               style={{
                 width: "21.8px",
                 height: "20.3px",
-                marginRight: "10px",
                 marginBottom: "5px",
               }}
             />
@@ -486,7 +484,7 @@ const Topbar = () => {
           <NavLink
             to="/report"
             className={({ isActive }) =>
-              `nav-link ${isActive ? "active py-4" : "py-4"}`
+              `nav-link d-flex gap-2 justify-content-center align-items-center ${isActive ? "active py-4" : "py-4"}`
             }
             onClick={() => setSidebarOpen(false)}
             style={({ isActive }) => ({
@@ -503,7 +501,6 @@ const Topbar = () => {
               style={{
                 width: "21.8px",
                 height: "20.3px",
-                marginRight: "10px",
                 marginBottom: "5px",
               }}
             />
@@ -514,7 +511,7 @@ const Topbar = () => {
           <NavLink
             to="/item-history"
             className={({ isActive }) =>
-              `nav-link ${isActive ? "active py-4" : "py-4"}`
+              `nav-link d-flex gap-2 justify-content-center align-items-center ${isActive ? "active py-4" : "py-4"}`
             }
             onClick={() => setSidebarOpen(false)}
             style={({ isActive }) => ({
@@ -531,7 +528,6 @@ const Topbar = () => {
               style={{
                 width: "21.8px",
                 height: "20.3px",
-                marginRight: "10px",
                 marginBottom: "5px",
               }}
             />
@@ -542,7 +538,7 @@ const Topbar = () => {
           <NavLink
             to="/inquiries"
             className={({ isActive }) =>
-              `nav-link ${isActive ? "active py-4" : "py-4"}`
+              `nav-link d-flex gap-2 justify-content-center align-items-center ${isActive ? "active py-4" : "py-4"}`
             }
             onClick={() => setSidebarOpen(false)}
             style={({ isActive }) => ({
@@ -559,7 +555,6 @@ const Topbar = () => {
               style={{
                 width: "21.8px",
                 height: "21.8px",
-                marginRight: "10px",
                 marginBottom: "5px",
               }}
             />
@@ -570,7 +565,7 @@ const Topbar = () => {
           <NavLink
             to="/userlist"
             className={({ isActive }) =>
-              `nav-link ${isActive ? "active py-4" : "py-4"}`
+              `nav-link d-flex gap-2 justify-content-center align-items-center ${isActive ? "active py-4" : "py-4"}`
             }
             onClick={() => setSidebarOpen(false)}
             style={({ isActive }) => ({
@@ -587,7 +582,6 @@ const Topbar = () => {
               style={{
                 width: "21.8px",
                 height: "20.3px",
-                marginRight: "10px",
                 marginBottom: "5px",
               }}
             />
@@ -601,7 +595,7 @@ const Topbar = () => {
           <NavLink
             to="/home"
             className={({ isActive }) =>
-              `nav-link ${isActive ? "active py-4" : " py-4"}`
+              `nav-link d-flex gap-2 justify-content-center align-items-center ${isActive ? "active py-4" : " py-4"}`
             }
             onClick={() => setSidebarOpen(false)}
             style={({ isActive }) => ({
@@ -617,7 +611,6 @@ const Topbar = () => {
               style={{
                 width: "21.8px",
                 height: "20.3px",
-                marginRight: "10px",
                 marginBottom: "5px",
               }}
             />
@@ -628,7 +621,7 @@ const Topbar = () => {
           <NavLink
             to="/report"
             className={({ isActive }) =>
-              `nav-link ${isActive ? "active py-4" : "py-4"}`
+              `nav-link d-flex gap-2 justify-content-center align-items-center ${isActive ? "active py-4" : "py-4"}`
             }
             onClick={() => setSidebarOpen(false)}
             style={({ isActive }) => ({
@@ -645,7 +638,6 @@ const Topbar = () => {
               style={{
                 width: "21.8px",
                 height: "20.3px",
-                marginRight: "10px",
                 marginBottom: "5px",
               }}
             />
@@ -656,7 +648,7 @@ const Topbar = () => {
           <NavLink
             to="/item-history"
             className={({ isActive }) =>
-              `nav-link ${isActive ? "active py-4" : "py-4"}`
+              `nav-link d-flex gap-2 justify-content-center align-items-center ${isActive ? "active py-4" : "py-4"}`
             }
             onClick={() => setSidebarOpen(false)}
             style={({ isActive }) => ({
@@ -673,7 +665,6 @@ const Topbar = () => {
               style={{
                 width: "21.8px",
                 height: "20.3px",
-                marginRight: "10px",
                 marginBottom: "5px",
               }}
             />
@@ -684,7 +675,7 @@ const Topbar = () => {
           <NavLink
             to="/inquiries"
             className={({ isActive }) =>
-              `nav-link ${isActive ? "active py-4" : "py-4"}`
+              `nav-link d-flex gap-2 justify-content-center align-items-center ${isActive ? "active py-4" : "py-4"}`
             }
             onClick={() => setSidebarOpen(false)}
             style={({ isActive }) => ({
@@ -701,7 +692,6 @@ const Topbar = () => {
               style={{
                 width: "21.8px",
                 height: "21.8px",
-                marginRight: "10px",
                 marginBottom: "5px",
               }}
             />
