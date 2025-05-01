@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
-import { setupAndSaveFCMToken, migrateLegacyTokens, requestNotificationPermission, onMessageListener  } from "./firebase";
+import { setupAndSaveFCMToken, migrateLegacyTokens, onMessageListener, getFCMToken  } from "./firebase";
 import { toast } from "react-toastify";
+import { playNotificationSound } from "../components/notifSound";
 import { watchNewMessagesForUser } from "../components/notificationService";
-import { initForegroundNotifications } from "./types/notifications";
 // import { SpeedInsights } from '@vercel/speed-insights/react';
 import Layout from "../components/Layout";
 import Signup from "../components/signup";
@@ -30,7 +30,7 @@ import ReportApproval from "../pages/dashcomps/AdminApproval";
 import Claimed from "../pages/dashcomps/ClaimsPage";
 import Hero from "../pages/heropage.tsx";
 
-import { registerServiceWorker } from "./types/serviceWorker";
+import { sendSubscriptionToServer } from "./types/serviceWorker";
 
 
 function App() {
@@ -54,9 +54,59 @@ function App() {
   }, []);
 
   useEffect(() => {
+    getFCMToken();
+    playNotificationSound();
+    const registerServiceWorker = async () => {
+      const reg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      return reg;
+    };
+
+    const subscribeUserToPushNotifications = async () => {
+      try {
+        const reg = await registerServiceWorker();
+
+        // Get the push subscription
+        const subscription = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: "BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w",
+        });
+
+        console.log("Push subscription obtained:", subscription);
+
+        await sendSubscriptionToServer(subscription);
+      } catch (error) {
+        console.error("Failed to subscribe to push notifications:", error);
+      }
+    };
+
+    const initForegroundNotifications = () => {
+      // Add logic to handle foreground notifications if needed
+      console.log("Foreground notification listener setup.");
+    };
+
+    const requestNotificationPermission = async () => {
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        // You could get the token here or handle any additional logic for permission
+        console.log("Notification permission granted!");
+      } else {
+        console.error("Notification permission denied!");
+      }
+    };
+
     registerServiceWorker()
       .then((reg) => {
         console.log("✅ Service Worker registered:", reg);
+
+        reg.pushManager.getSubscription().then((subscription) => {
+          if (subscription) {
+            console.log("Subscription exists:", subscription);
+          } else {
+            console.log("No active subscription");
+            // Optionally, prompt the user to subscribe to push notifications
+            subscribeUserToPushNotifications();
+          }
+        });
 
         // Handle foreground FCM messages via the SDK
         initForegroundNotifications();

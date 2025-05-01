@@ -81,6 +81,20 @@ export const markNotificationAsRead = async (userId: string, notificationId: str
     console.error("❗ Error marking notification as read:", error);
   }
 };
+export const markAllNotificationsAsRead = async (userId: string, notifications: AppNotification[]) => {
+  try {
+    const unread = notifications.filter((notif) => !notif.isRead);
+    const updatePromises = unread.map((notif) => {
+      const ref = doc(db, "users", userId, "notifications", notif.id);
+      return updateDoc(ref, { isRead: true });
+    });
+
+    await Promise.all(updatePromises);
+    console.log("✅ All notifications marked as read.");
+  } catch (error) {
+    console.error("❗ Error marking all notifications as read:", error);
+  }
+};
 
 export const hasUnreadNotifications = (notifications: AppNotification[]): boolean => {
   return notifications.some((notif) => !notif.isRead);
@@ -191,6 +205,8 @@ export interface ValidMessage {
 
 // Global cache to track notifications (survives component remounts)
 const lastMessageMap = new Map<string, string>();
+let lastNotificationTime: number | null = null;
+const notificationCooldown = 5000;
 
 export function watchNewMessagesForUser(
   userId: string,
@@ -202,6 +218,7 @@ export function watchNewMessagesForUser(
   let currentToken: string | null = null;
   (async () => {
     currentToken = await getFCMToken();
+    console.log("Message notif FCM Token:", currentToken);
     if (!currentToken) {
       console.warn("⚠️ Could not get FCM token—push disabled");
     }
@@ -210,32 +227,46 @@ export function watchNewMessagesForUser(
   const unsubscribe = onSnapshot(ref, async (snap) => {
     if (!snap.exists() || snap.metadata.hasPendingWrites) return;
     const chats = snap.data() as Record<string, any>;
-
     if (isInitialLoad) {
       isInitialLoad = false;
       return;
     }
-
     if (!currentToken) return;
 
     for (const [chatId, raw] of Object.entries(chats)) {
       const lastMessage = raw.lastMessage as ValidMessage | undefined;
       if (!lastMessage?.text || lastMessage.senderId === userId) continue;
-    
       const messageId = `${lastMessage.text}|${lastMessage.timestamp.seconds}|${lastMessage.timestamp.nanoseconds}`;
       const previousMessageId = lastMessageMap.get(chatId);
+      if (messageId === previousMessageId) continue;
+      lastMessageMap.set(chatId, messageId);
+
+      const now = Date.now();
+      if (lastNotificationTime && now - lastNotificationTime < notificationCooldown) {
+        console.log(`⏭️ Skipping notification due to cooldown: ${now - lastNotificationTime}ms`);
+        continue;
+      }
+      lastNotificationTime = now;
     
-      if (messageId === previousMessageId) continue; // Skip duplicates
-      lastMessageMap.set(chatId, messageId); // Track new message
-    
-      // Fetch sender and send notification
       try {
         const senderDocRef = doc(db, "users", lastMessage.senderId);
         const senderSnap = await getDoc(senderDocRef);
         const senderName = senderSnap.exists()
           ? `${senderSnap.data().firstName || ""} ${senderSnap.data().lastName || ""}`.trim() || "Unknown"
           : "Unknown";
-    
+        if (document.hidden) {
+          const originalTitle = document.title;
+          let blinkCount = 0;
+          const blinkInterval = setInterval(() => {
+            if (blinkCount >= 6) {
+              clearInterval(blinkInterval);
+              document.title = originalTitle;
+              return;
+            }
+            document.title = document.title === `${senderName}` ? 'FLO' : `${senderName}`;
+            blinkCount++;
+          }, 700);
+        }
         onNewMessage(chatId, lastMessage);
         console.log("[📨 Incoming Message]", chatId, lastMessage);
         if (currentToken) {
@@ -244,6 +275,7 @@ export function watchNewMessagesForUser(
             body: lastMessage.text,
             url: `/inquiries/${chatId}`,
           });
+          console.log("✅ Push notification sent:", lastMessage.text, senderName);
         }
       } catch (error) {
         console.error("Error sending push notification:", error);
@@ -302,7 +334,6 @@ export const createNotification = async (
 
     await batch.commit();
     console.log("📨 Notification created for", userId);
-    
   } catch (error) {
     console.error("💥 Notification error:", error);
     throw error;

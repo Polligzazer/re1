@@ -16,3 +16,35 @@ export async function getSWRegistration(): Promise<ServiceWorkerRegistration> {
   }
   return navigator.serviceWorker.ready;
 }
+
+export const sendSubscriptionToServer = async (subscription: PushSubscription) => {
+  const key = subscription.getKey('p256dh');
+  const auth = subscription.getKey('auth');
+
+  if (!key || !auth) {
+    console.error("❌ Failed to extract keys from subscription.");
+    return;
+  }
+
+  const payload = {
+    endpoint: subscription.endpoint,
+    keys: {
+      p256dh: btoa(String.fromCharCode(...new Uint8Array(key))),
+      auth: btoa(String.fromCharCode(...new Uint8Array(auth))),
+    },
+  };
+
+  try {
+    const response = await fetch('https://flo-proxy.vercel.app/api/saveSubscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw new Error("Failed to send subscription to server");
+
+    console.log("📬 Subscription sent to server");
+  } catch (err) {
+    console.error("❌ Error sending subscription to server:", err);
+  }
+};

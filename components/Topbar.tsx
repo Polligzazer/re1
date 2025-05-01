@@ -5,6 +5,7 @@ import { AuthContext } from "../components/Authcontext";
 import {
   AppNotification,
   markNotificationAsRead,
+  markAllNotificationsAsRead,
   fetchNotifications,
   fetchItemDetails,
   watchNewMessagesForUser, 
@@ -17,6 +18,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { Item } from "./types";
 import ItemPreviewModal from "./ItemPreviewModal";
 import "../css/topbar.css";
+import { playNotificationSound } from "../components/notifSound";
 
 import OptionIcon from "/assets/OptionIcon.png";
 import FLOLOGObg from "/assets/FLOLOGObg.png";
@@ -42,6 +44,7 @@ const Topbar = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showModal, setShowModal] = useState(false);
   const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const prevNotifsRef = useRef<AppNotification[]>([]);
 
   const { isAdmin } = useContext(AuthContext);
   const userId = auth.currentUser?.uid;
@@ -86,16 +89,37 @@ const Topbar = () => {
       navigate(`/search?query=${encodeURIComponent(searchInput.trim())}`);
     }
   };
+  
+
+  const handleMarkAllAsRead = async () => {
+    if (!userId) return;
+    try {
+      await markAllNotificationsAsRead(userId, notifications);
+      const updated = notifications.map((notif) => ({ ...notif, isRead: true }));
+      setNotifications(updated);
+    } catch (err) {
+      console.error("Error marking all notifications as read:", err);
+    }
+  };
 
   useEffect(() => {
     if (!userId) return;
   
-    // Fetch and listen for notifications
     const unsubscribeNotif = fetchNotifications(userId, (fetchedNotifications) => {
+      const prevNotifs = prevNotifsRef.current;
+    
+      const newNotifs = fetchedNotifications.filter(
+        notif => !prevNotifs.find(prev => prev.id === notif.id)
+      );
+  
+      if (newNotifs.length > 0) {
+        playNotificationSound();
+      }
+
       setNotifications(fetchedNotifications);
       setHasUnread(fetchedNotifications.some(notif => !notif.isRead));
     });
-  
+    
     // Message listener
     const handleNewMessage = (chatId: string, message: ValidMessage) => {
       if (message.senderId === userId) return;
@@ -105,11 +129,11 @@ const Topbar = () => {
         undefined, "message", chatId)
         .then(() => console.log("Notification created"))
         .catch(console.error);
-    };
-  
-    const unsubscribeMessages = watchNewMessagesForUser(userId, handleNewMessage);
-  
-    return () => {
+      };
+      
+      const unsubscribeMessages = watchNewMessagesForUser(userId, handleNewMessage);
+      
+      return () => {
       unsubscribeNotif();
       unsubscribeMessages();
     };
@@ -127,15 +151,13 @@ const Topbar = () => {
       );
   
       if (notif.type === "message" && notif.chatId) {
-        console.log(`➡️ Navigating to chatroom with ID: ${notif.chatId}`);
         navigate(`/inquiries/${notif.chatId}`);
-        return; // return early so no more code runs
+        return;
       }
   
       if (notif.contextId) {
         const itemDetails = await fetchItemDetails(notif.contextId);
         if (itemDetails) {
-          console.log("✅ Item details fetched:", itemDetails);
           setSelectedItem(itemDetails);
           setShowModal(true);
           console.log("🪟 Modal opened with selected item.");
@@ -145,14 +167,11 @@ const Topbar = () => {
       }
   
       if (notif.reportId) {
-        console.log(`Fetching details for report ID: ${notif.reportId}`);
         const itemDetails = await fetchItemDetails(notif.reportId);
         if (!itemDetails) {
-          console.error("Item details not found for ID:", notif.reportId);
           alert("The reported item could not be found. It may have been removed.");
           return;
         }
-        console.log("Retrieved item details:", itemDetails);
         setSelectedItem(itemDetails);
         setShowModal(true);
       }
@@ -245,7 +264,29 @@ const Topbar = () => {
                 }}
               >
 
-                <li className="dropdown-header fw-bold border-bottom fs-5" style={{ color: "#0e5cc5"}}>Notifications</li>
+                <li className="dropdown-header d-flex justify-content-between fw-bold border-bottom fs-5" style={{ color: "#0e5cc5"}}>Notifications
+                  <div className="dropstart" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      className="btn btn-sm btn-light border-0"
+                      type="button"
+                      id="notifMenu"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="true"
+                    >
+                      <i className="bi bi-three-dots"></i>
+                    </button>
+                    <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="notifMenu">
+                      <li>
+                        <button
+                          className="d-flex justify-content-center dropdown-item"
+                          onClick={handleMarkAllAsRead}
+                        >
+                          <small>Mark all as read</small>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
                 {notifications.length === 0 ? (
                   <li className="dropdown-item text-center">No new notifications</li>
                 ) : (
