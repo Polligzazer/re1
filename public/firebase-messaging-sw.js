@@ -10,29 +10,32 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
-  const { title, body, data } = payload.data;
-  
-  return self.registration.showNotification(title, {
+messaging.onBackgroundMessage(function(payload) {
+  console.log('[firebase-messaging-sw.js] Received background message', payload);
+
+  const { title, body } = payload.data;
+
+  self.registration.showNotification(title, {
     body,
     icon: '/icon.png',
-    data
+    data: payload.data,
   });
 });
 
-self.addEventListener('notificationclick', function(event) {
+self.addEventListener('notificationclick', function (event) {
   event.notification.close();
 
+  const urlToOpen = event.notification.data?.url || '/';
+  
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then(function(clientList) {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
-        if (client.url.includes('/home') && 'focus' in client) {
+        if (client.url.includes(urlToOpen) && 'focus' in client) {
           return client.focus();
         }
       }
-
       if (clients.openWindow) {
-        return clients.openWindow('/home');
+        return clients.openWindow(urlToOpen);
       }
     })
   );

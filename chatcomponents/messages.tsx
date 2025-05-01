@@ -94,10 +94,17 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
 
   useEffect(() => {
     const sorted = Object.entries(messages).sort((a, b) => {
+<<<<<<< HEAD
       // Get timestamps (fall back to 0 if undefined)
       const timestampA = a[1].lastMessage?.timestamp || a[1].lastActivity?.seconds || 0;
       const timestampB = b[1].lastMessage?.timestamp || b[1].lastActivity?.seconds || 0;
   
+=======
+      // Use lastActivity or date if lastActivity is missing
+      const timestampA = a[1].lastActivity?.seconds || a[1].date?.seconds || 0; // Fallback to 'date' if 'lastActivity' is missing
+      const timestampB = b[1].lastActivity?.seconds || b[1].date?.seconds || 0; // Same for b
+
+>>>>>>> 4cdeb116788d2bd9347fdb9fdaeeade9dade83df
       return timestampB - timestampA; // Sort in descending order
     });
     setSortedChats(sorted);

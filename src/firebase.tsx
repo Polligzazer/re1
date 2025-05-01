@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getMessaging, getToken, onMessage, MessagePayload } from "firebase/messaging";
 import { getDatabase, ref, set, onDisconnect } from "firebase/database";
 import { 
   getAuth, 
@@ -22,11 +22,11 @@ import {
   updateDoc,
   doc,
   getDocs,
-  setDoc,
+  deleteDoc,
+  serverTimestamp,
   query,
   where,
 } from "firebase/firestore";
-
 
 const firebaseConfig = {
     apiKey: "AIzaSyC_FLCIBWdReqRPmWFZB1L_4rhLntNWuyA",
@@ -45,70 +45,90 @@ const auth = getAuth(app);
 const messaging = getMessaging(app);
 export { messaging, getToken, onMessage };
 
-export const setupAndSaveFCMToken = async (userId: string) => {
-  try {
-    // 1. Get FCM Token
-    const token = await getFCMToken();
-    
-    if (!token) {
-      throw new Error("No FCM token available");
-    }
+export async function setupAndSaveFCMToken(userId: string): Promise<string> {
+  // Get the FCM token using the messaging object
+  const vapidKey = 'BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w';
+  const token = await getToken(messaging, { vapidKey });
+  
+  if (!token) throw new Error("Failed to obtain FCM token");
 
-    // 2. Save to Firestore
-    await setDoc(doc(db, "users", userId, "fcmTokens", token), {
-      token,
-      timestamp: new Date(),
-    });
-    
-    console.log("FCM Token saved successfully");
-    return token;
-  } catch (error) {
-    console.error("Error in FCM token setup:", error);
-    throw error;
+  // Update the user's FCM token in Firestore
+  await updateDoc(doc(db, "users", userId), { fcmToken: token, updatedAt: serverTimestamp() });
+
+  // Optionally: Manage FCM tokens in a subcollection if needed
+  const tokensRef = collection(db, "users", userId, "fcmTokens");
+
+  // Check if the token already exists in the fcmTokens subcollection
+  const existingQuery = query(tokensRef, where("token", "==", token));
+  const existingSnapshot = await getDocs(existingQuery);
+
+  // If the token doesn't exist in the subcollection, add it
+  if (existingSnapshot.empty) {
+    await addDoc(tokensRef, { token, createdAt: serverTimestamp() });
+  } else {
+    // Optionally, update the token in the subcollection (if needed)
+    const docRef = existingSnapshot.docs[0].ref;
+    await updateDoc(docRef, { token, createdAt: serverTimestamp() });
   }
-};
 
-// Helper function to get FCM token
-async function getFCMToken(): Promise<string | null> {
-  try {
-    const messaging = getMessaging(app);
-    
-    // Request notification permission
-    const permission = await Notification.requestPermission();
-    if (permission !== "granted") {
-      throw new Error("Notifications permission denied");
-    }
-
-    // Register service worker
-    const registration = await registerServiceWorker();
-    
-    // Get token with explicit service worker registration
-    const token = await getToken(messaging, {
-      serviceWorkerRegistration: registration,
-      vapidKey: "BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w"
-    });
-
-    return token;
-  } catch (error) {
-    console.error("Error getting FCM token:", error);
-    return null;
-  }
+  return token;
 }
 
-// Service worker registration
-async function registerServiceWorker(): Promise<ServiceWorkerRegistration> {
-  if (!("serviceWorker" in navigator)) {
-    throw new Error("Service workers not supported");
-  }
+export async function migrateLegacyTokens(userId: string): Promise<void> {
+  const db = getFirestore();
+  const legacyCol = collection(db, "users", userId, "fcmTokens");
+  const docs = await getDocs(legacyCol);
 
+  docs.forEach(async (docSnap) => {
+    const data = docSnap.data();
+    if (!data.token && docSnap.id) {
+      await addDoc(legacyCol, {
+        token: docSnap.id,
+        createdAt: serverTimestamp(),
+        migrated: true
+      });
+      await deleteDoc(docSnap.ref);
+    }
+  });
+}
+
+export const deleteInvalidToken = async (userId: string, invalidToken: string) => {
+  const db = getFirestore();
+  const tokensRef = collection(db, "users", userId, "fcmTokens");
+  const q = query(tokensRef, where("token", "==", invalidToken));
+  const snapshot = await getDocs(q);
+  
+  snapshot.forEach(async (doc) => {
+    await deleteDoc(doc.ref);
+  });
+};
+
+import { getSWRegistration } from "./types/serviceWorker";
+
+export const onMessageListener = (): Promise<MessagePayload> =>
+  new Promise((resolve) => {
+    onMessage(messaging, (payload) => {
+      resolve(payload);
+    });
+  });
+
+// Helper function to get FCM token
+export async function getFCMToken(): Promise<string | null> {
   try {
-    const registration = await navigator.serviceWorker.register(
-      "/firebase-messaging-sw.js"
-    );
-    return registration;
-  } catch (error) {
-    console.error("Service Worker registration failed:", error);
-    throw error;
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") throw new Error("Notification permission denied");
+    const registration = await getSWRegistration();
+    if (!registration) {
+      throw new Error("Service Worker registration unavailable");
+    }
+    const token = await getToken(messaging, {
+      vapidKey: "BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w",
+      serviceWorkerRegistration: registration,
+    });
+    return token;
+  } catch (error: any) {
+    console.error("Error getting FCM token:", error);
+    return null;
   }
 }
 
@@ -159,15 +179,14 @@ export const requestNotificationPermission = async () => {
   }
 };
 
-export const setupForegroundNotifications = () => {
-  if (messaging) {
-    onMessage(messaging, (payload) => {
-      console.log("📩 Foreground notification received:", payload);
-      alert(`Notification: ${payload.notification?.title}`);
-    });
-  } else {
-    console.error("❌ Firebase Messaging is not initialized!");
-  }
+export function setupForegroundNotifications() {
+  onMessage(messaging, (payload) => {
+    console.log("📥 Foreground FCM received:", payload);
+    // showInAppBanner(payload.data.title, payload.data.body);
+    if (document.hasFocus()) {
+      window.dispatchEvent(new CustomEvent("NEW_FCM_MESSAGE", { detail: payload }));
+    }
+  });
 };
 
 const database = getDatabase(app);

@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { ID } from "appwrite";
 import { apwstorage, APPWRITE_STORAGE_BUCKET_ID } from "../src/appwrite";
-import { db, storage } from "../src/firebase";
+import { db } from "../src/firebase";
 import {
   doc,
   updateDoc,
@@ -11,7 +11,6 @@ import {
   increment,
   writeBatch,
 } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { v4 as uuid } from "uuid";
 import { useChatContext } from "../components/ChatContext";
 import { AuthContext } from "../components/Authcontext";
@@ -74,29 +73,24 @@ const Input = () => {
 
     try {
       let fileUrl: string | null = null;
+      let fileType: string | null = null;
 
       if (file) {
-        const storageRef = ref(storage, uuid());
-        const uploadTask = uploadBytesResumable(storageRef, file);
+        try {
+          const response = await apwstorage.createFile(APPWRITE_STORAGE_BUCKET_ID, ID.unique(), file);
+          const fileId = response.$id;
+          fileUrl = apwstorage.getFileView(APPWRITE_STORAGE_BUCKET_ID, fileId);
 
-        await new Promise((resolve, reject) => {
-          uploadTask.on(
-            'state_changed',
-            null,
-            (error) => {
-              console.error('Upload error:', error);
-              reject(error);
-            },
-            async () => {
-              fileUrl = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(fileUrl);
-            }
-          );
-        });
+          const fileInfo = await apwstorage.getFile(APPWRITE_STORAGE_BUCKET_ID, fileId);
+          fileType = fileInfo.mimeType; // e.g., 'video/mp4', 'image/png', etc.
+        } catch (uploadError) {
+          console.error("Appwrite upload failed:", uploadError);
+          return;
+        }
       }
 
       const finalMessage = fileUrl
-        ? { ...messageData, img: fileUrl }
+        ? { ...messageData, img: fileUrl, fileType }
         : messageData;
 
       const batch = writeBatch(db);

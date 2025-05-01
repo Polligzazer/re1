@@ -222,31 +222,43 @@ useEffect(() => {
             </>
           ) : (
             <>
-              {
-                message.img ? (
-                  // If it's an image, display it as an image
-                  <div>
+            {
+              message.img ? (
+                // If it's an image or video, display it accordingly
+                <div>
+                  {message.fileType?.startsWith('video/') ? (
+                    // If it's a video, use the <video> tag
+                    <video
+                      width="300"
+                      controls
+                      onError={() => console.log('Error loading video thumbnail')}
+                    >
+                      <source src={message.img} type={message.fileType} />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    // If it's an image, display it as an image
                     <img
                       src={message.img}
                       alt="Attachment"
-                      style={{ maxWidth: '250px', borderRadius: '8px', cursor: 'pointer' }}
+                      style={{ maxWidth:'300px', backgroundColor: 'red', cursor: 'pointer' }}
                       onClick={() => window.open(message.img, '_blank')} // Open the image in a new tab when clicked
                     />
-                    {message.text && <p style={{ margin: 0, padding: 0 }}>{message.text}</p>}  {/* Render message.text only if it exists */}
-                  </div>
-                ) : message.text.includes('https://cloud.appwrite.io/v1/storage/buckets/') ? (
-                
-                  <div>
-                    <a href={message.text} target="_blank" rel="noopener noreferrer">
-                      See attached file
-                    </a>
-                  </div>
-                ) : (
-              
-                  <p style={{ margin: 0, padding: 0 }}>{message.text}</p>
-                )
-              }
-
+                  )}
+                  
+                  {message.text && <p style={{ margin: 0, padding: 0 }}></p>} {/* Render message.text if it exists */}
+                </div>
+              ) : message.text.includes('https://cloud.appwrite.io/v1/storage/buckets/') ? (
+                // If it's a link to an attached file
+                <div>
+                  <a href={message.text} target="_blank" rel="noopener noreferrer">
+                    See attached file
+                  </a>
+                </div>
+              ) : (
+                <p style={{ margin: 0, padding: 0 }}>{message.text}</p>
+              )
+            }
             </>
 
           )}

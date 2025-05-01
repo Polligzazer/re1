@@ -3,10 +3,11 @@ import {
   collection,
   doc,
   getDoc,
+  updateDoc,
+  deleteDoc,
   onSnapshot,
   orderBy,
   query,
-  updateDoc,
   getDocs,
   Unsubscribe,
   writeBatch,
@@ -14,6 +15,7 @@ import {
   where,
   limit
 } from "firebase/firestore";
+import { getFCMToken } from "../src/firebase";
 import { v4 as uuidv4 } from 'uuid';
 import { useEffect } from "react";
 import { messaging, onMessage } from "../src/firebase";
@@ -79,60 +81,24 @@ export const markNotificationAsRead = async (userId: string, notificationId: str
     console.error("❗ Error marking notification as read:", error);
   }
 };
+export const markAllNotificationsAsRead = async (userId: string, notifications: AppNotification[]) => {
+  try {
+    const unread = notifications.filter((notif) => !notif.isRead);
+    const updatePromises = unread.map((notif) => {
+      const ref = doc(db, "users", userId, "notifications", notif.id);
+      return updateDoc(ref, { isRead: true });
+    });
+
+    await Promise.all(updatePromises);
+    console.log("✅ All notifications marked as read.");
+  } catch (error) {
+    console.error("❗ Error marking all notifications as read:", error);
+  }
+};
 
 export const hasUnreadNotifications = (notifications: AppNotification[]): boolean => {
   return notifications.some((notif) => !notif.isRead);
 };
-
-
-// export const useChatNotifications = (currentUserId: string) => {
-//   const [notifications, setNotifications] = useState([]);
-//   const [unreadCount, setUnreadCount] = useState(0);
-
-//   useEffect(() => {
-//     if (!currentUserId) return;
-
-//     const q = query(
-//       collection(db, 'userChats'),
-//       where('senderId', '==', currentUserId),
-//       orderBy('lastActivity', 'desc')
-//     );
-
-//     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-//       const newNotifications = [];
-//       let totalUnread = 0;
-
-//       querySnapshot.forEach((doc) => {
-//         const chatData = doc.data();
-//         const notification = {
-//           id: doc.id,
-//           date: chatData.date,
-//           lastActivity: chatData.lastActivity?.toDate() || null,
-//           lastMessage: {
-//             text: chatData.lastMessage?.text || '',
-//             timestamp: chatData.lastMessage?.timestamp?.toDate() || null,
-//             senderId: chatData.lastMessage?.senderId || '',
-//           },
-//           messageCount: chatData.messageCount || 0,
-//           userInfo: {
-//             name: chatData.userInfo?.name || 'Unknown',
-//             uid: chatData.userInfo?.uid || '',
-//           },
-//         };
-
-//         newNotifications.push(notification);
-//         totalUnread += notification.messageCount;
-//       });
-
-//       setNotifications(newNotifications);
-//       setUnreadCount(totalUnread);
-//     });
-
-//     return () => unsubscribe();
-//   }, [currentUserId]);
-
-//   return { notifications, unreadCount };
-// };
 
 export const watchLostItemApprovals = () => {
   const q = query(collection(db, "lost_items"));
@@ -154,9 +120,13 @@ export const watchLostItemApprovals = () => {
 
 const useFirebaseNotifications = () => {
   useEffect(() => {
+<<<<<<< HEAD
     const unsubscribe = onMessage(messaging, (payload) => {
       console.log("Message received: ", payload);
      
+=======
+    const unsubscribe = onMessage(messaging, (_payload) => {
+>>>>>>> 4cdeb116788d2bd9347fdb9fdaeeade9dade83df
     });
 
     return () => unsubscribe();
@@ -165,82 +135,164 @@ const useFirebaseNotifications = () => {
   return null;
 };
 
+export interface PushPayload {
+  token: string;
+  title: string;
+  body: string;
+  icon: string;
+  data: { chatId?: string, url: string };
+};
+
+export const sendPushNotification = async (payload: Record<string, string>) => {
+  try {
+    // 1) Get the freshest token
+    const token = await getFCMToken();
+    if (!token) {
+      console.warn("⚠️ No FCM token available—skipping push");
+      return;
+    }
+
+    // 2) Ensure all values are strings
+    const safePayload = Object.fromEntries(
+      Object.entries(payload).map(([key, value]) => [key, String(value)])
+    );
+
+    // 3) Fire off to your proxy
+    const response = await fetch(
+      "https://flo-proxy.vercel.app/api/send-notification",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          payload: { data: safePayload },
+        }),
+      }
+    );
+
+    // 4) Handle invalid tokens cleanup
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      if (
+        result?.code === "messaging/invalid-registration-token" ||
+        result?.code === "messaging/registration-token-not-registered"
+      ) {
+        console.warn("🗑️ Removing invalid token:", token);
+        await deleteDoc(doc(db, "fcmTokens", token));
+      }
+      throw new Error(
+        `Push notification failed: ${result.message || response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (err) {
+    console.error("🚨 Push notification failed:", err);
+    throw err;
+  }
+};
+
+export const showInAppNotification = (payload: {
+  notification?: { title?: string; body?: string };
+  data?: { chatId?: string };
+}) => {
+  if (!payload.notification?.title || !payload.notification?.body) return;
+
+  // Your custom notification UI implementation
+  console.log('Showing notification:', payload);
+};
 
 export interface ValidMessage {
   text: string;
   senderId: string;
-  senderName: string;
+  senderName?: string;
   timestamp: { seconds: number; nanoseconds: number };
-}
+};
 
 // Global cache to track notifications (survives component remounts)
-const notificationCache = new Map<string, string>();
+const lastMessageMap = new Map<string, string>();
+let lastNotificationTime: number | null = null;
+const notificationCooldown = 5000;
 
-export const watchNewMessagesForUser = (
+export function watchNewMessagesForUser(
   userId: string,
   onNewMessage: (chatId: string, message: ValidMessage) => void
-): Unsubscribe => {
-  const userChatsRef = doc(db, "userChats", userId);
-  const state = new Map<string, { 
-    hash: string;
-    timer?: NodeJS.Timeout;
-  }>();
+): Unsubscribe {
+  const ref = doc(db, "userChats", userId);
+  let isInitialLoad = true;
 
-  const unsubscribe = onSnapshot(userChatsRef, (docSnapshot) => {
-    // Skip local updates and empty docs
-    if (docSnapshot.metadata.hasPendingWrites || !docSnapshot.exists()) return;
+  let currentToken: string | null = null;
+  (async () => {
+    currentToken = await getFCMToken();
+    console.log("Message notif FCM Token:", currentToken);
+    if (!currentToken) {
+      console.warn("⚠️ Could not get FCM token—push disabled");
+    }
+  })();
 
-    const data = docSnapshot.data();
+  const unsubscribe = onSnapshot(ref, async (snap) => {
+    if (!snap.exists() || snap.metadata.hasPendingWrites) return;
+    const chats = snap.data() as Record<string, any>;
+    if (isInitialLoad) {
+      isInitialLoad = false;
+      return;
+    }
+    if (!currentToken) return;
 
-    Object.entries(data).forEach(([chatId, chatData]) => {
-      const chatInfo = chatData as {
-        lastMessage?: ValidMessage;
-        messageCount?: number;
-      };
+    for (const [chatId, raw] of Object.entries(chats)) {
+      const lastMessage = raw.lastMessage as ValidMessage | undefined;
+      if (!lastMessage?.text || lastMessage.senderId === userId) continue;
+      const messageId = `${lastMessage.text}|${lastMessage.timestamp.seconds}|${lastMessage.timestamp.nanoseconds}`;
+      const previousMessageId = lastMessageMap.get(chatId);
+      if (messageId === previousMessageId) continue;
+      lastMessageMap.set(chatId, messageId);
 
-      // Validate structure
-      if (!chatInfo?.lastMessage?.text || 
-          !chatInfo?.lastMessage?.senderId ||
-          typeof chatInfo.messageCount !== 'number') return;
-
-      // Create enhanced unique hash
-      const hash = `${chatInfo.messageCount}-${
-        chatInfo.lastMessage.senderId
-      }-${chatInfo.lastMessage.timestamp.seconds}-${
-        chatInfo.lastMessage.timestamp.nanoseconds
-      }`;
-
-      // Global cache check
-      const cacheKey = `${userId}|${chatId}|${hash}`;
-      if (notificationCache.has(cacheKey)) return;
-
-      // Local state check
-      const currentState = state.get(chatId);
-      if (currentState?.hash === hash) return;
-
-      // Clear existing timer
-      if (currentState?.timer) clearTimeout(currentState.timer);
-
-      // Set new state with longer debounce
-      state.set(chatId, {
-        hash,
-        timer: setTimeout(() => {
-          if (chatInfo.lastMessage!.senderId !== userId) {
-            notificationCache.set(cacheKey, 'processed');
-            onNewMessage(chatId, chatInfo.lastMessage!);
-          }
-          state.delete(chatId);
-        }, 1000) // 1-second debounce
-      });
-    });
+      const now = Date.now();
+      if (lastNotificationTime && now - lastNotificationTime < notificationCooldown) {
+        console.log(`⏭️ Skipping notification due to cooldown: ${now - lastNotificationTime}ms`);
+        continue;
+      }
+      lastNotificationTime = now;
+    
+      try {
+        const senderDocRef = doc(db, "users", lastMessage.senderId);
+        const senderSnap = await getDoc(senderDocRef);
+        const senderName = senderSnap.exists()
+          ? `${senderSnap.data().firstName || ""} ${senderSnap.data().lastName || ""}`.trim() || "Unknown"
+          : "Unknown";
+        if (document.hidden) {
+          const originalTitle = document.title;
+          let blinkCount = 0;
+          const blinkInterval = setInterval(() => {
+            if (blinkCount >= 6) {
+              clearInterval(blinkInterval);
+              document.title = originalTitle;
+              return;
+            }
+            document.title = document.title === `${senderName}` ? 'FLO' : `${senderName}`;
+            blinkCount++;
+          }, 700);
+        }
+        onNewMessage(chatId, lastMessage);
+        console.log("[📨 Incoming Message]", chatId, lastMessage);
+        if (currentToken) {
+          await sendPushNotification({
+            title: `${senderName}`,
+            body: lastMessage.text,
+            url: `/inquiries/${chatId}`,
+          });
+          console.log("✅ Push notification sent:", lastMessage.text, senderName);
+        }
+      } catch (error) {
+        console.error("Error sending push notification:", error);
+      }
+    }
   });
 
   return () => {
-    state.forEach(({ timer }) => timer && clearTimeout(timer));
-    state.clear();
     unsubscribe();
   };
-};
+}
 
 export const createNotification = async (
   userId: string,
@@ -288,7 +340,6 @@ export const createNotification = async (
 
     await batch.commit();
     console.log("📨 Notification created for", userId);
-    
   } catch (error) {
     console.error("💥 Notification error:", error);
     throw error;
