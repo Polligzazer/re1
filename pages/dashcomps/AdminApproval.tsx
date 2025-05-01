@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { db, getFCMToken } from "../../src/firebase";
+import { db } from "../../src/firebase";
 import { collection, getDocs, doc, getDoc, updateDoc, orderBy, query, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { sendPushNotification } from "../../components/notificationService";
 import { createNotification } from "../../components/notificationService";
@@ -42,11 +42,6 @@ const AdminApproval: React.FC = () => {
     try {
       setModalStatus('loading'); 
       console.log("🔄 Fetching report data...");
-      const currentToken = await getFCMToken();
-      if (!currentToken) {
-        console.warn("⚠️ No FCM token available—skipping push");
-        return;
-      }
       
       const reportRef = doc(db, "lost_items", reportId);
       const reportSnap = await getDoc(reportRef);
@@ -69,6 +64,8 @@ const AdminApproval: React.FC = () => {
       const isLost = reportData.type === "lost";
 
       const notificationPromises = usersSnapshot.docs.map(async (userDoc) => {
+        const userData = userDoc.data();
+        const fcmToken = userData.fcmToken;
         try {
           // Create regular notification
           await createNotification(
@@ -76,14 +73,16 @@ const AdminApproval: React.FC = () => {
             notificationText,
             reportId
           )
-          if (currentToken) {
-            await sendPushNotification({
+          if (fcmToken) {
+            await sendPushNotification(fcmToken, {
               title: isLost ? "Someone lost an item" : "Someone found an item",
               body: isLost
                 ? "A new lost item report has been approved. Check it out and see if it's yours!"
                 : "A new found item report has been approved. Someone might be looking for it!",
               url: "/home",
             });
+        console.log("✅ Push notification sent.");
+
           }
         } catch (error) {
           console.error('Notification error for', userDoc.id, error);
@@ -104,44 +103,36 @@ const AdminApproval: React.FC = () => {
   const denyReport = async (reportId: string) => {
     try {
       setLoading(true);
-      const currentToken = await getFCMToken();
-      if (!currentToken) {
-        console.warn("⚠️ No FCM token available—skipping push");
-        return;
-      }
-  
       const reportRef = doc(db, "lost_items", reportId);
       await updateDoc(reportRef, { status: "denied" });
-  
       const reportSnap = await getDoc(reportRef);
       if (!reportSnap.exists()) {
         alert("Report not found");
         return;
       }
-  
       const reportData = reportSnap.data();
       const userId = reportData.userId;
-  
       if (!userId) {
         console.error("❗ Report has no associated userId.");
         return;
       }
-  
-      // Create Firestore notification
-      const notificationRef = doc(collection(db, "users", userId, "notifications"));
-      await setDoc(notificationRef, {
+
+      const userSnap = await getDoc(doc(db, "users", userId));
+      const fcmToken = userSnap.exists() ? userSnap.data().fcmToken : null;
+      await setDoc(doc(collection(db, "users", userId, "notifications")), {
         description: "Your report has been denied",
         isRead: false,
         timestamp: serverTimestamp(),
         reportId,
       });
   
-      if (currentToken) {
-        await sendPushNotification({
+      if (fcmToken) {
+        await sendPushNotification(fcmToken,{
           title: "Report Denied",
           body: "Your report has been denied by the admin, inquire for more details.",
           url: "/home",
         });
+        console.log("✅ Push notification sent.");
       }
   
       setReports((prevReports) => prevReports.filter((r) => r.id !== reportId));

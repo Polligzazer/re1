@@ -252,6 +252,7 @@ const Signup: React.FC = () => {
                   >
                     I have read and agree to the <br />
                     <button
+                      type="button"
                       className="text-primary fw-bold"
                       style={{ border: "none", background: "transparent" }}
                       onClick={handleShowTermsModal}
