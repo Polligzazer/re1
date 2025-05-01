@@ -1,9 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect } from "react";
-import { setupAndSaveFCMToken, migrateLegacyTokens, onMessageListener, getFCMToken  } from "./firebase";
+import { useEffect, useState } from "react";
+import { messaging, auth } from "./firebase";
+import { getToken, onMessage } from 'firebase/messaging';
+import { onAuthStateChanged, User } from "firebase/auth";
 import { toast } from "react-toastify";
-import { playNotificationSound } from "../components/notifSound";
-import { watchNewMessagesForUser } from "../components/notificationService";
+import { FCMProvider, saveFCMTokenToUser } from './types/FCMContext';
 // import { SpeedInsights } from '@vercel/speed-insights/react';
 import Layout from "../components/Layout";
 import Signup from "../components/signup";
@@ -30,121 +31,73 @@ import ReportApproval from "../pages/dashcomps/AdminApproval";
 import Claimed from "../pages/dashcomps/ClaimsPage";
 import Hero from "../pages/heropage.tsx";
 
-import { sendSubscriptionToServer } from "./types/serviceWorker";
-
-
 function App() {
   const { currentUser, loading } = useContext(AuthContext);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     if (loading) return <Loading />;
     if (!currentUser) return <Navigate to="/login" />;
     return <>{children}</>;
   };
-
   useEffect(() => {
-    onMessageListener()
-      .then((payload) => {
-        const title = payload?.notification?.title || payload?.data?.title;
-        const body = payload?.notification?.body || payload?.data?.body;
-  
-        toast.info(`${title}: ${body}`);
-      })
-      .catch(err => console.log('Failed to receive message: ', err));
-  }, []);
-
-  useEffect(() => {
-    getFCMToken();
-    playNotificationSound();
-    const registerServiceWorker = async () => {
-      const reg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-      return reg;
-    };
-
-    const subscribeUserToPushNotifications = async () => {
-      try {
-        const reg = await registerServiceWorker();
-
-        // Get the push subscription
-        const subscription = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: "BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w",
-        });
-
-        console.log("Push subscription obtained:", subscription);
-
-        await sendSubscriptionToServer(subscription);
-      } catch (error) {
-        console.error("Failed to subscribe to push notifications:", error);
-      }
-    };
-
-    const initForegroundNotifications = () => {
-      // Add logic to handle foreground notifications if needed
-      console.log("Foreground notification listener setup.");
-    };
-
-    const requestNotificationPermission = async () => {
-      const permission = await Notification.requestPermission();
-      if (permission === "granted") {
-        // You could get the token here or handle any additional logic for permission
-        console.log("Notification permission granted!");
-      } else {
-        console.error("Notification permission denied!");
-      }
-    };
-
-    registerServiceWorker()
-      .then((reg) => {
-        console.log("✅ Service Worker registered:", reg);
-
-        reg.pushManager.getSubscription().then((subscription) => {
-          if (subscription) {
-            console.log("Subscription exists:", subscription);
-          } else {
-            console.log("No active subscription");
-            // Optionally, prompt the user to subscribe to push notifications
-            subscribeUserToPushNotifications();
-          }
-        });
-
-        // Handle foreground FCM messages via the SDK
-        initForegroundNotifications();
-
-        // Ask permission & save token
-        return requestNotificationPermission();
-      })
-      .then((token) => {
-        console.log("🔔 Notification permission granted, token:", token);
-      })
-      .catch((err) => {
-        console.error("⚠️ FCM setup error:", err);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (!currentUser) return;
-
-    setupAndSaveFCMToken(currentUser.uid)
-      .then(() => migrateLegacyTokens(currentUser.uid))
-      .catch((err) => {
-        console.error("⚠️ Token migration error:", err);
-      });
-
-    const unsubscribe = watchNewMessagesForUser(
-      currentUser.uid,
-      (chatId, message) => {
-        // your in-app toast logic here
-        console.log(`New message in ${chatId}:`, message.text);
-      }
-    );
+    const enableSound = () => setHasInteracted(true);
+    window.addEventListener('click', enableSound);
+    window.addEventListener('keydown', enableSound);
 
     return () => {
-      unsubscribe();
+      window.removeEventListener('click', enableSound);
+      window.removeEventListener('keydown', enableSound);
     };
-  }, [currentUser]);
+  }, []);
+  useEffect(() => {
+    const setupFCM = async (user: User) => {
+      try {
+        // 1. Register the Service Worker
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        console.log('✅ Service Worker registered:', registration);
   
+        // 2. Ask notification permission
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          console.error('❌ Notification permission not granted');
+          return;
+        }
+  
+        // 3. Get FCM token
+        const token = await getToken(messaging, {
+          vapidKey: 'BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w',
+          serviceWorkerRegistration: registration,
+        });
+  
+        if (token) {
+          console.log('✅ FCM Token:', token);
+          await saveFCMTokenToUser(user.uid, token);
+          // Save or send token to your backend
+        } else {
+          console.warn('⚠️ No registration token available.');
+        }
+  
+        // 4. Foreground messages
+        onMessage(messaging, (payload) => {
+          console.log('📲 Foreground message received:', payload);
+          const title = payload?.notification?.title || payload?.data?.title;
+          const body = payload?.notification?.body || payload?.data?.body;
+          toast.info(`${title}: ${body}`);
+        });
+  
+      } catch (err) {
+        console.error('⚠️ Error setting up FCM:', err);
+      }
+    };
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) setupFCM(user);
+    });
+
+    return () => unsubscribe();
+  }, []);
   return (
+  <FCMProvider>
     <Router>
       <Routes>
         <Route path ="/" element={<Hero/>}/>
@@ -179,15 +132,15 @@ function App() {
 
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/userlist" element={<UserList />} />
-          <Route path="/dashboard/claim-approval" element={<ClaimApproval />} />
-          <Route path="/dashboard/report-approval" element={<ReportApproval />} />
+            <Route path="/dashboard/claim-approval" element={<ClaimApproval />} />
+            <Route path="/dashboard/report-approval" element={<ReportApproval />} />
           <Route path="/dashboard/claimed" element={<Claimed />} />
         </Route>
 
         {/* Admin-only Routes */}
       </Routes>
     </Router>
-    
+  </FCMProvider>
   );
 }
 

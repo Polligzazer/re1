@@ -2,6 +2,7 @@ import { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import { AuthContext } from "../components/Authcontext";
+import { useFCMToken } from "../src/types/FCMContext";
 import {
   AppNotification,
   markNotificationAsRead,
@@ -38,6 +39,7 @@ import { ChatContext } from "../components/ChatContext";
 const Topbar = () => {
   const auth = getAuth();
   const navigate = useNavigate();
+  const { token } = useFCMToken();
 
   const chatContext = useContext(ChatContext);
   if (!chatContext) {
@@ -112,14 +114,14 @@ const Topbar = () => {
 
   useEffect(() => {
     if (!userId) return;
-  
+
     const unsubscribeNotif = fetchNotifications(userId, (fetchedNotifications) => {
       const prevNotifs = prevNotifsRef.current;
-    
+
       const newNotifs = fetchedNotifications.filter(
         notif => !prevNotifs.find(prev => prev.id === notif.id)
       );
-  
+
       if (newNotifs.length > 0) {
         playNotificationSound();
       }
@@ -127,24 +129,29 @@ const Topbar = () => {
       setNotifications(fetchedNotifications);
       setHasUnread(fetchedNotifications.some(notif => !notif.isRead));
     });
-    // Message listener
-    const handleNewMessage = (chatId: string, message: ValidMessage) => {
-      if (message.senderId === userId) return;
-      
-      createNotification(
-        userId, `${message.senderName} sent a message`, 
-        undefined, "message", chatId)
+
+    // Ensure token is available before subscribing to message updates
+    if (token) {
+      const handleNewMessage = (chatId: string, message: ValidMessage) => {
+        if (message.senderId === userId) return;
+
+        createNotification(
+          userId, `${message.senderName} sent a message`, 
+          undefined, "message", chatId
+        )
         .then(() => console.log("Notification created"))
         .catch(console.error);
       };
-      
-      const unsubscribeMessages = watchNewMessagesForUser(userId, handleNewMessage);
-      
+
+      const unsubscribeMessages = watchNewMessagesForUser(userId, token, handleNewMessage);
+
       return () => {
-      unsubscribeNotif();
-      unsubscribeMessages();
-    };
-  }, [userId]);
+        unsubscribeNotif();
+        unsubscribeMessages();
+      };
+    }
+
+  }, [userId, token]);
   
   const handleNotificationClick = async (notif: AppNotification) => {
     if (!userId) {

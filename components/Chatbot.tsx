@@ -83,7 +83,6 @@ const Chatbot: React.FC = () => {
           }};
           fetchUserName();
        } else {
-           console.log("No user is logged in.");
           setUserName("Guest");
         }
     });

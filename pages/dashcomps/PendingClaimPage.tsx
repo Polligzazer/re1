@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import emailjs from "emailjs-com";
 import { createNotification, sendPushNotification } from "../../components/notificationService";
-import { db, getFCMToken } from "../../src/firebase";
+import { db } from "../../src/firebase";
 import { onSnapshot, collection, doc, where, addDoc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy, writeBatch } from "firebase/firestore";
 import categoryImages from "../../src/categoryimage";
 import { FaChevronLeft } from "react-icons/fa";
@@ -66,7 +66,6 @@ const AdminApproval: React.FC = () => {
   const [linkedPostData, setLinkedPostData] = useState<any | null>(null);
   const [reporterName, setReporterName] = useState('');
 
-
   useEffect(() => {
     const fetchPendingData = async () => {
       if (!currentUser) return;
@@ -116,27 +115,43 @@ const AdminApproval: React.FC = () => {
 
   const confirmDenyReport = async () => {
     if (!reportToDeny) return;
-    const currentToken = await getFCMToken();
-    if (!currentToken) { console.warn("⚠️ No FCM token available—skipping push"); return; }
-    await denyReport(reportToDeny.id);
-
-    await createNotification(
-      reportToDeny.userId,
-      "Your claim request has been denied",
-      reportToDeny.id
-    );
   
-    if (currentToken) {
-      await sendPushNotification({
-        title: "Denied claim request",
-        body: "Your claim request has been denied by the admin, inquire for more details.",
-        url: "/home",
-      });
-    };
+    setLoading(true);
   
-    // 3. Reset modal state
-    setShowDenyModal(false);
-    setReportToDeny(null);
+    try {
+      // 1. Update the report status
+      await denyReport(reportToDeny.id);
+  
+      // 2. Create Firestore notification
+      await createNotification(
+        reportToDeny.userId,
+        "Your claim request has been denied",
+        reportToDeny.id
+      );
+  
+      // 3. Fetch the denied user's FCM token
+      const userDoc = await getDoc(doc(db, "users", reportToDeny.userId));
+      const userToken = userDoc.exists() ? userDoc.data().fcmToken : null;
+  
+      // 4. Send push notification
+      if (userToken) {
+        await sendPushNotification(userToken, {
+          title: "Denied claim request",
+          body: "Your claim request has been denied by the admin. Inquire for more details.",
+          url: "/home",
+        });
+      } else {
+        console.warn("⚠️ No FCM token found for denied user.");
+      }
+    } catch (err) {
+      console.error("❌ Error denying claim report:", err);
+      alert("Failed to deny claim request.");
+    } finally {
+      // 5. Reset modal state
+      setShowDenyModal(false);
+      setReportToDeny(null);
+      setLoading(false);
+    }
   };
 
   const fetchUserEmail = async (userId: string): Promise<string> => {
@@ -158,9 +173,6 @@ const AdminApproval: React.FC = () => {
   const handleSendEmail = async (report: Report) => {
     if (!selectedReport) return;
     setLoading(true);
-
-    const currentToken = await getFCMToken();
-    if (!currentToken) { console.warn("⚠️ No FCM token available—skipping push"); return; }
   
     try {
       const userEmail = await fetchUserEmail(report.userId);
@@ -197,8 +209,11 @@ const AdminApproval: React.FC = () => {
         "Receipt has been sent in the mail, claim your lost item.",
         report.id
       );
-      if (currentToken) {
-        await sendPushNotification({
+
+      const userDoc = await getDoc(doc(db, "users", report.userId));
+      const userToken = userDoc.exists() ? userDoc.data().fcmToken : null;
+      if (userToken) {
+        await sendPushNotification(userToken, {
           title: "Claim your item",
           body: "Claim receipt has been sent to your mail. Claim your belonging in the lost and found. ",
           url: "/home",
@@ -222,9 +237,6 @@ const AdminApproval: React.FC = () => {
       console.error("❌ No selected report found.");
       return; }
     setLoading(true);
-    const currentToken = await getFCMToken();
-    if (!currentToken) { console.warn("⚠️ No FCM token available—skipping push"); return; }
-
     try {
       const reportRef = doc(db, "claim_items", selectedReport.id);
       const claimSnap = await getDoc(reportRef);
@@ -233,7 +245,6 @@ const AdminApproval: React.FC = () => {
         alert("❗ Claim not found.");
         return;
       }
-      
   
       const claimData = claimSnap.data();
       const referencePostId = claimData.referencePostId;
@@ -246,11 +257,9 @@ const AdminApproval: React.FC = () => {
       }
       
       const originalPosterId = lostItemSnap.data().userId;
-  
-      // 3. Create batch for atomic operations
+      const isFound = lostItemSnap.data().type === "found";
       const batch = writeBatch(db);
   
-      // Update documents
       batch.update(lostItemRef, {
         status: "claimed",
         claimedBy: claimantUserId,
@@ -261,7 +270,6 @@ const AdminApproval: React.FC = () => {
         status: "claimed",
         claimedDate: serverTimestamp()
       });
-  
       
       const claimantNotificationRef = doc(collection(db, "users", claimantUserId, "notifications"));
       batch.set(claimantNotificationRef, {
@@ -271,35 +279,39 @@ const AdminApproval: React.FC = () => {
         relatedPostId: referencePostId,
         type: "claim_success"
       });
-      if (currentToken) {
-        await sendPushNotification({
+      if (isFound) {
+        const posterNotifRef = doc(collection(db, "users", originalPosterId, "notifications"));
+        batch.set(posterNotifRef, {
+          description: "Your item has been claimed by a user",
+          isRead: false,
+          timestamp: serverTimestamp(),
+          relatedPostId: referencePostId,
+          type: "item_claimed",
+        });
+      }
+
+      await batch.commit();
+      const [claimantDoc, posterDoc] = await Promise.all([
+        getDoc(doc(db, "users", claimantUserId)),
+        isFound ? getDoc(doc(db, "users", originalPosterId)) : null,
+      ]);
+
+      const claimantToken = claimantDoc.exists() ? claimantDoc.data().fcmToken : null;
+      const posterToken = isFound && posterDoc?.exists() ? posterDoc.data().fcmToken : null;
+      if (claimantToken) {
+        await sendPushNotification(claimantToken, {
           title: "Item claimed successfully",
           body: "Your requested item has been claimed successfully",
           url: "/home",
         });
       }
-  
-      if(lostItemSnap.data().type === "found"){
-        const posterNotificationRef = doc(collection(db, "users", originalPosterId, "notifications"));
-        batch.set(posterNotificationRef, {
-          description: "Your item has been claimed by a user",
-          isRead: false,
-          timestamp: serverTimestamp(),
-          relatedPostId: referencePostId,
-          type: "item_claimed"
+      if (isFound && posterToken) {
+        await sendPushNotification(posterToken, {
+          title: "Reported item claimed",
+          body: "Your reported item has been claimed by a user.",
+          url: "/home",
         });
-        if (currentToken) {
-          await sendPushNotification({
-            title: "Reported item claimed",
-            body: "Your reported item has been claimed by a user.",
-            url: "/home",
-          });
-        }
       }
-  
-      // 4. Execute all operations atomically
-      await batch.commit();
-
       setReports((prevReports) => prevReports.filter((r) => r.id !== selectedReport.id));
   
       setShowConfirmModal(false);

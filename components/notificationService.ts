@@ -4,7 +4,6 @@ import {
   doc,
   getDoc,
   updateDoc,
-  deleteDoc,
   onSnapshot,
   orderBy,
   query,
@@ -15,7 +14,6 @@ import {
   where,
   limit
 } from "firebase/firestore";
-import { getFCMToken } from "../src/firebase";
 import { v4 as uuidv4 } from 'uuid';
 import { useEffect } from "react";
 import { messaging, onMessage } from "../src/firebase";
@@ -137,10 +135,11 @@ export interface PushPayload {
   data: { chatId?: string, url: string };
 };
 
-export const sendPushNotification = async (payload: Record<string, string>) => {
+export const sendPushNotification = async (  
+  token: string,
+  payload: Record<string, string>) => {
   try {
     // 1) Get the freshest token
-    const token = await getFCMToken();
     if (!token) {
       console.warn("⚠️ No FCM token available—skipping push");
       return;
@@ -171,8 +170,7 @@ export const sendPushNotification = async (payload: Record<string, string>) => {
         result?.code === "messaging/invalid-registration-token" ||
         result?.code === "messaging/registration-token-not-registered"
       ) {
-        console.warn("🗑️ Removing invalid token:", token);
-        await deleteDoc(doc(db, "fcmTokens", token));
+        console.warn("🗑️ Invalid token:", token);
       }
       throw new Error(
         `Push notification failed: ${result.message || response.statusText}`
@@ -210,20 +208,12 @@ const notificationCooldown = 5000;
 
 export function watchNewMessagesForUser(
   userId: string,
+  token: string,
   onNewMessage: (chatId: string, message: ValidMessage) => void
 ): Unsubscribe {
   const ref = doc(db, "userChats", userId);
   let isInitialLoad = true;
-
-  let currentToken: string | null = null;
-  (async () => {
-    currentToken = await getFCMToken();
-    console.log("Message notif FCM Token:", currentToken);
-    if (!currentToken) {
-      console.warn("⚠️ Could not get FCM token—push disabled");
-    }
-  })();
-
+  let currentToken = token;
   const unsubscribe = onSnapshot(ref, async (snap) => {
     if (!snap.exists() || snap.metadata.hasPendingWrites) return;
     const chats = snap.data() as Record<string, any>;
@@ -270,7 +260,7 @@ export function watchNewMessagesForUser(
         onNewMessage(chatId, lastMessage);
         console.log("[📨 Incoming Message]", chatId, lastMessage);
         if (currentToken) {
-          await sendPushNotification({
+          await sendPushNotification(currentToken, {
             title: `${senderName}`,
             body: lastMessage.text,
             url: `/inquiries/${chatId}`,

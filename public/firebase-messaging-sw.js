@@ -9,17 +9,17 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
-
 messaging.onBackgroundMessage(function(payload) {
   console.log('[firebase-messaging-sw.js] Received background message', payload);
 
-  const { title, body } = payload.data;
+  const title = payload?.notification?.title || payload?.data?.title || 'Notification';
+  const options = {
+    body: payload?.notification?.body || payload?.data?.body,
+    icon: payload?.data?.icon || '/icon.png',
+    data: payload?.data,
+  };
 
-  self.registration.showNotification(title, {
-    body,
-    icon: '/icon.png',
-    data: payload.data,
-  });
+  self.registration.showNotification(title, options);
 });
 
 self.addEventListener('notificationclick', function (event) {
