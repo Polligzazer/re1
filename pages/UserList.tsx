@@ -47,19 +47,11 @@ const UserList = () => {
     }
   
     try {
-<<<<<<< HEAD
-
-      const token = await auth.currentUser.getIdToken(true);
-      if (!token) throw new Error("Not authenticated");
-
-      const res = await fetch('https://flo-proxy.vercel.app/api/delete-user', {
-=======
       const tokenResult = await auth.currentUser.getIdToken();
       console.log("Firebase ID Token:", tokenResult); // Debug log
       if (!tokenResult) throw new Error("Not authenticated");
   
       const response = await fetch('https://flo-proxy.vercel.app/api/delete-user', {
->>>>>>> 4cdeb116788d2bd9347fdb9fdaeeade9dade83df
         method: 'POST',
         mode: 'cors',
         credentials: 'include', // iuiRequired for CORS + auth
@@ -80,18 +72,13 @@ const UserList = () => {
         }
         throw new Error(errorMessage);
       }
-<<<<<<< HEAD
 
       setUsers((prev) => prev.filter((u) => u.id !== userId));
 
       alert("User and all their data have been deleted.");
-    } catch (err: any) {
-=======
-  
+    }catch (err) {
       setUsers(prev => prev.filter(u => u.id !== userId));
       alert("User deleted successfully");
-    } catch (err) {
->>>>>>> 4cdeb116788d2bd9347fdb9fdaeeade9dade83df
       console.error("Delete failed:", err);
       let errorMessage = "Failed to delete user";
       if (err instanceof Error) {

@@ -120,13 +120,7 @@ export const watchLostItemApprovals = () => {
 
 const useFirebaseNotifications = () => {
   useEffect(() => {
-<<<<<<< HEAD
-    const unsubscribe = onMessage(messaging, (payload) => {
-      console.log("Message received: ", payload);
-     
-=======
     const unsubscribe = onMessage(messaging, (_payload) => {
->>>>>>> 4cdeb116788d2bd9347fdb9fdaeeade9dade83df
     });
 
     return () => unsubscribe();

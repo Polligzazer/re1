@@ -127,12 +127,7 @@ const Topbar = () => {
       setNotifications(fetchedNotifications);
       setHasUnread(fetchedNotifications.some(notif => !notif.isRead));
     });
-<<<<<<< HEAD
-  
-=======
-    
     // Message listener
->>>>>>> 4cdeb116788d2bd9347fdb9fdaeeade9dade83df
     const handleNewMessage = (chatId: string, message: ValidMessage) => {
       if (message.senderId === userId) return;
       
@@ -151,7 +146,6 @@ const Topbar = () => {
     };
   }, [userId]);
   
-<<<<<<< HEAD
  const handleNotificationClick = async (notif: AppNotification) => {
   if (!userId) {
     console.error("⚠️ User ID is missing, cannot handle notification.");
@@ -201,11 +195,10 @@ const Topbar = () => {
       
       if (itemDetails) {
         console.log("✅ Retrieved item details:", itemDetails);
-=======
-  const handleNotificationClick = async (notif: AppNotification) => {
-    if (!userId) return;
-    console.log("🔔 Notification clicked:", notif);
-  
+        const handleNotificationClick = async (notif: AppNotification) => {
+          if (!userId) return;
+          console.log("🔔 Notification clicked:", notif);
+        
     try {
       // Always mark as read first for every type
       await markNotificationAsRead(userId, notif.id);
@@ -235,33 +228,21 @@ const Topbar = () => {
           alert("The reported item could not be found. It may have been removed.");
           return;
         }
->>>>>>> 4cdeb116788d2bd9347fdb9fdaeeade9dade83df
         setSelectedItem(itemDetails);
         setShowModal(true);
       } else {
+        console.warn("⚠️ Notification type not recognized or missing fields:", notif);
         console.error("❌ Item details not found for ID:", notif.reportId);
         alert("The reported item could not be found. It may have been removed.");
       }
-<<<<<<< HEAD
       return;
-    }
-    
-    console.warn("⚠️ Notification type not recognized or missing fields:", notif);
-    
   } catch (error) {
-    console.error("🔥 Error handling notification click:", error);
-    alert("An error occurred while handling the notification. Please try again.");
+    console.error("Error handling notification click:", error);
+    alert("Failed to process this notification. Please try again.");
   }
-};
-=======
-  
-    } catch (error) {
-      console.error("Error handling notification click:", error);
-      alert("Failed to process this notification. Please try again.");
-    }
   };
->>>>>>> 4cdeb116788d2bd9347fdb9fdaeeade9dade83df
-
+  
+  
   return (
     <div>
       <nav className="navbar ps-lg-4 fixed-top" 
