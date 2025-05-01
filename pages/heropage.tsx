@@ -81,50 +81,60 @@ const HeroPage: React.FC = () => {
                
             }}
             >
-                <button 
-                   onClick={handleNavigateToHome}
-                   style={{
-                       backgroundColor:'transparent', 
-                       outline:'none', 
-                       border:'none',
-                       color:'#0e5cc5',
-                       fontSize:'13.9px'
-                   }}> 
-                   Home
-               </button>
-                <button  
-                    style={{
-                        backgroundColor:'transparent', 
-                        outline:'none', 
-                        border:'none',
-                        color:'#0e5cc5',
-                        fontSize:'13.9px'
-                    }}> Company 
-                </button>
-                <button 
-                     onClick={handleNavigateToLogin}
-                    style={{
-                        backgroundColor:'transparent', 
-                        outline:'none', 
-                        border:'none',
-                        color:'#0e5cc5',
-                        fontSize:'13.9px'
-                    }}> Login 
-                </button>
+                 {!fromProfile && (
+                    <>
+                        <button 
+                            onClick={handleNavigateToHome}
+                            style={{
+                                backgroundColor: 'transparent',
+                                outline: 'none',
+                                border: 'none',
+                                color: '#0e5cc5',
+                                fontSize: '13.9px'
+                            }}
+                        > 
+                            Home
+                        </button>
+                        <button
+                            style={{
+                                backgroundColor: 'transparent',
+                                outline: 'none',
+                                border: 'none',
+                                color: '#0e5cc5',
+                                fontSize: '13.9px'
+                            }}
+                        >
+                            Company
+                        </button>
+                        <button 
+                            onClick={handleNavigateToLogin}
+                            style={{
+                                backgroundColor: 'transparent',
+                                outline: 'none',
+                                border: 'none',
+                                color: '#0e5cc5',
+                                fontSize: '13.9px'
+                            }}
+                        >
+                            Login
+                        </button>
+                    </>
+                )}
+
                 {fromProfile && (
                     <button
-                    onClick={handleNavigateback}
-                    style={{
-                        backgroundColor: '#0e5cc5',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        padding: '6px 12px',
-                        fontSize: '13.9px',
-                        marginLeft: '20px'
-                    }}
+                        onClick={handleNavigateback}
+                        style={{
+                            backgroundColor: '#0e5cc5',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '6px 12px',
+                            fontSize: '13.9px',
+                            marginLeft: '20px'
+                        }}
                     >
-                    Back to Profile
+                        Back to Profile
                     </button>
                 )}
             </div>

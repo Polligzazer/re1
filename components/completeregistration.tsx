@@ -102,6 +102,7 @@ const CompleteRegistration: React.FC = () => {
         if (!formData[field as keyof typeof formData].trim()) {
           alert(`Please fill out ${field}`);
           setLoading(false);
+          setShowLoadingModal(false);
           return;
         }
       }

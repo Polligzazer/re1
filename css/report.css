@@ -129,7 +129,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
   @media (min-width: 426px) and (max-width:575.9px ){
 	.cbtn{
-		min-width: 180px;
+		min-width: 160px;
 		max-width: 220px;
 		min-height: 70px;
 		width: 100%;

@@ -232,6 +232,7 @@ useEffect(() => {
                       width="300"
                       controls
                       onError={() => console.log('Error loading video thumbnail')}
+                      style={{maxWidth:'220px'}}
                     >
                       <source src={message.img} type={message.fileType} />
                       Your browser does not support the video tag.
@@ -241,7 +242,7 @@ useEffect(() => {
                     <img
                       src={message.img}
                       alt="Attachment"
-                      style={{ maxWidth:'300px', backgroundColor: 'red', cursor: 'pointer' }}
+                      style={{ maxWidth:'220px', borderRadius:'10px', backgroundColor: 'red', cursor: 'pointer' }}
                       onClick={() => window.open(message.img, '_blank')} // Open the image in a new tab when clicked
                     />
                   )}

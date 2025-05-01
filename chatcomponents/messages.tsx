@@ -42,6 +42,8 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
   const fetchedNamesRef = useRef<{ [uid: string]: string }>({});
   const { chatId } = useParams();
   const prevSelectedUserId = useRef<string | null>(null); 
+   const { isAdmin } = useContext(AuthContext);
+
   
  const navigate = useNavigate();
 
@@ -61,7 +63,7 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
         await Promise.all(
           Object.entries(chatData).map(async ([key, msg]) => {
             const uid = msg.userInfo.uid;
-            if (!fetchedNamesRef.current[uid]) { // Only fetch if not already fetched.
+            if (!fetchedNamesRef.current[uid]) {
               try {
                 const userDoc = await getDoc(doc(db, 'users', uid));
                 if (userDoc.exists()) {
@@ -94,11 +96,10 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
 
   useEffect(() => {
     const sorted = Object.entries(messages).sort((a, b) => {
-      // Use lastActivity or date if lastActivity is missing
-      const timestampA = a[1].lastActivity?.seconds || a[1].date?.seconds || 0; // Fallback to 'date' if 'lastActivity' is missing
-      const timestampB = b[1].lastActivity?.seconds || b[1].date?.seconds || 0; // Same for b
+      const timestampA = a[1].lastActivity?.seconds || a[1].date?.seconds || 0; 
+      const timestampB = b[1].lastActivity?.seconds || b[1].date?.seconds || 0; 
 
-      return timestampB - timestampA; // Sort in descending order
+      return timestampB - timestampA; 
     });
     setSortedChats(sorted);
   }, [messages]);
@@ -110,17 +111,17 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
       const matchedChat = sortedChats.find(([key]) => key === chatId);
       if (!matchedChat) {
         console.warn('No matching chat found for chatId:', chatId);
-        return; // Early return if no chat is found
+        return; 
       }
     
       const userInfo = matchedChat[1].userInfo;
-      if (!userInfo?.uid) return; // Early return if no userInfo
+      if (!userInfo?.uid) return; 
       
       if (userInfo.uid !== prevSelectedUserId.current) {
         console.log('Switching user based on chatId from URL:', chatId);
         chatContext?.dispatch({ type: 'CHANGE_USER', payload: userInfo });
         setSelectedUserId(userInfo.uid);
-        prevSelectedUserId.current = userInfo.uid; // Update reference
+        prevSelectedUserId.current = userInfo.uid; 
         onChatSelect?.();
       }
     }, [chatId, sortedChats, chatContext, selectedUserId, onChatSelect, currentUser]);
@@ -157,7 +158,14 @@ const Messages = ({ onChatSelect }: MessagesProps) => {
         sortedChats.length === 0 ? (
           <div>No conversations yet.</div>
         ) : (
-          sortedChats .filter(([_, msg]) => msg.lastMessage?.text?.trim())
+          sortedChats
+          .filter(([_, msg]) => {
+            const lastMsg = msg.lastMessage?.text?.trim();
+            if (isAdmin) {
+              return !!lastMsg;
+            }
+            return true;
+          })
           .map(([key, msg]) => {
             const isActive = chatContext?.data.user?.uid === msg.userInfo.uid;
             const userDisplayName = msg.userInfo.name || 'Unknown';

@@ -4,7 +4,7 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import PrivacyPreviewModal from "../components/privacypolicy";
-
+import PFP from "/assets/notifpfpicon.png"
 const Profile: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [reportCount, setReportCount] = useState(0);
@@ -51,22 +51,10 @@ const Profile: React.FC = () => {
 
   if (!user) return <p>Loading...</p>;
 
-  // const handleInquireClick = () => {
-  //   setModalContent({
-  //     title: "Privacy Policy",
-  //     body: (
-  //       <p>
-  //         This is our privacy policy. We respect your privacy and do not share your information with third parties.
-  //       </p>
-  //     ),
-  //   });
-  //   setShowModal(true);
-  // };
-
   return (
     <div className="mt-5 pt-5">
       <div className="d-flex pb-3 ms-2 flex-row flex-column flex-sm-row justify-content-center align-items-center justify-content-lg-start">
-        <img src="public\assets\notifpfpicon.png" className="rounded-circle"
+        <img src={PFP} className="rounded-circle"
           style={{
             width: "clamp(70px, 2vw, 120px)",
             minWidth: "50px",
@@ -132,7 +120,7 @@ const Profile: React.FC = () => {
                 </span>
 
                 <img
-                  src="public\assets\Reporticonbutred.png" alt="" className="pb-4 me-4"
+                  src="/assets/Reporticonbutred.png" alt="" className="pb-4 me-4"
                   style={{
                     width: "clamp(35px, 3vw, 30px)",
                     minWidth: "15px",
@@ -168,7 +156,7 @@ const Profile: React.FC = () => {
                 </span>
 
                 <img
-                  src="public\assets\Walletwcheck.png" alt="" className="pb-4 me-3"
+                  src="/assets/Walletwcheck.png" alt="" className="pb-4 me-3"
                   style={{
                     width: "clamp(45px, 3vw, 30px)",
                     minWidth: "15px",

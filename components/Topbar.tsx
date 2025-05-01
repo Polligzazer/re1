@@ -273,7 +273,7 @@ const Topbar = () => {
           <div className="d-flex me-4 gap-5 position-relative align-items-center pe-3">
             <div className="dropdown position-relative">
               <a className="position-relative" data-bs-toggle="dropdown" style={{ cursor: "pointer" }}>
-                <img src={NotifIcon} alt="Notifications" style={{ width: "30px", height: "30px" }} />
+                <img src={NotifIcon} alt="Notifications" style={{ width: "clamp(24px, 2.6vw, 30px)",}} />
                 {hasUnread && (
                   <span className="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"></span>
                 )}

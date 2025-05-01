@@ -17,12 +17,15 @@ import { AuthContext } from "../components/Authcontext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperclip, faPaperPlane, faFileAlt } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
+import { Modal } from "react-bootstrap";
 
 const Input = () => {
   const [text, setText] = useState("");    
   const [file, setFile] = useState<File | null>(null);
   const { data } = useChatContext();
   const { currentUser, isAdmin } = useContext(AuthContext);
+  const [isFileUploading, setIsFileUploading] = useState(false);
+   const [showLoadingModal, setShowLoadingModal] = useState(false);
 
   useEffect(() => {
     console.log("Current Role:", currentUser?.role);
@@ -33,7 +36,8 @@ const Input = () => {
     if (!e.target.files || e.target.files.length === 0) return;
   
     const selectedFile = e.target.files[0];
-  
+    setIsFileUploading(true);
+    setShowLoadingModal(true)
     try {
       const uploadedFile = await apwstorage.createFile(
         APPWRITE_STORAGE_BUCKET_ID,
@@ -50,6 +54,8 @@ const Input = () => {
   
       setText((prev) => prev + `\n${fileUrl}`);
       setFile(selectedFile);
+      setIsFileUploading(false);
+      setShowLoadingModal(false)
     } catch (error) {
       console.error("❗ Error uploading file:", error);
       alert("❗ Failed to upload file. Please try again.");
@@ -225,6 +231,37 @@ const Input = () => {
       <button className="btn btn-primary" onClick={handleSend}>
         <FontAwesomeIcon icon={faPaperPlane} />
       </button>
+      <Modal show={showLoadingModal} onHide={() => setShowLoadingModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{isFileUploading ? "Uploading..." : "Upload Complete"}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {isFileUploading ? (
+            <div className="d-flex justify-content-center align-items-center flex-column">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Logging In...</span>
+              </div>
+              <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+                Uploading your file...
+              </span>
+            </div>
+          ) : (
+            <div className="d-flex justify-content-center align-items-center flex-column">
+              <div className="check-container pb-1">
+                <div className="check-background">
+                  <svg viewBox="0 0 65 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 25L27.3077 44L58.5 7" stroke="white" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </div>
+              <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+                File uploaded!
+              </span>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer />
+      </Modal>
     </div>
   );
 };
