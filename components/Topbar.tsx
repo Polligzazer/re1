@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
-import { AuthContext } from "../components/Authcontext";
+import { AuthContext   } from "../components/Authcontext";
 import { useFCMToken } from "../src/types/FCMContext";
 import {
   AppNotification,
@@ -56,7 +56,7 @@ const Topbar = () => {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
   const prevNotifsRef = useRef<AppNotification[]>([]);
 
-  const { isAdmin } = useContext(AuthContext);
+  const { isAdmin, loading } = useContext(AuthContext);
   const userId = auth.currentUser?.uid;
   
   
@@ -424,7 +424,10 @@ const Topbar = () => {
             overflow:"hidden"
           }}>
   <ul className="nav flex-column pb-1 pt-4 mb-lg-3 justify-content-center align-items-center w-100">
-    {isAdmin ? (
+    
+    {loading ? (
+      <p className="text-center py-4">Loading...</p> // or null / skeleton
+    ) : isAdmin ? (
       <>
         <li className="nav-item text-center w-100">
           <NavLink
