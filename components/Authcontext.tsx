@@ -24,7 +24,7 @@ export const AuthContext = createContext<AuthContextType>({
   currentUser: null,
   loading: true,
   isAdmin: false,
-  refreshUser: async () => {}, 
+  refreshUser: async () => {},
 });
 
 interface AuthProviderProps {
@@ -109,4 +109,3 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-
