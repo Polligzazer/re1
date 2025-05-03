@@ -22,6 +22,7 @@ import Inquiries from "../pages/inquires";
 import SearchBar from "../components/Searchbar";
 import Lost from "../pages/reportcomp/reports/Lost";
 import Found from "../pages/reportcomp/reports/Found";
+import ItemHotspots from "../components/ItemHotspots";
 import { AuthContext } from "../components/Authcontext";
 import { ReactNode, useContext } from "react";
 import Loading from "../components/Loading";
@@ -108,7 +109,7 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/email-verified" element={<EmailVerified />} />
         <Route path="/complete-registration" element={<CompleteRegistration />} />
-        <Route path="/testload" element={<Loading />} />
+        <Route path="hotspot" element={<ItemHotspots />} />
 
         {/* Protected Routes */}
         <Route

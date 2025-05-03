@@ -451,7 +451,7 @@ const Topbar = () => {
                 marginBottom: "5px",
               }}
             />
-            <span className="d-none d-md-inline pe-2">Homea</span>
+            <span className="d-none d-md-inline pe-2">Home</span>
           </NavLink>
         </li>
         <li className="nav-item text-center w-100">

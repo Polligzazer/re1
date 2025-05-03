@@ -23,6 +23,7 @@ export const FCMProvider: React.FC<FCMProviderProps> = ({ children }) => {
     const registerServiceWorker = async () => {
       try {
         const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+
         console.log('✅ Service Worker registered:', registration);
 
         // Request notification permission
@@ -35,7 +36,7 @@ export const FCMProvider: React.FC<FCMProviderProps> = ({ children }) => {
 
         // Get the token
         const currentToken = await getToken(messaging, {
-          vapidKey: 'BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w',
+          vapidKey: import.meta.env.VAPID_KEY,
           serviceWorkerRegistration: registration,
         });
 

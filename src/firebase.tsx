@@ -29,15 +29,15 @@ import {
 } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyC_FLCIBWdReqRPmWFZB1L_4rhLntNWuyA",
-    authDomain: "message-4138f.firebaseapp.com",
-    projectId: "message-4138f",
-    databaseURL: "https://message-4138f-default-rtdb.asia-southeast1.firebasedatabase.app",
-    storageBucket: "message-4138f.firebasestorage.app",
-    messagingSenderId: "197072020008",
-    appId: "1:197072020008:web:e0676251a0d313260dcb1d",
-    measurementId: "G-GD15C1MZW2",
-    vapidKey:"BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w"
+    apiKey: process.env.FIREBASE_APIKEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECTID,
+    databaseURL: process.env.FIREBASE_DATABASEURL,
+    storageBucket: process.env.FIREBASE_STORAGEID,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDERID,
+    appId: process.env.FIREBASE_APPID,
+    measurementId: process.env.FIREBASE_MEASUREMENTID,
+    vapidKey: process.env.VAPID_KEY
   };
 
 const app = initializeApp(firebaseConfig);
@@ -47,7 +47,7 @@ export { messaging, getToken, onMessage };
 
 export async function setupAndSaveFCMToken(userId: string): Promise<string> {
   // Get the FCM token using the messaging object
-  const vapidKey = 'BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w';
+  const vapidKey = process.env.VAPID_KEY;
   const token = await getToken(messaging, { vapidKey });
   
   if (!token) throw new Error("Failed to obtain FCM token");
@@ -122,7 +122,7 @@ export async function getFCMToken(): Promise<string | null> {
       throw new Error("Service Worker registration unavailable");
     }
     const token = await getToken(messaging, {
-      vapidKey: "BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w",
+      vapidKey: process.env.VAPID_KEY,
       serviceWorkerRegistration: registration,
     });
     return token;
@@ -163,7 +163,7 @@ export const requestNotificationPermission = async () => {
     const messaging = getMessaging(); 
 
     const token = await getToken(messaging, {
-      vapidKey: "BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w",
+      vapidKey: process.env.VAPID_KEY,
     });
 
     if (token) {

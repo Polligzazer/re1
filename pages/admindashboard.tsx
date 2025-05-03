@@ -4,6 +4,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../src/firebase";
 import Analytics from "../components/Analytics";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import ItemHotspots from "../components/ItemHotspots";
 import { faCircleCheck, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import "../css/dashboard.css";
 
@@ -197,7 +198,7 @@ const Dashboard = () => {
 
 
       <Analytics />
-
+      <ItemHotspots />
     </div>
   );
 };
