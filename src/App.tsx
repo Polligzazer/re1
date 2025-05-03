@@ -67,7 +67,7 @@ function App() {
   
         // 3. Get FCM token
         const token = await getToken(messaging, {
-          vapidKey: 'BFxv9dfRXQRt-McTvigYKqvpsMbuMdEJTgVqnb7gsql1kljrxNbZmTA_woI4ngYveFGsY5j33IImXJfiYLHBO3w',
+          vapidKey: import.meta.env.VITE_VAPID_KEY,
           serviceWorkerRegistration: registration,
         });
   

@@ -29,15 +29,15 @@ import {
 } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: process.env.FIREBASE_APIKEY,
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.FIREBASE_PROJECTID,
-    databaseURL: process.env.FIREBASE_DATABASEURL,
-    storageBucket: process.env.FIREBASE_STORAGEID,
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDERID,
-    appId: process.env.FIREBASE_APPID,
-    measurementId: process.env.FIREBASE_MEASUREMENTID,
-    vapidKey: process.env.VAPID_KEY
+    apiKey: process.env.VITE_FIREBASE_APIKEY,
+    authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.VITE_FIREBASE_PROJECTID,
+    databaseURL: process.env.VITE_FIREBASE_DATABASEURL,
+    storageBucket: process.env.VITE_FIREBASE_STORAGEID,
+    messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDERID,
+    appId: process.env.VITE_FIREBASE_APPID,
+    measurementId: process.env.VITE_FIREBASE_MEASUREMENTID,
+    vapidKey: process.env.VITE_VAPID_KEY
   };
 
 const app = initializeApp(firebaseConfig);
@@ -47,7 +47,7 @@ export { messaging, getToken, onMessage };
 
 export async function setupAndSaveFCMToken(userId: string): Promise<string> {
   // Get the FCM token using the messaging object
-  const vapidKey = process.env.VAPID_KEY;
+  const vapidKey = process.env.VITE_VAPID_KEY;
   const token = await getToken(messaging, { vapidKey });
   
   if (!token) throw new Error("Failed to obtain FCM token");
@@ -122,7 +122,7 @@ export async function getFCMToken(): Promise<string | null> {
       throw new Error("Service Worker registration unavailable");
     }
     const token = await getToken(messaging, {
-      vapidKey: process.env.VAPID_KEY,
+      vapidKey: process.env.VITE_VAPID_KEY,
       serviceWorkerRegistration: registration,
     });
     return token;

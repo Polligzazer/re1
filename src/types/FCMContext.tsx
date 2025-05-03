@@ -36,7 +36,7 @@ export const FCMProvider: React.FC<FCMProviderProps> = ({ children }) => {
 
         // Get the token
         const currentToken = await getToken(messaging, {
-          vapidKey: import.meta.env.VAPID_KEY,
+          vapidKey: import.meta.env.VITE_VAPID_KEY,
           serviceWorkerRegistration: registration,
         });
 
