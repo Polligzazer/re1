@@ -29,15 +29,15 @@ import {
 } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: process.env.VITE_FIREBASE_APIKEY,
-    authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.VITE_FIREBASE_PROJECTID,
-    databaseURL: process.env.VITE_FIREBASE_DATABASEURL,
-    storageBucket: process.env.VITE_FIREBASE_STORAGEID,
-    messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDERID,
-    appId: process.env.VITE_FIREBASE_APPID,
-    measurementId: process.env.VITE_FIREBASE_MEASUREMENTID,
-    vapidKey: process.env.VITE_VAPID_KEY
+    apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECTID,
+    databaseURL: import.meta.env.VITE_FIREBASE_DATABASEURL,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGEID,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDERID,
+    appId: import.meta.env.VITE_FIREBASE_APPID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENTID,
+    vapidKey: import.meta.env.VITE_VAPID_KEY
   };
 
 const app = initializeApp(firebaseConfig);
