@@ -3,7 +3,7 @@ import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
-import { Autoplay} from 'swiper/modules';
+import { Autoplay } from 'swiper/modules';
 import FLO8 from "/assets/8.png" 
 import FLO13 from "/assets/13.png" 
 import p1 from "/assets/p1.png" 
@@ -35,10 +35,6 @@ const HeroPage: React.FC = () => {
     const location = useLocation();
     const fromProfile = location.state?.from === "profile";
 
-     const handleNavigateToHome = () => {
-         navigate("/");
-       };
-    
     const handleNavigateToLogin = () => {
         navigate("/login");
     };
@@ -83,18 +79,6 @@ const HeroPage: React.FC = () => {
             >
                  {!fromProfile && (
                     <>
-                        <button 
-                            onClick={handleNavigateToHome}
-                            style={{
-                                backgroundColor: 'transparent',
-                                outline: 'none',
-                                border: 'none',
-                                color: '#0e5cc5',
-                                fontSize: '13.9px'
-                            }}
-                        > 
-                            Home
-                        </button>
                         <button
                             style={{
                                 backgroundColor: 'transparent',

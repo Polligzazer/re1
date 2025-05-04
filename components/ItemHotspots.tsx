@@ -44,9 +44,9 @@ const capitalizeWords = (input: string): string =>
   input.replace(/\b\w+/g, word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
 
 const getHotspotLevel = (count: number): string => {
-  if (count >= 10) return '🔥 High';
-  if (count >= 5) return '⚠️ Medium';
-  return '✅ Low';
+  if (count >= 10) return 'High';
+  if (count >= 5) return 'Medium';
+  return 'Low';
 };
 const ItemHotspots: React.FC = () => {
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
@@ -117,26 +117,22 @@ const ItemHotspots: React.FC = () => {
     <div className="container my-4">
       <h2 className="h4 mb-3">Lost Item Hotspots</h2>
       <table className="table table-bordered table-hover">
-        <thead className="table-light">
+        <thead className="table-light text-center">
           <tr>
             <th>Location</th>
-            <th>Lost Items per Room</th>
             <th>Hotspot Level</th>
-            <th>Role/Section</th>
             <th>Total Lost Items per Section</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="text-center">
           {hotspots.map((hotspot, index) => (
             <tr key={index}>
               <td>{hotspot.location}</td>
-              <td>{hotspot.count}</td>
               <td>{getHotspotLevel(hotspot.count)}</td>
-              <td>{[...hotspot.roles].join(', ')}</td>
               <td>
                 <ul className="mb-0">
                   {Object.entries(hotspot.sections).map(([section, count]) => (
-                    <li key={section}>{section}: {count}</li>
+                    <span key={section}>{section}: {count}</span>
                   ))}
                 </ul>
               </td>
