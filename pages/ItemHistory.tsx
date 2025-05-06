@@ -225,7 +225,7 @@ const ItemHistory = () => {
                   }}>
                 <div>
                   <img className="img-cat"
-                    src={categoryImages[item.category] || '../src/assets/othersIcon.png'}
+                    src={categoryImages[item.category] || './assets/othersIcon.png'}
                     alt={item.category}/>
                 </div>
               </div>
