@@ -88,7 +88,7 @@ const Input = () => {
           fileUrl = apwstorage.getFileView(APPWRITE_STORAGE_BUCKET_ID, fileId);
 
           const fileInfo = await apwstorage.getFile(APPWRITE_STORAGE_BUCKET_ID, fileId);
-          fileType = fileInfo.mimeType; // e.g., 'video/mp4', 'image/png', etc.
+          fileType = fileInfo.mimeType;
         } catch (uploadError) {
           console.error("Appwrite upload failed:", uploadError);
           return;

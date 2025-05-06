@@ -15,7 +15,6 @@ import "../css/searchbar.css";
 
 interface Report {
   type: string;
-  item: any;
   id: string;
   category: string;
   description: string;
@@ -63,8 +62,6 @@ const SearchPage = () => {
           constraints.push(where("type", "==", type));
         }
 
-        
-        
         const q = query(reportsRef, ...constraints);
         const querySnapshot = await getDocs(q);
         
@@ -79,7 +76,6 @@ const SearchPage = () => {
             report.category.toLowerCase().includes(keywordLower) ||
             report.description.toLowerCase().includes(keywordLower) ||
             report.location.toLowerCase().includes(keywordLower) ||
-            report.item.toLowerCase().includes(keywordLower) ||
             report.type.toLowerCase().includes(keywordLower)
         );
 
@@ -255,7 +251,7 @@ const SearchPage = () => {
               </div>
               <div style={{ width: "100%", fontFamily: "Poppins, sans-serif" }}>
                 <p className="report-info">
-                <strong>{report.type === "lost" ? "Lost item:" : "Found item:"}</strong> {report.item}
+                <strong>{report.type === "lost" ? "Lost item:" : "Found item:"}</strong> {report.category}
                 </p>
                 <p className="report-info">
                 <strong>{report.type === "lost" ? "Last Location:" : "Seen at:"}</strong> {report.location}

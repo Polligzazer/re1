@@ -13,14 +13,11 @@ const Chatbot: React.FC = () => {
   const [showBubble, setShowBubble] = useState(true);
   const [messages, setMessages] = useState<{ text: string; sender: string; options?: string[] }[]>([]);
   const [currentTopic, setCurrentTopic] = useState<string | null>(null);
-  // const [userInput, setUserInput] = useState("");
   const [userName, setUserName] = useState<string>(""); 
   const [showMainOptionsFlag, setShowMainOptionsFlag] = useState(false);
   const [randomMessage, setRandomMessage] = useState<string>("");
   const [isTyping, setIsTyping] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null); 
-  // const inputRef = useRef<HTMLInputElement>(null); 
-  // const sendButtonRef = useRef<HTMLButtonElement>(null);
   const chatAssistantRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
   const [imageSrc, setImageSrc] = useState(FLO3);
@@ -159,22 +156,7 @@ const Chatbot: React.FC = () => {
         setShowMainOptionsFlag(true); 
       }
     };
-    
-    // const handleSendMessage = () => {
-    //   if (userInput.trim() !== "") {
-    //     setMessages([...messages, { text: userInput, sender: "user" }, { text: "Please contact the Admin for more inquiries.", sender: "bot" }]);
-    //     setUserInput(""); 
-    //     if (inputRef.current) {
-    //       inputRef.current.focus(); 
-    //     }
-    //   }
-    // };
-  
-    // const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement | HTMLButtonElement>) => {
-    //   if (event.key === "Enter") {
-    //     handleSendMessage();
-    //   }
-    // };
+
     useEffect(() => {
         if (chatContainerRef.current) {
           chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;

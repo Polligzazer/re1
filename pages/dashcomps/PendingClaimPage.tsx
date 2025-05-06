@@ -108,7 +108,6 @@ const AdminApproval: React.FC = () => {
   const handleDenyClick = async (event: React.MouseEvent, report: Report) => {
     event.stopPropagation();
   
-    // 1. Create Firestore notification
     setReportToDeny(report);
     setShowDenyModal(true);
   };
@@ -119,21 +118,17 @@ const AdminApproval: React.FC = () => {
     setLoading(true);
   
     try {
-      // 1. Update the report status
       await denyReport(reportToDeny.id);
   
-      // 2. Create Firestore notification
       await createNotification(
         reportToDeny.userId,
         "Your claim request has been denied",
         reportToDeny.id
       );
   
-      // 3. Fetch the denied user's FCM token
       const userDoc = await getDoc(doc(db, "users", reportToDeny.userId));
       const userToken = userDoc.exists() ? userDoc.data().fcmToken : null;
   
-      // 4. Send push notification
       if (userToken) {
         await sendPushNotification(userToken, {
           title: "Denied claim request",
@@ -147,7 +142,6 @@ const AdminApproval: React.FC = () => {
       console.error("❌ Error denying claim report:", err);
       alert("Failed to deny claim request.");
     } finally {
-      // 5. Reset modal state
       setShowDenyModal(false);
       setReportToDeny(null);
       setLoading(false);
@@ -203,7 +197,6 @@ const AdminApproval: React.FC = () => {
       const updatedReport = { ...report, emailSent: true };
       setReports(prev => prev.map(r => r.id === report.id ? updatedReport : r));
   
-      // 1. Firestore notification
       await createNotification(
         report.userId,
         "Receipt has been sent in the mail, claim your lost item.",
@@ -388,7 +381,6 @@ const AdminApproval: React.FC = () => {
     const report = reports.find((r) => r.id === reportId);
     if (report) {
       try {
-        // Fetch receipt ID from claim_receipts collection
         const receiptQuery = query(
           collection(db, "claim_receipts"),
           where("referenceId", "==", report.id)
@@ -449,7 +441,7 @@ const AdminApproval: React.FC = () => {
       }
     }catch (err) {
       console.error("Error fetching receipt ID:", err);
-      setSelectedReport(report); // fallback to normal report
+      setSelectedReport(report);
       setShowReportModal(true);
     }
   }

@@ -60,7 +60,6 @@ export const fetchNotifications = (
     const notifications = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-      // Convert Firestore timestamp to JS Date
       timestamp: doc.data().timestamp?.toDate().getTime() || Date.now()
     })) as AppNotification[];
     
@@ -139,18 +138,15 @@ export const sendPushNotification = async (
   token: string,
   payload: Record<string, string>) => {
   try {
-    // 1) Get the freshest token
     if (!token) {
       console.warn("⚠️ No FCM token available—skipping push");
       return;
     }
 
-    // 2) Ensure all values are strings
     const safePayload = Object.fromEntries(
       Object.entries(payload).map(([key, value]) => [key, String(value)])
     );
 
-    // 3) Fire off to your proxy
     const response = await fetch(
       "https://flo-proxy.vercel.app/api/send-notification",
       {
@@ -163,7 +159,6 @@ export const sendPushNotification = async (
       }
     );
 
-    // 4) Handle invalid tokens cleanup
     if (!response.ok) {
       const result = await response.json().catch(() => ({}));
       if (
@@ -190,7 +185,6 @@ export const showInAppNotification = (payload: {
 }) => {
   if (!payload.notification?.title || !payload.notification?.body) return;
 
-  // Your custom notification UI implementation
   console.log('Showing notification:', payload);
 };
 
@@ -201,7 +195,6 @@ export interface ValidMessage {
   timestamp: { seconds: number; nanoseconds: number };
 };
 
-// Global cache to track notifications (survives component remounts)
 const lastMessageMap = new Map<string, string>();
 let lastNotificationTime: number | null = null;
 const notificationCooldown = 5000;
@@ -286,7 +279,6 @@ export const createNotification = async (
   chatId?: string
 ) => {
   try {
-    // Check if notification already exists
     const notificationsRef = collection(db, "users", userId, "notifications");
     const existing = await getDocs(query(
       notificationsRef, 
@@ -300,14 +292,12 @@ export const createNotification = async (
       const lastNotification = existing.docs[0].data();
       const timeDiff = Date.now() - lastNotification.timestamp.toDate().getTime();
       
-      // Block duplicates within 5 minutes
       if (timeDiff < 300) {
         console.log("⏭️ Duplicate notification blocked");
         return;
       }
     }
 
-    // Create new notification
     const batch = writeBatch(db);
     const notificationId = uuidv4();
     

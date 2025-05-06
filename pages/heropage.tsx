@@ -79,17 +79,6 @@ const HeroPage: React.FC = () => {
             >
                  {!fromProfile && (
                     <>
-                        <button
-                            style={{
-                                backgroundColor: 'transparent',
-                                outline: 'none',
-                                border: 'none',
-                                color: '#0e5cc5',
-                                fontSize: '13.9px'
-                            }}
-                        >
-                            Company
-                        </button>
                         <button 
                             onClick={handleNavigateToLogin}
                             style={{
@@ -225,7 +214,6 @@ const HeroPage: React.FC = () => {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.8, delay: 0.5 }}    
                 >
-
                 </motion.div>
             </motion.div>
         </div>

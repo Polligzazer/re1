@@ -10,7 +10,7 @@ const Inquiries = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [showChat, setShowChat] = useState(window.innerWidth > 768);
   const [autoSelected, setAutoSelected] = useState(false); 
-  const [selectedUser, setSelectedUser] = useState<any>(null);  // <-- New
+  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -29,7 +29,7 @@ const Inquiries = () => {
 
   useEffect(() => {
     console.log(`Window width changed to: ${windowWidth}`);
-    if (!currentUser?.isAdmin) { // <-- ✅ Only auto-select if NOT admin
+    if (!currentUser?.isAdmin) {
       if (windowWidth > 768 && !autoSelected) {
         handleSelectChat(null); 
         setAutoSelected(true);
@@ -41,7 +41,7 @@ const Inquiries = () => {
 
   const handleSelectChat = (user: any = null) => {
     console.log("handleSelectChat triggered", user);
-  setSelectedUser(user); // <-- Always set, even if null
+  setSelectedUser(user);
   setShowChat(true);
   if (user) {
     console.log(`User selected: ${user?.name || 'Unknown'}`);
@@ -54,7 +54,7 @@ const Inquiries = () => {
     if (windowWidth <= 768) {
       setShowChat(false); 
       setAutoSelected(false);
-      setSelectedUser(null); // <-- RESET user when back
+      setSelectedUser(null);
       console.log("User deselected and chat window hidden.");
     }
   };

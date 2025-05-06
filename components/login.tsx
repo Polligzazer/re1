@@ -15,7 +15,7 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
 
-  const emailPattern = /^([a-z]+\.\d{6}@meycauayan\.sti\.edu\.ph|[a-z]+\.[a-z]+@meycauayan\.sti\.edi\.ph)$/;
+  const emailPattern = /^([a-z]+(?:[a-z]+)?\.[a-z0-9]+@meycauayan\.sti\.edu(?:\.ph)?)$/;
 
   useEffect(() => {
     if (email.length > 0) {

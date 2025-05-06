@@ -43,11 +43,12 @@ const Lost: React.FC = () => {
 
   const [userUID, setUserUID] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-    const [showLoadingModal, setShowLoadingModal] = useState(false);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
   const [fileName, setFileName] = useState("");
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false); 
   const [success, setSucess] = useState(false);
+  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     const getUserUID = async () => {
@@ -64,6 +65,12 @@ const Lost: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.category) {
+      setShowModal(false);
+      setFormError("Please select a category.");
+      return;
+    }
+    setFormError("");
     setShowModal(true);
   };
 
@@ -76,7 +83,7 @@ const Lost: React.FC = () => {
     
     try {
       const uploadedFile = await apwstorage.createFile(
-        APPWRITE_STORAGE_BUCKET_ID, // Replace with your Appwrite Storage bucket ID
+        APPWRITE_STORAGE_BUCKET_ID,
         ID.unique(),
         file
       );
@@ -99,7 +106,7 @@ const Lost: React.FC = () => {
       alert("❗ User not authenticated. Please log in again.");
       return;
     }
-
+    
     setLoading(true); 
     const reportData = {
       ...formData,
@@ -133,9 +140,9 @@ const Lost: React.FC = () => {
   };
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-1">
       {/* Header */}
-      <div className="d-flex align-items-center w-100 justify-content-between mt-5 pt-4 mb-3">
+      <div className="d-flex align-items-center w-100 justify-content-between mt-4 pt-4 mb-3">
       <div className="d-flex flex-column">
         <h1 className="fw-bold" style={{
              fontFamily: "DM Sans, sans-serif", 
@@ -240,6 +247,7 @@ const Lost: React.FC = () => {
               </button>
             ))}
           </div>
+          {formError && <div className="text-danger mt-1">{formError}</div>}
           </div>
           <div className=" d-none d-lg-flex flex-row align-self-end" style={{ width: "100%" }}>
  

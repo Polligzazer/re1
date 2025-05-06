@@ -68,13 +68,6 @@ const CompleteRegistration: React.FC = () => {
         const refreshedData = userSnap.data();
         console.log("✅ User data refreshed:", refreshedData);
 
-        // Optional: you can update local state or context here if necessary
-        // Example:
-        // setFormData(prev => ({
-        //   ...prev,
-        //   ...refreshedData
-        // }));
-
       } else {
         console.warn("⚠️ No user data found to refresh.");
       }

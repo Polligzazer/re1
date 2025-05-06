@@ -9,7 +9,6 @@ const Profile: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [reportCount, setReportCount] = useState(0);
   const [claimCount, setClaimCount] = useState(0);
-  // const [modalContent, setModalContent] = useState({ title: "", body: "" });
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
@@ -17,7 +16,6 @@ const Profile: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async (uid: string) => {
       try {
-        // Fetch user profile data
         const userDoc = await getDoc(doc(db, "users", uid));
         if (userDoc.exists()) {
           setUser(userDoc.data());

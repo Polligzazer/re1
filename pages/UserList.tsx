@@ -48,13 +48,13 @@ const UserList = () => {
   
     try {
       const tokenResult = await auth.currentUser.getIdToken();
-      console.log("Firebase ID Token:", tokenResult); // Debug log
+      console.log("Firebase ID Token:", tokenResult);
       if (!tokenResult) throw new Error("Not authenticated");
   
       const response = await fetch('https://flo-proxy.vercel.app/api/delete-user', {
         method: 'POST',
         mode: 'cors',
-        credentials: 'include', // iuiRequired for CORS + auth
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${tokenResult}`,

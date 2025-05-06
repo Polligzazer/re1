@@ -5,7 +5,7 @@ import { getToken, onMessage } from 'firebase/messaging';
 import { onAuthStateChanged, User } from "firebase/auth";
 import { toast } from "react-toastify";
 import { FCMProvider, saveFCMTokenToUser } from './types/FCMContext';
-// import { SpeedInsights } from '@vercel/speed-insights/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Layout from "../components/Layout";
 import Signup from "../components/signup";
 import Login from "../components/login";
@@ -22,7 +22,6 @@ import Inquiries from "../pages/inquires";
 import SearchBar from "../components/Searchbar";
 import Lost from "../pages/reportcomp/reports/Lost";
 import Found from "../pages/reportcomp/reports/Found";
-import ItemHotspots from "../components/ItemHotspots";
 import { AuthContext } from "../components/Authcontext";
 import { ReactNode, useContext } from "react";
 import Loading from "../components/Loading";
@@ -54,18 +53,15 @@ function App() {
   useEffect(() => {
     const setupFCM = async (user: User) => {
       try {
-        // 1. Register the Service Worker
         const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
         console.log('✅ Service Worker registered:', registration);
   
-        // 2. Ask notification permission
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
           console.error('❌ Notification permission not granted');
           return;
         }
   
-        // 3. Get FCM token
         const token = await getToken(messaging, {
           vapidKey: import.meta.env.VITE_VAPID_KEY,
           serviceWorkerRegistration: registration,
@@ -74,12 +70,10 @@ function App() {
         if (token) {
           console.log('✅ FCM Token:', token);
           await saveFCMTokenToUser(user.uid, token);
-          // Save or send token to your backend
         } else {
           console.warn('⚠️ No registration token available.');
         }
   
-        // 4. Foreground messages
         onMessage(messaging, (payload) => {
           console.log('📲 Foreground message received:', payload);
           const title = payload?.notification?.title || payload?.data?.title;
@@ -99,6 +93,7 @@ function App() {
   }, []);
   return (
   <FCMProvider>
+    <SpeedInsights />
     <Router>
       <Routes>
         <Route path ="/" element={<Hero/>}/>
@@ -109,7 +104,6 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/email-verified" element={<EmailVerified />} />
         <Route path="/complete-registration" element={<CompleteRegistration />} />
-        <Route path="hotspot" element={<ItemHotspots />} />
 
         {/* Protected Routes */}
         <Route

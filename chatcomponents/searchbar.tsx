@@ -80,7 +80,7 @@ const SearchBar = ({ onChatSelect }: SearchBarProps) => {
   
     try {
       const usersRef = collection(db, 'users');
-      const allUsersQuery = query(usersRef); // Query for all users
+      const allUsersQuery = query(usersRef);
   
       const allUsersSnapshot = await getDocs(allUsersQuery);
       const users = allUsersSnapshot.docs.map((doc) => ({
@@ -102,7 +102,7 @@ const SearchBar = ({ onChatSelect }: SearchBarProps) => {
         setUser(null);
       } else {
         setErr(null);
-        setUser(filteredUsers[0] as User); // Return the first matching user
+        setUser(filteredUsers[0] as User);
       }
     } catch (error) {
       console.error("Firestore Query Error:", error);
@@ -166,10 +166,9 @@ const SearchBar = ({ onChatSelect }: SearchBarProps) => {
         const currentUserChats = currentUserChatsSnap.data();
         const selectedUserChats = selectedUserChatsSnap.data();
   
-        // If chat already exists in userChats for both users, don't create it again
         if (currentUserChats[combinedId] || selectedUserChats[combinedId]) {
           console.log("Chatroom already exists, skipping creation.");
-          return; // Chat already exists, no need to continue
+          return;
         }
       }
 

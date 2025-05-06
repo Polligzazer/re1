@@ -11,7 +11,7 @@ export const handleSend = async (
     reportId?: string | undefined,
 ) => {
     if (!customText?.trim()) return;
-    if (!currentUser?.uid || !chatData.chatId || !chatData.user?.uid) return; // Ensure user exists
+    if (!currentUser?.uid || !chatData.chatId || !chatData.user?.uid) return;
 
     const displayName = currentUser.firstName + currentUser.lastName;
 

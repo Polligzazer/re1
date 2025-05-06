@@ -18,9 +18,10 @@ const Signup: React.FC = () => {
   const [checked, setChecked] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [termsModalShow, setTermsModalShow] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const emailPattern = /^([a-z]+\.\d{6}@meycauayan\.sti\.edu\.ph|[a-z]+\.[a-z]+@meycauayan\.sti\.edu\.ph)$/;
+  const emailPattern = /^([a-z]+(?:[a-z]+)?\.[a-z0-9]+@meycauayan\.sti\.edu(?:\.ph)?)$/;
 
   const passwordError = password.length > 0 && password.length < 8 ? "Password must be at least 8 characters" : "";
   const confirmPasswordError =
@@ -39,9 +40,11 @@ const Signup: React.FC = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError("");
+    setIsLoading(true);
   
     if (!emailPattern.test(email)) {
       setEmailError("Invalid email format");
+      setIsLoading(false);
       return;
     }
   
@@ -49,13 +52,14 @@ const Signup: React.FC = () => {
       let signInMethods = [];
       try {
         signInMethods = await fetchSignInMethodsForEmail(auth, email);
+        
+        if (signInMethods.length > 0) {
+          setEmailError("There is already an existing account with this email.");
+          setIsLoading(false);
+          return;
+        }
       } catch (fetchError) {
         console.warn("Warning: Email check failed, proceeding with signup.", fetchError);
-      }
-  
-      if (signInMethods.length > 0) {
-        setEmailError("There is already an existing account with this email.");
-        return;
       }
   
       const verificationId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -267,7 +271,7 @@ const Signup: React.FC = () => {
                   <button
                     type="submit"
                     className="btn"
-                    disabled={!checked}
+                    disabled={!checked || isLoading}
                     style={{
                       width: "150px",
                       minWidth: "100px",
@@ -333,7 +337,7 @@ const Signup: React.FC = () => {
           backgroundColor:'white'
         }}>
           <p>
-            Welcome to FLO Application! we prioritize the safety of our users while also improving their experience within the application. Please reade our terms and conditions for more.. <br/><br/>
+            Welcome to FLO Application! we prioritize the safety of our users while also improving their experience within the application. Please read our terms and conditions for more.. <br/><br/>
             1. General Information <br /> 📌 FLO is a platform designed to help users report lost and found items. It does NOT support the reporting of missing persons, perishable items, or items with monetary value such as cash or jewelry. <br /><br />
 
             2. Eligibility <br /> ✅ By using FLO, you confirm that: <br />

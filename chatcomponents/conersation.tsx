@@ -250,7 +250,6 @@ useEffect(() => {
                   {message.text && <p style={{ margin: 0, padding: 0 }}></p>} {/* Render message.text if it exists */}
                 </div>
               ) : message.text.includes('https://cloud.appwrite.io/v1/storage/buckets/') ? (
-                // If it's a link to an attached file
                 <div>
                   <a href={message.text} target="_blank" rel="noopener noreferrer">
                     See attached file

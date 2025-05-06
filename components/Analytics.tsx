@@ -210,7 +210,7 @@ const Analytics = () => {
               {
                 label: "Item Reports",
                 data: monthlyReports.map((value, index) => {
-                  return index === new Date().getMonth() ? 0 : value; // Exclude the current month
+                  return index === new Date().getMonth() ? 0 : value;
                 }),
                 backgroundColor: (context) => {
                   const chart = context.chart;
@@ -227,9 +227,9 @@ const Analytics = () => {
               {
                 label: "Current Month",
                 data: monthlyReports.map((value, index) => {
-                  return index === new Date().getMonth() ? value : 0; // Show only the current month
+                  return index === new Date().getMonth() ? value : 0; 
                 }),
-                backgroundColor: "#e8a627", // Different color for the current month
+                backgroundColor: "#e8a627",
               },
             ],
           }}

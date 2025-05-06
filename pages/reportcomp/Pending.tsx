@@ -6,7 +6,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { AuthContext } from '../../components/Authcontext';
 import { Modal, ProgressBar } from 'react-bootstrap';
 import "../../css/ModalProgress.css";
-import "../../css/pending.css"
+import "../../css/pending.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeadset } from '@fortawesome/free-solid-svg-icons';
 

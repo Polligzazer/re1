@@ -128,7 +128,6 @@ const Topbar = () => {
       setHasUnread(fetchedNotifications.some(notif => !notif.isRead));
     });
 
-    // Ensure token is available before subscribing to message updates
     if (token) {
       const handleNewMessage = (chatId: string, message: ValidMessage) => {
         if (message.senderId === userId) return;
@@ -264,7 +263,7 @@ const Topbar = () => {
               className="form-control ms-md-5"
               value={searchInput}
               onChange={handleSearchChange}
-              onKeyDown={handleSearchSubmit} // Listens for Enter k
+              onKeyDown={handleSearchSubmit}
               style={{
                 borderRadius:" 38px",
                 height:"32px",
@@ -424,7 +423,7 @@ const Topbar = () => {
   <ul className="nav flex-column pb-1 pt-4 mb-lg-3 justify-content-center align-items-center w-100">
     
     {loading ? (
-      <p className="text-center py-4">Loading...</p> // or null / skeleton
+      <p className="text-center py-4">Loading...</p>
     ) : isAdmin ? (
       <>
         <li className="nav-item text-center w-100">

@@ -22,7 +22,6 @@ const Report = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Effect to check query parameter and show Claim Form instantly
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     console.log("Query params:", params.toString());

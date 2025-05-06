@@ -2,7 +2,6 @@ import { createContext, useReducer, ReactNode, useContext } from "react";
 import { AuthContext } from "./Authcontext";
 import React from "react";
 
-// 🔹 Define context data structure
 interface UserInfo {
     uid: string;
     name: string;

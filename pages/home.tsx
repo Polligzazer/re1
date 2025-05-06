@@ -67,8 +67,6 @@ const Home = () => {
   const [pendingReports, setPendingReports] = useState<Report[]>([]);
   const [pendingClaims, setPendingClaims] = useState<Claim[]>([]);
   const [filteredPending, setFilteredPending] = useState<(Report | Claim)[]>([]);
-  // const [loading, setLoading] = useState(true);
-
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -80,7 +78,6 @@ const Home = () => {
         return {
           id: doc.id,
           ...data,
-          
         };
       }) as Report[];
 
@@ -513,7 +510,6 @@ const Home = () => {
 
             onSwiper={(swiper) => (swiperRefs.current[key] = swiper)}
             breakpoints={{
-              // wait lang
               320: { slidesPerView: 1, spaceBetween: 0 },
               364: { slidesPerView: 1.1, spaceBetween: 0 },
               408: { slidesPerView: 1.2, spaceBetween: 0},
@@ -562,7 +558,7 @@ const Home = () => {
                         <strong>
                           {report.type === "found" ? "Found item" : "Lost item"}:
                         </strong>{" "}
-                        {report.item}
+                        {report.category}
                       </p>
                       <p className="report-info">
                         <strong>

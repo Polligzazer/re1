@@ -24,14 +24,11 @@ const FirebaseActionHandler: React.FC = () => {
         switch (mode) {
           case "verifyEmail":
             await applyActionCode(auth, oobCode);
-            // ✅ Email verified! Redirect to your complete registration or login
             navigate("/complete-registration", { replace: true });
             break;
 
           case "resetPassword":
-            // ✅ Verify the password reset code before redirecting
             await verifyPasswordResetCode(auth, oobCode);
-            // If successful, redirect to password input screen with the oobCode
             navigate(`/reset-password?oobCode=${oobCode}`, { replace: true });
             break;
 
@@ -69,7 +66,7 @@ const FirebaseActionHandler: React.FC = () => {
     );
   }
 
-  return null; // Should redirect automatically
+  return null;
 };
 
 export default FirebaseActionHandler;

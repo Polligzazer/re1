@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { onSnapshot, collection, where, query, getDocs } from 'firebase/firestore';
-import { db } from '../src/firebase'; // adjust path as needed
+import { db } from '../src/firebase';
 
 type Hotspot = {
   location: string;
   count: number;
-  sections: Record<string, number>; // e.g., { "G11-A": 2, "G12-B": 3 }
+  sections: Record<string, number>;
   roles: Set<string>;
 };
 
@@ -53,7 +53,6 @@ const ItemHotspots: React.FC = () => {
 
   useEffect(() => {
     const fetchUsersAndReports = async () => {
-      // Step 1: Fetch user data
       const usersSnap = await getDocs(collection(db, 'users'));
       const userMap = new Map<string, { role: string; section: string }>();
       usersSnap.forEach(doc => {
@@ -66,7 +65,6 @@ const ItemHotspots: React.FC = () => {
         });
       });
   
-      // Step 2: Set up real-time listener
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
@@ -121,7 +119,6 @@ const ItemHotspots: React.FC = () => {
           <tr>
             <th>Location</th>
             <th>Hotspot Level</th>
-            <th>Total Lost Items per Section</th>
           </tr>
         </thead>
         <tbody className="text-center">
@@ -129,13 +126,6 @@ const ItemHotspots: React.FC = () => {
             <tr key={index}>
               <td>{hotspot.location}</td>
               <td>{getHotspotLevel(hotspot.count)}</td>
-              <td>
-                <ul className="mb-0">
-                  {Object.entries(hotspot.sections).map(([section, count]) => (
-                    <span key={section}>{section}: {count}</span>
-                  ))}
-                </ul>
-              </td>
             </tr>
           ))}
         </tbody>

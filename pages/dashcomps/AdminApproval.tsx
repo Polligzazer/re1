@@ -67,7 +67,6 @@ const AdminApproval: React.FC = () => {
         const userData = userDoc.data();
         const fcmToken = userData.fcmToken;
         try {
-          // Create regular notification
           await createNotification(
             userDoc.id,
             notificationText,
@@ -163,11 +162,11 @@ const AdminApproval: React.FC = () => {
       setLoading(false);
     });
   
-    return () => unsubscribe(); // Cleanup listener on unmount
+    return () => unsubscribe();
   }, []);
 
   const fetchUserNames = async (reports: Report[]) => {
-    const userIds = [...new Set(reports.map((report) => report.userId))]; // Unique user IDs
+    const userIds = [...new Set(reports.map((report) => report.userId))];
     const nameMap: { [key: string]: string } = {};
 
     await Promise.all(
@@ -657,7 +656,7 @@ const AdminApproval: React.FC = () => {
 
               <Button
                 onClick={() => approveReport(selectedReport.id)}
-                disabled={loading || isApproved}  // Disable button if loading or approved
+                disabled={loading || isApproved}
                 style={{
                   backgroundColor: "#67d753",
                   color: "white",

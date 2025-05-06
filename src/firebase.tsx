@@ -46,27 +46,21 @@ const messaging = getMessaging(app);
 export { messaging, getToken, onMessage };
 
 export async function setupAndSaveFCMToken(userId: string): Promise<string> {
-  // Get the FCM token using the messaging object
   const vapidKey = process.env.VITE_VAPID_KEY;
   const token = await getToken(messaging, { vapidKey });
   
   if (!token) throw new Error("Failed to obtain FCM token");
 
-  // Update the user's FCM token in Firestore
   await updateDoc(doc(db, "users", userId), { fcmToken: token, updatedAt: serverTimestamp() });
 
-  // Optionally: Manage FCM tokens in a subcollection if needed
   const tokensRef = collection(db, "users", userId, "fcmTokens");
 
-  // Check if the token already exists in the fcmTokens subcollection
   const existingQuery = query(tokensRef, where("token", "==", token));
   const existingSnapshot = await getDocs(existingQuery);
 
-  // If the token doesn't exist in the subcollection, add it
   if (existingSnapshot.empty) {
     await addDoc(tokensRef, { token, createdAt: serverTimestamp() });
   } else {
-    // Optionally, update the token in the subcollection (if needed)
     const docRef = existingSnapshot.docs[0].ref;
     await updateDoc(docRef, { token, createdAt: serverTimestamp() });
   }
@@ -112,7 +106,6 @@ export const onMessageListener = (): Promise<MessagePayload> =>
     });
   });
 
-// Helper function to get FCM token
 export async function getFCMToken(): Promise<string | null> {
   try {
     const permission = await Notification.requestPermission();
@@ -174,7 +167,6 @@ export const requestNotificationPermission = async () => {
       throw new Error("Failed to retrieve notification token.");
     }
   } catch (error) {
-    // Log all errors for easier debugging
     console.error("❌ Error getting notification token:", error);
   }
 };
@@ -182,7 +174,6 @@ export const requestNotificationPermission = async () => {
 export function setupForegroundNotifications() {
   onMessage(messaging, (payload) => {
     console.log("📥 Foreground FCM received:", payload);
-    // showInAppBanner(payload.data.title, payload.data.body);
     if (document.hasFocus()) {
       window.dispatchEvent(new CustomEvent("NEW_FCM_MESSAGE", { detail: payload }));
     }
@@ -226,23 +217,15 @@ export const reportLostItem = async (
   description: string,
   location: string,
   date: string,
-  // imageFile: File
 ) => {
   try {
-    // Upload image to Firebase Storage
-    // const storageRef = ref(storage, `lost_items/${imageFile.name}`);
-    // await uploadBytes(storageRef, imageFile);
-    // const imageUrl = await getDownloadURL(storageRef);
-
-    // Save report in Firestore
     const docRef = await addDoc(collection(db, "lost_items"), {
       userId,
       category,
       description,
       location,
       date,
-      // imageUrl,
-      status: "pending", // Default status
+      status: "pending",
       createdAt: new Date(),
     });
 
@@ -253,14 +236,12 @@ export const reportLostItem = async (
   }
 };
 
-// Fetch pending reports for admin
 export const getPendingReports = async () => {
   const q = query(collection(db, "lost_items"), where("status", "==", "pending"));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
-// Admin approval/rejection function
 export const reviewLostItem = async (
   reportId: string,
   approve: boolean,
@@ -272,7 +253,6 @@ export const reviewLostItem = async (
       status: approve ? "approved" : "denied",
     });
 
-    // Notify user (Assuming there's a 'notifications' collection)
     await addDoc(collection(db, "notifications"), {
       userId,
       message: approve
@@ -286,7 +266,6 @@ export const reviewLostItem = async (
   }
 };
 
-// Fetch approved reports for the feed
 export const getApprovedReports = async () => {
   const q = query(collection(db, "lost_items"), where("status", "==", "approved"));
   const querySnapshot = await getDocs(q);

@@ -45,8 +45,9 @@ const Found: React.FC = () => {
   const [showLoadingModal, setShowLoadingModal] = useState(false);
   const [fileName, setFileName] = useState("");
   const [fileUrl, setFileUrl] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false); 
-    const [success, setSucess] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [loading, setLoading] = useState(false); 
+  const [success, setSucess] = useState(false);
 
   useEffect(() => {
     const getUserUID = async () => {
@@ -63,6 +64,12 @@ const Found: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.category) {
+      setShowModal(false);
+      setFormError("Please select a category.");
+      return;
+    }
+    setFormError(""); 
     setShowModal(true);
   };
 
@@ -98,6 +105,7 @@ const Found: React.FC = () => {
       alert("❗ User not authenticated. Please log in again.");
       return;
     }
+    
     setLoading(true); 
     const now = new Date();
     const nineMonthsLater = new Date(now.setMonth(now.getMonth() + 9));
@@ -127,7 +135,7 @@ const Found: React.FC = () => {
     } finally{
       setTimeout(() => {
         setSucess(false); 
-        setShowModal(false)
+        setShowModal(false);
         navigate('/report?tab=pending');
       }, 2000); 
     }
@@ -135,9 +143,9 @@ const Found: React.FC = () => {
   };
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-1">
       {/* Header */}
-      <div className="d-flex align-items-center w-100 justify-content-between mt-5 pt-4 mb-3">
+      <div className="d-flex align-items-center w-100 justify-content-between mt-4 pt-4 mb-3">
       <div className="d-flex flex-column">
         <h1 className="fw-bold" style={{
              fontFamily: "DM Sans, sans-serif", 
@@ -240,8 +248,10 @@ const Found: React.FC = () => {
                 {category}
                 </div>
               </button>
+              
             ))}
           </div>
+            {formError && <div className="text-danger mt-1">{formError}</div>}
           </div>
           <div className=" d-none d-lg-flex flex-row align-self-end" style={{ width: "100%" }}>
  

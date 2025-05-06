@@ -83,7 +83,7 @@ const ItemPreviewModal = ({ show, onClose, item }: ItemPreviewModalProps) => {
         {item ? (
           <div>
              <p><strong>Reference Id:</strong> {item.id}</p>
-            <p><strong>Item:</strong> {item.item} ({item.category})</p>
+            <p><strong>Item:</strong> {item.category}</p>
             <p><strong>Location:</strong> {item.location}</p>
             <p><strong>Date:</strong> {item.date}</p>
            

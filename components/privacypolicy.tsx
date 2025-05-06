@@ -1,4 +1,4 @@
-import { Modal, Button } from "react-bootstrap"; // Using Bootstrap Modal for simplicity
+import { Modal, Button } from "react-bootstrap";
 
 
 interface PrivacyPreviewModalProps {

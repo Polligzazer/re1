@@ -52,7 +52,9 @@ const ClaimFormRequest: React.FC = () => {
   const [isValidReference, setIsValidReference] = useState<boolean | null>(null);
   const [, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false); 
-    const [success, setSucess] = useState(false);
+  const [success, setSucess] = useState(false);
+  const [formError, setFormError] = useState("");
+    
 
   const validateReferenceId = async (id: string) => {
     if (!id) {
@@ -67,7 +69,6 @@ const ClaimFormRequest: React.FC = () => {
 
     if (lostItemSnap.exists()) {
       const lostItemData = lostItemSnap.data();
-      // Assuming the type is stored as 'type' field in the lost items collection
       if (lostItemData?.type === "found" || lostItemData?.type === "lost") {
         setIsValidReference(true);
         setErrorMessage("");
@@ -131,7 +132,12 @@ const ClaimFormRequest: React.FC = () => {
       alert("❗ Please validate the reference ID before submitting.");
       return;
     }
-
+    if (!formData.category) {
+      setShowModal(false);
+      setFormError("Please select a category.");
+      return;
+    }
+    setFormError(""); 
     setShowModal(true);
   };
 
@@ -198,7 +204,7 @@ const ClaimFormRequest: React.FC = () => {
   };
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-3">
 
       {/* Form */}
       <form 
@@ -241,7 +247,7 @@ const ClaimFormRequest: React.FC = () => {
                   outline:'none',
                   fontFamily:'League Spartan, serif',
                   boxShadow: formData.category === category 
-                    ? '0px 6px 12px rgba(0, 0, 0, 0.2)' // **Shadow when selected**
+                    ? '0px 6px 12px rgba(0, 0, 0, 0.2)'
                     : 'none',
                 }}
                 className="cbtn btn d-flex align-items-md-center align-items-start  flex-row flex-sm-column"
@@ -280,6 +286,7 @@ const ClaimFormRequest: React.FC = () => {
               </button>
             ))}
           </div>
+          {formError && <div className="text-danger mt-1">{formError}</div>}
           </div>
           <div className=" d-none d-lg-flex flex-row align-self-end" style={{ width: "100%" }}>
  
@@ -434,6 +441,7 @@ const ClaimFormRequest: React.FC = () => {
                 onChange={handleChange}
                 required
               />
+              {formError && <div className="text-danger mt-1">{formError}</div>}
             </div>
            <div className=" d-flex d-lg-none align-self-end" style={{ width: "100%" }}>
   
