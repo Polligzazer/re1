@@ -24,9 +24,7 @@ export const FCMProvider: React.FC<FCMProviderProps> = ({ children }) => {
       try {
         const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
 
-        console.log('✅ Service Worker registered:', registration);
 
-        // Request notification permission
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
           console.error('❌ Notification permission not granted');
@@ -34,7 +32,6 @@ export const FCMProvider: React.FC<FCMProviderProps> = ({ children }) => {
         }
         console.log('✅ Notification permission granted');
 
-        // Get the token
         const currentToken = await getToken(messaging, {
           vapidKey: import.meta.env.VITE_VAPID_KEY,
           serviceWorkerRegistration: registration,
@@ -42,14 +39,11 @@ export const FCMProvider: React.FC<FCMProviderProps> = ({ children }) => {
 
         if (currentToken) {
           setToken(currentToken);
-          console.log('✅ FCM Token:', currentToken);
         } else {
           console.warn('⚠️ No registration token available.');
         }
 
-        // Listen for foreground messages
         onMessage(messaging, (payload) => {
-          console.log('📲 Foreground message received:', payload);
           const title = payload.notification?.title || payload.data?.title;
           const body = payload.notification?.body || payload.data?.body;
           toast.info(`${title}: ${body}`);
@@ -64,17 +58,15 @@ export const FCMProvider: React.FC<FCMProviderProps> = ({ children }) => {
       try {
         const refreshedToken = await getToken(messaging);
         if (refreshedToken !== token) {
-          setToken(refreshedToken); // Update the token if it's changed
-          console.log('✅ FCM Token refreshed:', refreshedToken);
+          setToken(refreshedToken);
         }
       } catch (error) {
         console.error('❌ Error refreshing token:', error);
       }
-    }, 3600000); // Check every hour (adjust as needed)
+    }, 3600000);
 
-    // Clear the interval on cleanup
     return () => clearInterval(tokenRefreshInterval);
-  }, [token]); // Empty dependency array to run only once on component mount
+  }, [token]);
 
   return (
     <FCMContext.Provider value={{ token, setToken }}>

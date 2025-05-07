@@ -127,7 +127,6 @@ export async function getFCMToken(): Promise<string | null> {
 
 export const requestNotificationPermission = async () => {
   try {
-    console.log("Current Notification Permission:", Notification.permission);
 
     if (!("Notification" in window)) {
       throw new Error("This browser does not support notifications.");
@@ -143,7 +142,6 @@ export const requestNotificationPermission = async () => {
       console.log("📢 Requesting notification permission...");
 
       const permissionRequest = await Notification.requestPermission();
-      console.log("Notification permission request response:", permissionRequest);
 
       if (permissionRequest !== "granted") {
         console.error("❌ Notification permission not granted.");
@@ -160,7 +158,6 @@ export const requestNotificationPermission = async () => {
     });
 
     if (token) {
-      console.log("✅ Notification token:", token);
       return token;
     } else {
       console.error("❌ Failed to retrieve notification token.");

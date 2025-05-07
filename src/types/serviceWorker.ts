@@ -1,9 +1,8 @@
 export function registerServiceWorker(): Promise<ServiceWorkerRegistration> {
   if ('serviceWorker' in navigator) {
     return navigator.serviceWorker
-      .register('/firebase-messaging-sw.js')   // <-- same path as above
+      .register('/firebase-messaging-sw.js')
       .then((registration) => {
-        console.log('✅ SW registered at scope:', registration.scope);
         return registration;
       });
   }

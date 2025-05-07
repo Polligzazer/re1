@@ -54,7 +54,6 @@ function App() {
     const setupFCM = async (user: User) => {
       try {
         const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        console.log('✅ Service Worker registered:', registration);
   
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
@@ -68,14 +67,12 @@ function App() {
         });
   
         if (token) {
-          console.log('✅ FCM Token:', token);
           await saveFCMTokenToUser(user.uid, token);
         } else {
           console.warn('⚠️ No registration token available.');
         }
   
         onMessage(messaging, (payload) => {
-          console.log('📲 Foreground message received:', payload);
           const title = payload?.notification?.title || payload?.data?.title;
           const body = payload?.notification?.body || payload?.data?.body;
           toast.info(`${title}: ${body}`);
