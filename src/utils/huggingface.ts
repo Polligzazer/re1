@@ -1,8 +1,6 @@
-// src/utils/huggingface.ts
+
 
 import { InferenceClient } from '@huggingface/inference';
-import { getDocs, collection } from "firebase/firestore";
-import { db } from "../firebase";
 
 export const FIELD_WEIGHTS = {
   category: 10,
@@ -12,10 +10,8 @@ export const FIELD_WEIGHTS = {
   description: 40,
 };
 
-// Get the API key from environment variables
 const API_KEY = import.meta.env.VITE_HF_API_KEY || '';
 
-// Initialize the Hugging Face inference client
 const hf = new InferenceClient(API_KEY);
 
 // Cosine similarity calculation
@@ -64,7 +60,6 @@ export async function compareDescriptions(desc1: string, desc2: string): Promise
     }
   }
 
-  // Average similarity from all models
   const avgSimilarity = similarities.length > 0 
     ? similarities.reduce((acc, val) => acc + val, 0) / similarities.length 
     : 0;
@@ -92,7 +87,6 @@ export async function enhancedSimilarity(text1: string, text2: string): Promise<
   }
 }
 
-// Date similarity calculation
 function dateSimilarity(date1: string, date2: string): number {
   const d1 = new Date(date1);
   const d2 = new Date(date2);
@@ -108,8 +102,6 @@ function dateSimilarity(date1: string, date2: string): number {
 }
 
 
-
-// Main comparison function
 export async function compareLostAndFound(
   lostItem: any,
   foundItems: any[]
@@ -127,7 +119,7 @@ export async function compareLostAndFound(
     console.log('Lost item:', lostItem);
     console.log('Found item:', foundItem);
 
-    // Category comparison
+    
     if (lostItem.category === foundItem.category) {
       totalScore += 0.10;
       breakdown.category = 10;
@@ -138,7 +130,7 @@ export async function compareLostAndFound(
     console.log(`${breakdown.category > 0 ? '100.00' : '0.00'}% is ${breakdown.category.toFixed(2)}%`);
     console.log(`100% would be ${FIELD_WEIGHTS.category}%`);
 
-    // Item name comparison
+   
     const nameSimilarity = await enhancedSimilarity(
       lostItem.itemName,
       foundItem.itemName || foundItem.item
@@ -151,7 +143,7 @@ export async function compareLostAndFound(
     console.log(`${(nameSimilarity * 100).toFixed(2)}% is ${(nameScore * 100).toFixed(2)}%`);
     console.log(`100% would be ${FIELD_WEIGHTS.itemName}%`);
 
-    // Location comparison
+    
     const locationSimilarity = await enhancedSimilarity(
       lostItem.location,
       foundItem.location
@@ -164,7 +156,7 @@ export async function compareLostAndFound(
     console.log(`${(locationSimilarity * 100).toFixed(2)}% is ${(locationScore * 100).toFixed(2)}%`);
     console.log(`100% would be ${FIELD_WEIGHTS.location}%`);
 
-    // Date comparison
+    
     const dateSim = dateSimilarity(lostItem.date, foundItem.date);
     const dateScore = dateSim * 0.10;
     totalScore += dateScore;
@@ -174,7 +166,7 @@ export async function compareLostAndFound(
     console.log(`${(dateSim * 100).toFixed(2)}% is ${(dateScore * 100).toFixed(2)}%`);
     console.log(`100% would be ${FIELD_WEIGHTS.date}%`);
 
-    // Description comparison
+   
     let descriptionScore = 0;
     let rawDescPercent = 0;
     if (lostItem.description && foundItem.description) {
@@ -202,7 +194,7 @@ export async function compareLostAndFound(
     console.log('Total similarity score:', totalScore * 100, '%');
   }
 
-  // Sort by score descending
+
   results.sort((a, b) => b.score - a.score);
 
   const topCount = Math.min(results.length, 3);
