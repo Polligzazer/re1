@@ -5,6 +5,9 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import PrivacyPreviewModal from "../components/privacypolicy";
 import PFP from "/assets/notifpfpicon.png"
+import UserReportsTable from "../components/UserReportsTable";
+import "../css/profile.css"
+
 const Profile: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [reportCount, setReportCount] = useState(0);
@@ -227,6 +230,7 @@ const Profile: React.FC = () => {
           </div>
         </div>
       </div>
+      <UserReportsTable userId={user?.uid} />
       </div>
     </div >
   );

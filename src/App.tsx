@@ -30,6 +30,7 @@ import ClaimApproval from "../pages/dashcomps/PendingClaimPage";
 import ReportApproval from "../pages/dashcomps/AdminApproval";
 import Claimed from "../pages/dashcomps/ClaimsPage";
 import Hero from "../pages/heropage.tsx";
+import SmartMatch from "../components/smartmatch"
 
 function App() {
   const { currentUser, loading } = useContext(AuthContext);
@@ -119,6 +120,7 @@ function App() {
           <Route path="/inquiries" element={<Inquiries />} />
           <Route path="/inquiries/:chatId" element={<Inquiries/>} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/smartmatch" element={<SmartMatch />} />
 
           {/* Admin */}
 

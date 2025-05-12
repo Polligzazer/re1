@@ -26,6 +26,7 @@ import FLO11 from "/assets/11.png"
 import FLO12 from "/assets/12.png"
 import FLO14 from "/assets/14.png"
 import FLOpss1 from "/assets/pss1.png"
+import Smartmatch from "/assets/smclose.png"
 import StatusProgressBar from '../components/statusprogressbar';
 
 
@@ -188,6 +189,10 @@ const Home = () => {
   };
   const handleNavigateToReports = () => {
     navigate("/report");
+  };
+
+    const handleNavigateToSmartmatch = () => {
+    navigate("/smartmatch");
   };
  
 
@@ -472,6 +477,19 @@ const Home = () => {
       {renderSection("Lost Items", lostReports, "lost")}
       </div><div className="post-transition">    
       {renderSection("Found Items", foundReports, "found")}
+      </div>
+       <div className="" style={{ width:'auto', position: 'fixed', bottom: '100px', right: '36px', zIndex: 1000, height:'55px' }}>
+          <button className="p-1 d-flex " style={{
+            height:'55px', 
+            width:'55px', 
+            backgroundColor:'#0f2c53', 
+            outline:'none', 
+            border:'none',
+            borderRadius:'5px'
+            }} 
+            onClick={handleNavigateToSmartmatch}>
+            <img style={{width:'45px', height:'45px'}} src={Smartmatch}/>
+          </button>
       </div>
       <div className="chat-animate" style={{ width:'auto', position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000 }}>
           <ChatBot/>

@@ -107,10 +107,16 @@ const AdminApproval: React.FC = () => {
 
   const handleDenyClick = async (event: React.MouseEvent, report: Report) => {
     event.stopPropagation();
+      if (loading) return;
   
     setReportToDeny(report);
     setShowDenyModal(true);
   };
+
+  const handleCloseDenyModal = () => {
+  setShowDenyModal(false);
+  setReportToDeny(null);
+};
 
   const confirmDenyReport = async () => {
     if (!reportToDeny) return;
@@ -138,10 +144,14 @@ const AdminApproval: React.FC = () => {
       } else {
         console.warn("⚠️ No FCM token found for denied user.");
       }
+      setReports(prevReports => prevReports.filter(r => r.id !== reportToDeny.id));
+      setLoading(false);
+      handleCloseDenyModal();
     } catch (err) {
       console.error("❌ Error denying claim report:", err);
       alert("Failed to deny claim request.");
     } finally {
+      // 5. Reset modal state
       setShowDenyModal(false);
       setReportToDeny(null);
       setLoading(false);
@@ -441,7 +451,7 @@ const AdminApproval: React.FC = () => {
       }
     }catch (err) {
       console.error("Error fetching receipt ID:", err);
-      setSelectedReport(report);
+      setSelectedReport(report); // fallback to normal report
       setShowReportModal(true);
     }
   }
@@ -950,7 +960,7 @@ const AdminApproval: React.FC = () => {
     </Modal>
 
     {/* Confirm Denial Modal */}
-    <Modal show={showDenyModal && !!reportToDeny} onHide={() => setShowDenyModal(false)} centered>
+    <Modal show={!loading && showDenyModal && !!reportToDeny} onHide={handleCloseDenyModal} centered>
       <Modal.Header closeButton>
         <Modal.Title className="" style={{
           color:'#2169ac',
@@ -974,6 +984,7 @@ const AdminApproval: React.FC = () => {
           border:'none',
           fontFamily: "Poppins, sans-serif",
          }}
+          disabled={loading} 
          >Cancel</Button>
         <Button onClick={confirmDenyReport}
          style={{
@@ -983,8 +994,11 @@ const AdminApproval: React.FC = () => {
           outline:'none',
           border:'none',
           fontFamily: "Poppins, sans-serif",
-          }}>
-         Yes, Deny Report</Button>
+          }}
+           disabled={loading}
+          >
+         {loading ? 'Denying...' : 'Yes, Deny Report'}
+        </Button>
       </Modal.Footer>
     </Modal>
 

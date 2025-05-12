@@ -12,6 +12,7 @@ interface ConfirmationModalProps {
   success?: boolean;
 }
 
+
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   show,
   onHide,

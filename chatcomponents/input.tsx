@@ -220,6 +220,7 @@ const Input = () => {
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
+        
       />
 
       <input type="file" id="fileInput" className="d-none" onChange={handleFileChange} />

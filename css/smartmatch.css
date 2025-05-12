@@ -1,0 +1,111 @@
+.smreport-image{
+     width: clamp(50px, 7vw, 105px);
+    height: clamp(50px, 5vw, 75px);
+    object-fit: contain;
+}
+
+.pulse-image {
+  width: 100px;
+  animation: bounce 1.5s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px); /* Adjust the height of bounce */
+  }
+}
+
+.loading-text {
+  font-family: 'Poppins, sans-serif';
+  color: #2169ac;
+  font-size: 16px;
+  position: relative;
+}
+
+.loading-text::after {
+  content: '';
+  display: inline-block;
+  width: 1em;
+  text-align: left;
+  animation: dots 1s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0%   { content: ''; }
+  25%  { content: '.'; }
+  50%  { content: '..'; }
+  75%  { content: '...'; }
+  100% { content: ''; }
+}
+
+
+@media (min-width: 991px) and (max-width: 1199.9px){
+    .imgreport-div{
+        padding: 0 !important;
+        margin-right: 12px !important;
+    }
+    .breakdown{
+        flex-direction: column !important;
+       
+    }
+    .lbreakdown{
+        width: 100% !important;
+        justify-items: center;
+    }
+    .rbreakdown{
+        padding-left:0 !important ;
+    }
+    .mcard{
+        gap: 0 !important;
+    }
+}
+@media (min-width: 768px) and (max-width:990.9px){
+     .breakdown{
+        flex-direction: column !important;
+       
+    }
+    .lbreakdown{
+        width: 100% !important;
+        justify-items: center;
+    }
+    .rbreakdown{
+        padding-left:0 !important ;
+    }
+}
+@media (max-width: 767.9px){
+    .imgreport-div{
+        padding: 10 !important;
+        margin-right: 16px !important;
+    }
+    .smreport-image{
+        width: clamp(60px, 7vw, 105px);
+        height: clamp(60px, 5vw, 75px);
+        object-fit: contain;
+    }
+     .breakdown{
+        flex-direction: column !important;
+       
+    }
+    .lbreakdown{
+        width: 100% !important;
+        justify-items: center;
+    }
+    .rbreakdown{
+        padding-left:0 !important ;
+    }
+}
+
+@media(max-width: 425.9px){
+    .percent{
+        width: auto !important;
+    }
+    .imgreport-div{
+        display: none !important;
+    }
+    .report-infos{
+        margin-left: 20px;
+    }
+}

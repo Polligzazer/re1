@@ -1,0 +1,80 @@
+.th1{
+    padding: 20px !important;
+    max-width: none;
+}
+.pdiv{
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 400px;
+}
+.pdiv::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .pdiv::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+  }
+  
+  .pdiv::-webkit-scrollbar-thumb {
+    background: #888; 
+    border-radius: 10px;
+  }
+  
+  .pdiv::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+  }
+.td1{
+    padding:10px !important;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    white-space: normal;
+    max-width: none;
+    font-size: clamp(5px, 0.8rem, 15px);
+}
+.table{
+    width:100%;
+    table-layout: fixed;
+}
+
+@media (min-width: 768px ) and (max-width: 991px){
+    .table{
+        width:100% !important;
+    }
+    .pdiv{
+        width: 20%;
+    }
+  } 
+  
+  @media (min-width: 576px) and (max-width:767px ){
+    .table{
+        width:100% !important;
+    }
+    .th1{
+        padding: 10px !important;
+        width: 150px !important;
+    }
+  }
+
+  @media (min-width: 426px) and (max-width:575.9px ){
+    .table{
+        width:100% !important;
+    }
+    .th1{
+        padding: 5px !important;
+        width: 130px !important;
+    }
+  }
+  
+  @media (max-width: 425.9px){
+    .table{
+        width:100% !important;
+        overflow-x: auto;
+    }
+    .th1{
+        padding: 0px !important;
+        width: 100px !important;
+        
+    }
+  }
