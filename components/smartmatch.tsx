@@ -7,7 +7,7 @@ import "swiper/swiper-bundle.css";
 import { AuthContext } from './Authcontext';
 import { db } from "../src/firebase";
 import { Button, Modal } from "react-bootstrap";
-import { compareLostAndFound, FIELD_WEIGHTS } from "../src/utils/huggingface";
+import { compareLostAndFound } from "../src/utils/huggingface";
 import SmartMatchCard from "./SmartMatchCard";
 import { handleSend } from "../chatcomponents/handleSend";
 import { faWandMagicSparkles } from "@fortawesome/free-solid-svg-icons";
@@ -51,7 +51,7 @@ const initialMatchPlaceholders = Array.from({ length: PLACEHOLDER_MATCH_COUNT },
 }));
 
 const SmartMatch: React.FC = () => {
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const { currentUser } = useContext(AuthContext);
   const [reports, setReports] = useState<Report[]>([]); // Holds all reports
   const [filterType, setFilterType] = useState<"all" | "lost" | "found">("all"); // Filter type
@@ -240,13 +240,6 @@ useEffect(() => {
         }
     };
 
-  const handleCloseModal = () => {
-    setShowModal(false); // Close the modal
-    setSelectedReport(null);
-     // Clear the selected report
-  };
-
-  
     const handleNavigateToSmartmatch = () => {
     navigate("/home");
   };

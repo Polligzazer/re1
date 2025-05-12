@@ -29,7 +29,7 @@ interface SmartMatchCardProps {
   rank: number;
   onInquire?: (reportId: string) => void;
 }
-const SmartMatchCard: React.FC<SmartMatchCardProps> = ({ match, rank, onInquire }) => {
+const SmartMatchCard: React.FC<SmartMatchCardProps> = ({ match, onInquire }) => {
 
     
 const isPlaceholder = match.isPlaceholder; 
