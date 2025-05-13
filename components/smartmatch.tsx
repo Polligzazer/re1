@@ -285,7 +285,7 @@ useEffect(() => {
               <SwiperSlide key={report.id}>
                 <div className="card p-2 py-3" style={{fontSize:'13px', borderRadius:'13px', backgroundColor:'#2169ac', color:'white', fontFamily:'Poppins, sans-serif'}}>
                     <div className="d-flex flex-row">
-                        <div className="imgreport-div d-flex align-items-center p-2 me-4"
+                        <div className="smimgreport-div d-flex align-items-center p-2 me-4"
                         style={{
                             borderRight:"1px solid white",
                         }}
