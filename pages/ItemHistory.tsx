@@ -1,18 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from "react-router-dom";
 import { db } from '../src/firebase';
 import { collection, getDocs, doc, updateDoc, Timestamp, query, where } from 'firebase/firestore';
 import { Card } from 'react-bootstrap';
-import { faCheckCircle, faExclamationTriangle, faHeadset } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faCircleCheck, faExclamationTriangle, faHeadset,} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import categoryImages from '../src/categoryimage';
 import "../css/PendingClaimDash.css";
+import { Modal, Button } from "react-bootstrap";
+import { AuthContext } from '../components/Authcontext';
 
 interface Item {
   id: string;
   userId: string;
   username: string;
-  referenceId: string;
+  referencePostId: string;
   type: string;
   date: string;
   location: string;
@@ -25,6 +27,12 @@ interface Item {
   validUntil?: Timestamp;
   claimantName?: string; 
   claimedDate?: string | Timestamp; 
+  proof?: {
+    fileUrl?: string;
+    timestamp?: any;
+  };
+  proofUploadedAt?: any;
+  proofOfReturn?: string;
 }
 
 const ItemHistory = () => {
@@ -34,74 +42,188 @@ const ItemHistory = () => {
   const [claimedCount, setClaimedCount] = useState<number>(0);
   const [unclaimedCount, setUnclaimedCount] = useState<number>(0);
   const navigate = useNavigate();
+  const [selectedProof, setSelectedProof] = useState<string | null>(null);
+  const [showProofModal, setShowProofModal] = useState(false);
+  const [proofUploadedAt, setProofUploadedAt] = useState<any>(null);
+ const [proofOfReturn, setProofOfReturn] = useState<string | null>();
+ const [, setClaimItems] = useState<Item[]>([]);
+ const [lostItems, setLostItems] = useState<Item[]>([]);
+   const [itemsLoaded, setItemsLoaded] = useState(false);
+   const { currentUser } = useContext(AuthContext);
+
+
 
   useEffect(() => {
-    const fetchItemsAndUsers = async () => {
-      console.log(`📌 Fetching items with status: '${filter}'`);
+    const fetchAllData = async () => {
+      try {
+        // Fetch users
+        const userSnapshot = await getDocs(collection(db, "users"));
+        const usersData = userSnapshot.docs.reduce((acc, userDoc) => {
+          const userData = userDoc.data();
+          acc[userDoc.id] = `${userData.firstName} ${userData.lastName}`.trim();
+          return acc;
+        }, {} as { [key: string]: string });
+        setUsers(usersData);
 
-      const userSnapshot = await getDocs(collection(db, "users"));
-      const usersData = userSnapshot.docs.reduce((acc, userDoc) => {
-        const userData = userDoc.data();
-        acc[userDoc.id] = `${userData.firstName} ${userData.lastName}`.trim();
-        return acc;
-      }, {} as { [key: string]: string });
-      setUsers(usersData);
+        // Fetch claim_items filtered by status
+        const itemsQuery = query(collection(db, "claim_items"), where('status', '==', filter));
+        const querySnapshot = await getDocs(itemsQuery);
+        const fetchedItems = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Item[];
 
-  
-      const itemsQuery = query(
-        collection(db, "claim_items"),
-        where('status', '==', filter)
-      );
-      const querySnapshot = await getDocs(itemsQuery);
-      const fetchedItems = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Item[];
+        // Update counts
+        setClaimedCount(fetchedItems.filter(i => i.status === 'claimed').length);
+        setUnclaimedCount(fetchedItems.filter(i => i.status === 'unclaimed').length);
 
-      const claimed = fetchedItems.filter(item => item.status === 'claimed').length;
-      const unclaimed = fetchedItems.filter(item => item.status === 'unclaimed').length;
-      
-      setClaimedCount(claimed);
-      setUnclaimedCount(unclaimed);
+        // Attach usernames
+        const updatedItems = fetchedItems.map(item => ({
+          ...item,
+          username: usersData[item.userId] || "Unknown User",
+        }));
 
-      const updatedItems = fetchedItems.map(item => ({
-        ...item,
-        username: usersData[item.userId] || "Unknown User",
-      }));
+        // Update statuses for old items (older than 9 months)
+        const nineMonthsAgo = new Date();
+        nineMonthsAgo.setMonth(nineMonthsAgo.getMonth() - 9);
 
-
-      const nineMonthsAgo = new Date();
-      nineMonthsAgo.setMonth(nineMonthsAgo.getMonth() - 9);
-      
-      const updates = updatedItems.map(async (item) => {
-        if (item.timestamp) {
-          const reportDate = item.timestamp.toDate();
-          if (reportDate < nineMonthsAgo && item.status !== "unclaimed") {
-            const itemRef = doc(db, "lost_items", item.id);
-            await updateDoc(itemRef, { status: "unclaimed" });
-            item.status = "unclaimed";  
+        const updates = updatedItems.map(async (item) => {
+          if (item.timestamp) {
+            const reportDate = item.timestamp.toDate();
+            if (reportDate < nineMonthsAgo && item.status !== "unclaimed") {
+              const itemRef = doc(db, "lost_items", item.id);
+              await updateDoc(itemRef, { status: "unclaimed" });
+              item.status = "unclaimed";
+            }
           }
-        }
-      });
+        });
+        await Promise.all(updates);
 
-      await Promise.all(updates);
-      setItems(updatedItems);
+        setItems(updatedItems);
+
+        // Fetch all claim_items and lost_items for proof display
+        const [claimSnapshot, lostSnapshot] = await Promise.all([
+          getDocs(collection(db, "claim_items")),
+          getDocs(collection(db, "lost_items")),
+        ]);
+
+        setClaimItems(claimSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Item));
+        setLostItems(lostSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Item));
+
+        setItemsLoaded(true);
+      } catch (error) {
+        console.error("❌ Error fetching data:", error);
+      }
     };
 
-    fetchItemsAndUsers();
+    fetchAllData();
   }, [filter]);
 
-  const filteredItems = items.filter((item) => {
+  const filteredItems = items.filter(item => {
     if (filter === "unclaimed") {
-      return (
-        item.status === "unclaimed" &&
-        item.validUntil &&
-        item.validUntil.toDate() < new Date()
-      );
-    } else {
-      return item.status === "claimed";
+      return item.status === "unclaimed" && item.validUntil && item.validUntil.toDate() < new Date();
     }
+    return item.status === "claimed";
   });
+
+  const handleShowProof = (selectedId: string) => {
+    console.log("🟡 handleShowProof triggered for ID:", selectedId);
+
+    if (!itemsLoaded) {
+      console.warn("⛔ Items not loaded yet.");
+      return;
+    }
+
+    const claimItem = items.find(item => item.id === selectedId);
+    if (!claimItem) {
+      console.warn("⛔ Claim item not found with ID:", selectedId);
+      return;
+    }
+    console.log("✅ Found Claim Item:", claimItem);
+
+    const proofObj = claimItem.proof;
+    if (!proofObj || (!proofObj.fileUrl && !proofObj.timestamp)) {
+      console.warn("⛔ No valid proof object in claim item.");
+      return;
+    }
+    console.log("📎 Claim Item Proof Object:", proofObj);
+
+    const referenceId = claimItem.referencePostId;
+    if (!referenceId) {
+      console.warn("⛔ No referencePostId found in claim item.");
+      return;
+    }
+    console.log("📌 referencePostId:", referenceId);
+
+    const lostItem = lostItems.find(item => item.id === referenceId);
+    if (!lostItem) {
+      console.warn("⛔ Lost item not found with referencePostId:", referenceId);
+      console.log("🔍 Available lostItem IDs:", lostItems.map(i => i.id));
+      return;
+    }
+    console.log("✅ Found Referenced Lost Item:", lostItem);
+
+    const proofUploadedAtVal = lostItem.proofUploadedAt ?? null;
+    const proofOfReturnVal = lostItem.proofOfReturn ?? null;
+
+    console.log("📁 proofUploadedAt:", proofUploadedAtVal);
+    console.log("📁 proofOfReturn:", proofOfReturnVal);
+
+    let formattedProofUploadedAt = "";
+    if (proofUploadedAtVal) {
+      const date =
+        typeof proofUploadedAtVal === "object" && proofUploadedAtVal.seconds
+          ? new Date(proofUploadedAtVal.seconds * 1000)
+          : new Date(proofUploadedAtVal);
+
+      formattedProofUploadedAt = date.toLocaleString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+      });
+    }
+
+    console.log("🕒 Formatted Proof Uploaded At:", formattedProofUploadedAt);
+
+    setSelectedProof(proofObj.fileUrl || "");
+    setProofUploadedAt(formattedProofUploadedAt);
+    setProofOfReturn(proofOfReturnVal);
+    setShowProofModal(true);
+  };
+
+const formatTimestamp = (timestamp: any): string => {
+  if (!timestamp) return "";
+
+  let dateObj: Date;
+  if (typeof timestamp === "object" && timestamp.seconds) {
+    dateObj = new Date(timestamp.seconds * 1000);
+  } else {
+    dateObj = new Date(timestamp);
+  }
+
+  return dateObj.toLocaleString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  });
+};
+
+const getProofUploadDate = (fileUrl: string, items: Item[]): string => {
+  const item = items.find((item) => item.proof?.fileUrl === fileUrl);
+  if (!item || !item.proof?.timestamp) return "";
+  return formatTimestamp(item.proof.timestamp);
+};
+
+
+
+
+
 
   return (
     <div className="container mt-5">
@@ -217,8 +339,21 @@ const ItemHistory = () => {
               style={{ backgroundColor: 'transparent', border:"none", color: '#fff', width: "100%",}}>
 
           <Card.Body className="pending-card align-content-center">
-          <div className="card-main d-flex align-items-center p-4"
-            style={{ backgroundColor: '#1B75BC', color: '#fff', width: "100%", borderRadius:'6px' }}>
+          <div
+          onClick={() => {
+            if (currentUser?.isAdmin) {
+              handleShowProof(item.id);
+            }
+          }}
+           className="card-main d-flex align-items-center p-4"
+           style={{
+             border:"none", 
+             backgroundColor: '#1B75BC', 
+             color: '#fff', 
+             width: "100%", 
+             borderRadius:'6px',
+             cursor: currentUser?.isAdmin? 'pointer' : 'default'
+             }}>
             <div className="d-flex flex-row fcolumn w-100">
               <div className="conimg d-flex align-items-center justify-content-center "style={{
                   borderRight:'1px solid white'
@@ -271,6 +406,90 @@ const ItemHistory = () => {
       ))}
       </div>
       </div>
+      <Modal show={showProofModal} onHide={() => setShowProofModal(false)} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title style={{
+          fontSize:'14.4px',
+          fontFamily: "Poppins, sans-serif",
+          color:'#2169ac'
+        }}>Proof Details</Modal.Title>
+        </Modal.Header>
+         <Modal.Body className="d-flex flex-column flex-lg-row justify-content-evenly"
+            style={{
+              fontSize:'14px',
+              fontFamily: "Poppins, sans-serif",
+              width:'100%'
+            }}>
+              {/* Proof of Return Section */}
+              <div className=" p-3 modal-custom1 d-flex flex-column">
+                <div className="d-flex p-3 mb-3 flex-row" style={{
+                  backgroundColor:'#2169ac',
+                  color:'white',
+                }}>
+                <FontAwesomeIcon icon={faCircleCheck} style={{
+                  color:'#67d753',
+                  fontSize:'26px'
+                  
+                }}/>
+                  <p className="p-0 m-1">Proof of Return</p>
+                </div>
+                {proofOfReturn ? (
+                   <a href={proofOfReturn} target="_blank" rel="noopener noreferrer">
+                    <img
+                      src={proofOfReturn}
+                      alt="Proof of return"
+                      style={{ width: "100%", maxHeight: "200px", objectFit: "contain", borderRadius: '8px', }}
+                    />
+                   </a> 
+                ) : (
+                  <p>No proof of return image available.</p>
+                )}
+                {proofUploadedAt && (
+                  <p className="mt-3">
+                    <strong>Return Date:</strong> {proofUploadedAt}
+                  </p>
+                )}
+              </div>
+
+              {/* Proof of Claim Section */}
+               <div className=" p-3 modal-custom1 d-flex flex-column">
+                <div className="d-flex p-3 mb-3 flex-row" style={{
+                  backgroundColor:'#2169ac',
+                  color:'white',
+                }}>
+                <FontAwesomeIcon icon={faCircleCheck} style={{
+                  color:'#67d753',
+                  fontSize:'26px'
+                  
+                }}/>
+                  <p className="p-0 m-1">Proof of Claim</p>
+                </div>
+                {selectedProof ? (
+                   <a href={selectedProof} target="_blank" rel="noopener noreferrer">  
+                    <img
+                      src={selectedProof}
+                      alt="Proof of claim"
+                      style={{ width: "100%", maxHeight: "200px", objectFit: "contain",  borderRadius: '8px', }}
+                    />
+                   </a> 
+                ) : (
+                  <p>No proof of claim image available.</p>
+                )}
+                {selectedProof && (
+                  <p className="mt-3">
+                    <strong>Upload date:</strong> {getProofUploadDate(selectedProof, items)}
+                  </p>
+                )}
+              </div>
+            
+          </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowProofModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
     </div>
   );
 };

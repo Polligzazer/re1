@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../src/firebase";
-import { collection, getDocs, doc, getDoc, updateDoc, orderBy, query, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, updateDoc, orderBy, query, setDoc, serverTimestamp, onSnapshot, DocumentData } from "firebase/firestore";
 import { sendPushNotification } from "../../components/notificationService";
 import { createNotification } from "../../components/notificationService";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -9,9 +9,11 @@ import { FaChevronLeft } from "react-icons/fa";
 import categoryImages from "../../src/categoryimage";
 import { Button, Modal, Spinner } from "react-bootstrap";
 import "../../css/ModalProgress.css";
-import { faExclamationTriangle, faHeadset } from "@fortawesome/free-solid-svg-icons";
+import { faExclamationTriangle, faFileCirclePlus, faHeadset, faXmarkCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "../../css/loading.css"
+import { APPWRITE_STORAGE_BUCKET_ID, apwstorage } from "../../src/appwrite";
+import { ID } from "appwrite";
 
 interface Report {
   id: string;
@@ -37,6 +39,39 @@ const AdminApproval: React.FC = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reporterName, setReporterName] = useState('');
   const [modalStatus, setModalStatus] = useState<'idle' | 'loading' | 'approved'>('idle');
+  const [,] = useState<{
+  [reportId: string]: { fileUrl: string | null; fileName: string };
+  }>({});
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [fileName, setFileName] = useState("");
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+
+
+   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setLoading(true); 
+    
+    try {
+      const uploadedFile = await apwstorage.createFile(
+        APPWRITE_STORAGE_BUCKET_ID,
+        ID.unique(),
+        file
+      );
+  
+      const filePreviewUrl = apwstorage.getFilePreview(APPWRITE_STORAGE_BUCKET_ID, uploadedFile.$id);
+  
+      setFileName(file.name);
+      setFileUrl(filePreviewUrl);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("❗ Failed to upload file. Please try again.");
+    }finally {
+      setLoading(false); 
+    }
+  };
 
   const approveReport = async (reportId: string) => {
     try {
@@ -51,11 +86,24 @@ const AdminApproval: React.FC = () => {
         alert("❗ Report not found.");
         return;
       }
+
+    const data: DocumentData = reportSnap.data();
+    const reportType = data.type;
+
+      if (reportType === "found" && (!fileUrl || !fileName)) {
+        alert("Please upload a proof file first.");
+        return;
+      }
   
       console.log("✅ Updating report status...");
-      await updateDoc(reportRef, { status: "approved" });
+      await updateDoc(reportRef, { 
+        status: "approved",
+        proofOfReturn: fileUrl ?? null,
+        proofFileName: fileName ?? "",
+        proofUploadedAt: serverTimestamp(),
+      });
 
-      const reportData = reportSnap.data();
+      let reportData = reportSnap.data();
       const type = reportData.type;
       const notificationText = type === "lost" 
         ? "A lost item report has been approved!" 
@@ -608,10 +656,102 @@ const AdminApproval: React.FC = () => {
           <hr />
           <p><strong>Has the item been physically surrendered to the Lost and Found office?</strong></p>
           <p className="text-muted" style={{ fontSize: '14px' }}>
-            Please confirm the item is in possession before approval.
+            Please confirm the item is in possession by adding a picture of the item.
           </p>
+
+           {/* Upload Section Starts */}
+            <div className="d-flex flex-column align-self-end" style={{ width: "100%" }}>
+              <div className="d-flex flex-rows">
+                <input
+                  type="file"
+                  id="fileInput"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  style={{
+                    width: 0,
+                    height: 0,
+                    opacity: 0,
+                    overflow: "hidden",
+                    position: "absolute",
+                  }}
+                />
+
+                <label
+                  htmlFor="fileInput"
+                  className="d-flex flex-column justify-end items-center w-full h-[125.4px] cursor-pointer"
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "transparent",
+                    color: "#2169ac",
+                    borderRadius: "5px",
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={faFileCirclePlus}
+                    style={{
+                      color: "#2169ac",
+                      fontSize: "40px",
+                    }}
+                  />
+                  <p className="text-center p-2 pb-0 mb-0">Add proof</p>
+                </label>
+                <button
+                  onClick={() => {
+                    setFileName("");
+                    setFileUrl(null);
+                    if (fileInputRef.current) {
+                       fileInputRef.current.value = ""; // 👈 This resets the input
+                    }
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                    color: "gray",
+                    fontWeight: "bold",
+                  }}
+                >
+                  <FontAwesomeIcon icon={faXmarkCircle}/>
+                </button>
+              </div>
+              {loading ? (
+                <div className="d-flex justify-content-center align-items-center flex-column">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Uploading...</span>
+                  </div>
+                  <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+                    Uploading your file...
+                  </span>
+                </div>
+              ) : fileUrl ? (
+                <>
+
+                  {/* ✅ Image Preview */}
+                  <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+                    <img
+                      src={fileUrl}
+                      alt={fileName || "Uploaded proof"}
+                      style={{
+                        width: '100%',
+                        maxHeight: '250px',
+                        objectFit: 'contain',
+                        borderRadius: '8px',
+                        marginTop: '10px',
+                        cursor: 'pointer'
+                      }}
+                      onError={(e) => {
+                        console.error("Image failed to load:", e.currentTarget.src);
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  </a>
+                </>
+              ) : null}
+            </div>
           </>
         )}
+        
         </Modal.Body>
         <Modal.Footer className="d-flex justify-content-between pb-1 flex-column align-items-start">
           {modalStatus === 'approved' ? (
@@ -656,7 +796,7 @@ const AdminApproval: React.FC = () => {
 
               <Button
                 onClick={() => approveReport(selectedReport.id)}
-                disabled={loading || isApproved}
+                disabled={loading || isApproved|| !fileUrl}
                 style={{
                   backgroundColor: "#67d753",
                   color: "white",

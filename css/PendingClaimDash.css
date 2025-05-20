@@ -103,6 +103,14 @@
     border-radius:5px;
 
 }
+.modal-custom1{
+
+    width:48%;
+    border:1px solid #2169ac;
+    color:#2169ac;
+    border-radius:5px;
+
+}
 @media (min-width: 768px ) and (max-width: 991px){
   .pending-card{
       width:98% !important;
@@ -196,6 +204,9 @@
   .r-btn{
     width: 100%;
   }
+  .modal-custom1{
+    width:100%;
+  }
 }
 
 @media (min-width: 426px) and (max-width:575.9px ){
@@ -251,6 +262,9 @@
 .r-btn{
   width: 100%;
 }
+  .modal-custom1{
+    width:100%;
+  }
 }
 
 @media (max-width: 425.9px){
@@ -308,4 +322,7 @@
 .r-btn{
   width: 100%;
 }
+  .modal-custom1{
+    width:100%;
+  }
 }

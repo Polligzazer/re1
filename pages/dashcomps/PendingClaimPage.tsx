@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import emailjs from "emailjs-com";
 import { createNotification, sendPushNotification } from "../../components/notificationService";
@@ -9,11 +9,13 @@ import { FaChevronLeft } from "react-icons/fa";
 import { AuthContext } from '../../components/Authcontext';
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationTriangle, faUser, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faExclamationTriangle, faFileCirclePlus, faUser, faXmark, faXmarkCircle } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Button, Form, Spinner } from "react-bootstrap";
 import "../../css/ModalProgress.css";
 import "../../css/PendingClaimDash.css"
 import "../../css/loading.css"
+import { ID } from "appwrite";
+import { apwstorage, APPWRITE_STORAGE_BUCKET_ID } from "../../src/appwrite";
 
 interface Report {
   id: string;
@@ -30,6 +32,8 @@ interface Report {
   emailSent: boolean;
   imageUrl?: string;
   receiptId?: string;
+  proofOfReturn: string,
+  proofUploadedAt: string,
 
 }
 
@@ -42,6 +46,10 @@ interface Claim {
   status: string;
   emailSent: boolean;
   imageUrl?: string;
+  proof: string;
+  proofOfReturn: string,
+  proofUploadedAt: string,
+
 }
 
 const AdminApproval: React.FC = () => {
@@ -65,6 +73,12 @@ const AdminApproval: React.FC = () => {
 
   const [linkedPostData, setLinkedPostData] = useState<any | null>(null);
   const [reporterName, setReporterName] = useState('');
+
+    const [,] = useState(false);
+    const [fileName, setFileName] = useState("");
+    const [fileUrl, setFileUrl] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [modalStatus, setModalStatus] = useState<"idle" | "uploading" | "approving">("idle");
 
   useEffect(() => {
     const fetchPendingData = async () => {
@@ -239,7 +253,13 @@ const AdminApproval: React.FC = () => {
     if (!selectedReport) {
       console.error("❌ No selected report found.");
       return; }
-    setLoading(true);
+
+    if (!fileUrl || !fileName) {
+     alert("Please upload a proof file first.");
+     return;
+    }
+
+    setModalStatus("approving");
     try {
       const reportRef = doc(db, "claim_items", selectedReport.id);
       const claimSnap = await getDoc(reportRef);
@@ -271,7 +291,12 @@ const AdminApproval: React.FC = () => {
   
       batch.update(reportRef, {
         status: "claimed",
-        claimedDate: serverTimestamp()
+        claimedDate: serverTimestamp(),
+         proof: {
+          fileUrl,
+          uploadedBy: claimantUserId,
+          timestamp: serverTimestamp(),
+        },
       });
       
       const claimantNotificationRef = doc(collection(db, "users", claimantUserId, "notifications"));
@@ -317,17 +342,22 @@ const AdminApproval: React.FC = () => {
       }
       setReports((prevReports) => prevReports.filter((r) => r.id !== selectedReport.id));
   
+      setModalStatus("approving");
       setShowConfirmModal(false);
       setVerifyModal(false);
       setSelectedReport(null);
     } catch (error) {
       console.error("Error updating claim status:", error);
-      alert("Error processing claim.");
-    } finally {
-      setLoading(false);
-      setShowConfirmModal(false);
-    }
+      
+    } 
   };
+
+    useEffect(() => {
+
+    setFileName("");
+    setFileUrl(null);
+    setLoading(false);
+  }, [selectedReport]);
 
   const storeReceiptInDatabase = async (report: Report, userEmail: string): Promise<string> => {
     try {
@@ -383,7 +413,32 @@ const AdminApproval: React.FC = () => {
       console.log("✅ Email sent successfully:", response);
     } catch (error: any) {
       console.error("Error sending email:", error);
-      alert(`Failed to send email. Error: ${error.text || error.message}`);
+     
+    }
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setModalStatus("uploading");
+    
+    try {
+      const uploadedFile = await apwstorage.createFile(
+        APPWRITE_STORAGE_BUCKET_ID,
+        ID.unique(),
+        file
+      );
+  
+      const filePreviewUrl = apwstorage.getFilePreview(APPWRITE_STORAGE_BUCKET_ID, uploadedFile.$id);
+  
+      setFileName(file.name);
+      setFileUrl(filePreviewUrl);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("❗ Failed to upload file. Please try again.");
+    }finally {
+      setModalStatus("idle");
     }
   };
 
@@ -783,7 +838,7 @@ const AdminApproval: React.FC = () => {
 
     {/*confirm claimed*/}
 
-    <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered
+    <Modal  key={selectedReport?.id} show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered
         style={{
           color:'#2169ac',
           fontFamily: "Poppins, sans-serif",
@@ -796,15 +851,118 @@ const AdminApproval: React.FC = () => {
         style={{
           fontSize:'13.4px'
         }}>
-      <p><strong>Verify this user attempting to claim their item</strong></p>
-      <p>✅ You have successfully sent an email to the user!</p>
-      
-        <p><strong>Receipt ID:</strong> {selectedReport?.receiptId}</p>
-    
-      <p><strong>Claimant:</strong> {selectedReport?.claimantName}</p>
+        {modalStatus === 'idle' && (
+          <>
+            <p><strong>Verify this user attempting to claim their item</strong></p>
+            <p>✅ You have successfully sent an email to the user!</p>
+
+            <p><strong>Receipt ID:</strong> {selectedReport?.receiptId}</p>
+            <p><strong>Claimant:</strong> {selectedReport?.claimantName}</p>
+
+            <div className="d-flex flex-column align-self-end" style={{ width: "100%" }}>
+              <p className=""><span className="text-danger">Note!</span> Please take a picture of the claimant with their receipt</p>
+
+              <div className="d-flex flex-rows">
+                <input
+                  type="file"
+                  id="fileInput"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  style={{
+                    width: 0,
+                    height: 0,
+                    opacity: 0,
+                    overflow: "hidden",
+                    position: "absolute",
+                  }}
+                />
+
+                <label
+                  htmlFor="fileInput"
+                  className="d-flex flex-column justify-end items-center w-full h-[125.4px] cursor-pointer"
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "transparent",
+                    color: "#2169ac",
+                    borderRadius: "5px",
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={faFileCirclePlus}
+                    style={{ color: "#2169ac", fontSize: "40px" }}
+                  />
+                  <p className="text-center p-2 pb-0 mb-0">Add proof</p>
+                </label>
+
+                <button
+                  onClick={() => {
+                    setFileName("");
+                    setFileUrl(null);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = "";
+                    }
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                    color: "gray",
+                    fontWeight: "bold",
+                  }}
+                >
+                  <FontAwesomeIcon icon={faXmarkCircle} />
+                </button>
+              </div>
+
+              {fileUrl && (
+                <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+                  <img
+                    src={fileUrl}
+                    alt={fileName || "Uploaded proof"}
+                    style={{
+                      width: '100%',
+                      maxHeight: '250px',
+                      objectFit: 'contain',
+                      borderRadius: '8px',
+                      marginTop: '10px',
+                      cursor: 'pointer'
+                    }}
+                    onError={(e) => {
+                      console.error("Image failed to load:", e.currentTarget.src);
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                </a>
+              )}
+            </div>
+          </>
+        )}
+
+        {modalStatus === 'uploading' && (
+          <div className="d-flex justify-content-center align-items-center flex-column">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Uploading...</span>
+            </div>
+            <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+              Uploading your file...
+            </span>
+          </div>
+        )}
+
+        {modalStatus === 'approving' && (
+          <div className="d-flex justify-content-center align-items-center flex-column">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Approving...</span>
+            </div>
+            <span className="mt-2" style={{ fontFamily: 'Poppins, sans-serif', color: '#2169ac' }}>
+              Claiming the item...
+            </span>
+          </div>
+        )}
     </Modal.Body>
     <Modal.Footer>
-      <Button onClick={() => setShowConfirmModal(false)}
+      <Button onClick={() => setShowConfirmModal(false) }
        style={{
         backgroundColor:' #e86b70',
         color:'white',
@@ -812,7 +970,9 @@ const AdminApproval: React.FC = () => {
         outline:'none',
         border:'none',
         fontFamily: "Poppins, sans-serif",
-        }}>
+        }}
+        
+        >
        Cancel</Button>
       <Button onClick={handleConfirmClaim}
         style={{
@@ -822,7 +982,9 @@ const AdminApproval: React.FC = () => {
           outline:'none',
           border:'none',
           fontFamily: "Poppins, sans-serif",
-        }}>
+        }}
+       disabled={!fileUrl || modalStatus === "approving" || modalStatus === "uploading"}
+        >
         Claimed</Button>
     </Modal.Footer>
   </Modal>
@@ -1042,7 +1204,6 @@ const AdminApproval: React.FC = () => {
            }}>Send Email</Button>
       </Modal.Footer>
     </Modal>
-    
     </div>
     
 
