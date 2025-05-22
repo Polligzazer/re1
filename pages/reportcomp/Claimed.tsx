@@ -78,7 +78,7 @@ const Claimed = () => {
   };
 
  const handlefeedback = () => {
-    if (!currentUser || !selectedItem) {
+    if (!currentUser || !_selectedItem) {
       alert("Missing information to send feedback.");
       return;
     }
@@ -94,7 +94,7 @@ const Claimed = () => {
         : adminUID + currentUser.uid;
 
     const fullMessage = `${selectedFeedback}
-    Claimed item: ${selectedItem.itemName}
+    Claimed item: ${_selectedItem.itemName}
     Comment: ${comment}`;
 
 
