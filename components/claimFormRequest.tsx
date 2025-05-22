@@ -169,39 +169,53 @@ const ClaimFormRequest: React.FC = () => {
   };
  
 
-  const handleConfirmSubmit = async () => {
-    if (!isValidReference) {
-      
-      alert("❗ Please enter a valid reference ID.");
-      return;
+const handleConfirmSubmit = async () => {
+  if (!isValidReference) {
+    alert("❗ Please enter a valid reference ID.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    // 🔍 Fetch the item by reference ID from lost_items collection
+    const itemRef = doc(db, "lost_items", formData.referencePostId);
+    const itemSnap = await getDoc(itemRef);
+
+    // ❌ Reject if type is "lost"
+    if (itemSnap.exists()) {
+      const itemData = itemSnap.data();
+      if (itemData.type === "lost") {
+        setLoading(false);
+        alert("❗ Claims cannot be submitted for items marked as 'lost'.");
+        return;
+      }
     }
-    setLoading(true); 
+
     const claimData = {
       ...formData,
       status: "pendingclaim",
       timestamp: serverTimestamp(),
       imageUrl: fileUrl || "",
       userId: userUID,
-
     };
 
-    try {
-      await addDoc(collection(db, "claim_items"), claimData);
-      setLoading(false);
-      setSucess(true);
-    } catch (error) {
-      setLoading(false); 
-      setSucess(false); 
-      console.error("🔥 Error submitting claim request:", error);
-      alert("❗ Error submitting claim request. Please try again.");
-    } finally{
-      setTimeout(() => {
-        setSucess(false); 
-        setShowModal(false)
-        navigate('/report?tab=pending');
-      }, 2000); 
-    }
-  };
+    await addDoc(collection(db, "claim_items"), claimData);
+    setLoading(false);
+    setSucess(true);
+    setTimeout(() => {
+      setSucess(false);
+      setShowModal(false);
+      navigate('/report?tab=pending');
+    }, 2000);
+  } catch (error) {
+    setLoading(false);
+    setSucess(false);
+    console.error("🔥 Error submitting claim request:", error);
+    alert("❗ Error submitting claim request. Please try again.");
+  } 
+};
+
 
   return (
     <div className="container mt-3">

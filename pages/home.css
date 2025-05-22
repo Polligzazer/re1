@@ -100,7 +100,30 @@
   display: flex;
 }
 
+.report-card1 {
+  background-color: #2169ac;
+  width: 100% !important;
+  max-height: auto;
+  font-size: clamp(11.8px, 0.7rem, 17px);
+  font-family: "Poppins", sans-serif;
+  color: white;
+  display: flex;
+  border-radius: 10px;
+}
+  .conimgc{
+   width: 90% !important;
+  }
+  .img-catc{
+    width: 100px; 
+    height: 100px; 
+    padding:10px;
+    }
 
+    .detailsc{
+      width:100% !important;
+      font-size: clamp(11.8px, 0.7rem, 17px);
+     font-family: "Poppins", sans-serif;
+    }
 
 .inquire-button {
   background-color:#67d753;
@@ -250,7 +273,27 @@
     border-radius:10px;
 }
 /*for cards and content*/
-@media (min-width: 992px){
+@media (min-width:1200px){
+  
+  .report-image {
+  
+    width: clamp(70px, 7vw, 120px);
+    height: clamp(70px, 5vw, 90px);
+    object-fit: contain;
+  }
+  .imgreport-div{
+    width:auto;
+    height:clamp(120px, 7vw, 132px);
+  }
+  .report-info{
+    font-size: clamp(10.5px, 1vw, 12px) !important;
+  }
+}
+@media (min-width: 992px) and (max-width:1199.9px){
+   .mainclaim{
+    width: 33.3% !important;
+  }
+  
   .report-image {
   
     width: clamp(70px, 7vw, 120px);
@@ -266,6 +309,9 @@
   }
 }
 @media (min-width: 768px) and (max-width: 991.9px){
+  .mainclaim{
+    width: 50% !important;
+  }
   /*topcontents*/
   .topcontent{
     flex-direction: column;
@@ -286,6 +332,11 @@
     height: clamp(70px, 5vw, 90px);
     object-fit: contain;
   }
+    .img-cat{
+      width: 80px; 
+      height: 80px; 
+      padding:5px;
+    }
   .imgreport-div{
     width:auto;
     height:clamp(120px, 7vw, 132px);
@@ -294,7 +345,126 @@
     font-size: clamp(10.5px, 1vw, 12px) !important;
   }
 } 
-@media (min-width: 426px) and (max-width:767.9px ){
+@media (min-width: 522px) and (max-width:767.9px ){
+   .mainclaim{
+    width: 50% !important;
+  }
+  /*swiper content*/
+  .naviscircle{
+    background-color:#0f2c53;
+    height:25px;
+    position:relative;
+    top:30px;
+  }
+  .navisimg{
+    height:400%;
+    bottom: 65px;
+  }
+  .headline1{
+    margin-left: 0 !important;
+  }
+  .headline2{
+    margin-left:10px !important;
+    width: 70% !important;
+  }
+  .headline3{
+    width: 70% !important;
+    margin-right:20px !important;
+  }
+  .headline4{
+    width: 75% !important;
+    margin-bottom: 0 !important;
+  }
+  .navisother, .navisother3{
+      width:85px;
+      height:85px;   
+  }
+  .navisotherp{
+    width: 60px;
+    height: 60px;
+  }
+ 
+  .slide1, .slide2, .slide3, .slide4, .slide5, .slide6{
+    height:150px;
+    font-size:18px;
+    border-radius:10px;
+  }
+  .pendingex{
+    width: 20vw;
+    min-width:200px ;
+    border-radius: 5px;
+  }
+  .headlinep{
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+    margin-top:0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  /*topcontents*/
+  .topcontent{
+    flex-direction: column;
+  }
+  .swipercolumn{
+    width: 100%;
+  }
+  .pendingcontainer{
+    width: 100%;
+  }
+  .pendings{
+    flex-direction: row;
+  }
+  .topbuttons{
+    flex-direction: column;
+    row-gap: 10px;
+  }
+  .directbutton{
+    width: 100%;
+  }
+  .totalreports{
+    width: 100%;
+  }
+  .buttondirect{
+    width: 48%;
+    height: 40px;
+  }
+  .totalreportsdiv{
+    height: 40px;
+  }
+  /*cards*/
+  .report-image {
+  
+    width: clamp(60px, 7vw, 120px);
+    height: clamp(60px, 5vw, 90px);
+    object-fit: contain;
+  }
+  .imgreport-div{
+    width:auto;
+    height:clamp(100px, 7vw, 120px);
+  }
+  .report-info{
+    font-size: clamp(10.25px, 1vw, 12px);
+  }
+
+  .swiper-button {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+  }
+
+  .swiper-button.prev {
+    left: -40px;
+  }
+
+  .swiper-button.next {
+    right: -40px;
+  }
+}
+
+@media (min-width: 426px) and (max-width:521.9px ){
+   .mainclaim{
+    width: 100% !important;
+  }
   /*swiper content*/
   .naviscircle{
     background-color:#0f2c53;
@@ -408,6 +578,10 @@
 }
 
 @media(max-width: 425.9px){
+    .mainclaim{
+    width: 100% !important;
+  }
+
   .slide1, .slide2, .slide3, .slide4, .slide5, .slide6{
     height:130px;
     font-size:15px;
@@ -501,6 +675,7 @@
     width:auto;
     height:clamp(90px, 7vw, 100px);
   }
+
   .report-info{
     font-size: clamp(10px, 1vw, 12px);
   }

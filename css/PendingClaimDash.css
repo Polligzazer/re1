@@ -151,7 +151,7 @@
   }
 } 
 
-@media (min-width: 576px) and (max-width:767px ){
+@media (min-width: 576px) and (max-width:767.9px ){
   .pending-card{
       width:99% !important;
      
@@ -207,9 +207,15 @@
   .modal-custom1{
     width:100%;
   }
+   .modal-custom{
+    width: 100%;
+  }
 }
 
 @media (min-width: 426px) and (max-width:575.9px ){
+   .modal-custom{
+    width: 100%;
+  }
   .pending-card{
       width:98% !important;
   }
@@ -268,6 +274,9 @@
 }
 
 @media (max-width: 425.9px){
+   .modal-custom{
+    width: 100%;
+  }
   .pending-card{
       width:98% !important;
   }

@@ -424,7 +424,7 @@ const Found: React.FC = () => {
                       download={fileName}
                       style={{ color: "#2169ac", fontSize:'12px', cursor: "pointer", textDecoration: "underline" }}
                     >
-                      {fileName}
+                      File
                     </a>
                     
                   )}

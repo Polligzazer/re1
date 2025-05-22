@@ -660,15 +660,15 @@ const AdminApproval: React.FC = () => {
                      />
                    </div>
                  </div>
-               <div className="details d-flex justify-content-center align-items-start ms-4 flex-column">
-                  
-                <p className="m-1"><strong> Claimnant: </strong>{report.claimantName}</p>
-                <p className="m-1"><span className="fw-bold">Item: </span>{report.itemName}</p>
-                <p className="m-1 text-start">
-                <span className="fw-bold"> Last location: </span>{report.location} 
-                </p>
-                <p className="m-1"><span className="fw-bold">Date of Lost: </span>{report.date}</p>
-              </div>  
+                <div className="details d-flex justify-content-center align-items-start ms-4 flex-column">
+                    
+                  <p className="m-1"><strong> Claimnant: </strong>{report.claimantName}</p>
+                  <p className="m-1"><span className="fw-bold">Item: </span>{report.itemName}</p>
+                  <p className="m-1 text-start">
+                  <span className="fw-bold"> Last location: </span>{report.location} 
+                  </p>
+                  <p className="m-1"><span className="fw-bold">Date of Lost: </span>{report.date}</p>
+                </div>  
               </div>
 
               <div className="card-button d-flex gap-2 align-self-end justify-content-end" style={{
