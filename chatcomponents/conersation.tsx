@@ -269,13 +269,13 @@ useEffect(() => {
           <p></p>
           <div style={{ marginTop: '4px' }}>
             <p style={{ margin: '4px 0', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
-              <strong></strong>{' '}
+              <strong>Feedback:</strong>{' '}
               {
                 message.text.split('\n').find((line) => !line.includes('Claimed item:') && !line.includes('Comment:'))
                 || '[No feedback]'
               }
             </p>
-              <p></p>
+          <p></p>    
             <p style={{ margin: '4px 0', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
               <strong>Claimed Item:</strong>{' '}
               {message.text.match(/Claimed item:\s*(.*)/)?.[1] || '[No item name]'}
