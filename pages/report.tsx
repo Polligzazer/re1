@@ -5,7 +5,7 @@ import ReportForms from "./reportcomp/ReportForms";
 import Pending from "./reportcomp/Pending";
 import Claimed from "./reportcomp/Claimed";
 import ClaimForm from "../components/claimFormRequest";
-import AppealForm from "../components/appealFormRequest";
+import AppealForm from "../components/AppealFormRequest";
 
 type TabType = "reportForms" | "pendingClaims" | "claimed" | "claimForm" | "appealForm";
 
