@@ -53,10 +53,11 @@ const ResetPassword: React.FC = () => {
     
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:3001/generate-reset-link", {
+      const response = await fetch("https://flo-proxy.vercel.app/api/pass-reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
+        mode: 'cors',
       });
       const data = await response.json();
 

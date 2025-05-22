@@ -54,59 +54,45 @@ const ItemHistory = () => {
   const { currentUser } = useContext(AuthContext);
 
   const { dispatch } = useChatContext();
-  const handleAppeal = async () => {
+  const handleAppeal = async (claimId: string) => {
     if (!currentUser) {
       alert("You must be logged in to inquire.");
       return;
     }
   
-    const q = query(collection(db, "claim_items"), where("status", "==", "claimed"));
-    const querySnapshot = await getDocs(q);
-  
-    if (querySnapshot.empty) {
-      alert("No pending reports found.");
-      return;
-    }
-  
-    // Use the first found claim
-    const reportDoc = querySnapshot.docs[0];
-    const claimData = reportDoc.data();
-    const claimId = reportDoc.id;
-  
-    // ✅ Step 1: Update the claim status to "onHold"
     try {
+      // ✅ Step 1: Update the claim status to "onHold"
       const claimRef = doc(db, "claim_items", claimId);
       await updateDoc(claimRef, {
         status: "onHold"
       });
       console.log(`Claim ${claimId} status updated to 'onHold'`);
+  
+      // Continue with initiating inquiry chat
+      const adminUID = "rWU1JksUQzUhGX42FueojcWo9a82";
+      const adminUserInfo = { uid: adminUID, name: "Admin" };
+  
+      dispatch({ type: "CHANGE_USER", payload: adminUserInfo });
+  
+      const combinedId = currentUser.uid > adminUID
+        ? currentUser.uid + adminUID
+        : adminUID + currentUser.uid;
+  
+      handleSend(
+        () => {},
+        () => {},
+        undefined,
+        { chatId: combinedId, user: adminUserInfo },
+        currentUser,
+        claimId,
+        'Appeal'
+      );
+  
+      navigate("/inquiries");
     } catch (error) {
       console.error("Error updating claim status:", error);
       alert("Failed to update claim status.");
-      return;
     }
-  
-    // Continue with initiating inquiry chat
-    const adminUID = "rWU1JksUQzUhGX42FueojcWo9a82";
-    const adminUserInfo = { uid: adminUID, name: "Admin" };
-  
-    dispatch({ type: "CHANGE_USER", payload: adminUserInfo });
-  
-    const combinedId = currentUser.uid > adminUID
-      ? currentUser.uid + adminUID
-      : adminUID + currentUser.uid;
-  
-    handleSend(
-      () => {},
-      () => {},
-      undefined,
-      { chatId: combinedId, user: adminUserInfo },
-      currentUser,
-      claimId,
-      'Appeal'
-    );
-  
-    navigate("/inquiries");
   };
 
   useEffect(() => {
@@ -450,7 +436,7 @@ const getProofUploadDate = (fileUrl: string, items: Item[]): string => {
                 width:'22%',
                 fontFamily: "Poppins, sans-serif"
               }}>
-                <button className="btn" style={{ backgroundColor: "#67d753", width: "50px", height: "30px", color: "white", fontSize: "15.2px", borderRadius: "15px" }} onClick={() => handleAppeal()}>
+                <button className="btn" style={{ backgroundColor: "#67d753", width: "50px", height: "30px", color: "white", fontSize: "15.2px", borderRadius: "15px" }} onClick={() => handleAppeal(item.id)}>
                   <FontAwesomeIcon icon={faHeadset} />
                 </button>
 

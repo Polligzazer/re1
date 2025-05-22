@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 const Claimed = () => {
   const [claimedItems, setClaimedItems] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [_selectedItem, setSelectedItem] = useState<any>(null);
   const [rating, setRating] = useState<string>("");
   const [selectedFeedback, setSelectedFeedback] = useState<string>("");
   const [comment, setComment] = useState<string>("");
