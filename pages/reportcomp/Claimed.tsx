@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, addDoc, Timestamp } from "firebase/firestore";
 import { db } from "../../src/firebase";
 import { getAuth } from "firebase/auth";
 import categoryImages from "../../src/categoryimage";
@@ -24,7 +24,7 @@ const Claimed = () => {
  const navigate = useNavigate();
   const { dispatch } = useChatContext();
   const auth = getAuth();
-  
+  const [ratingAttempts, setRatingAttempts] = useState<{ [itemId: string]: number }>({});
 
   useEffect(() => {
     const fetchClaimedItems = async () => {
@@ -67,49 +67,90 @@ const Claimed = () => {
     fetchClaimedItems();
   }, [auth.currentUser]);
 
-  const handleRateClick = (item: any) => {
-   setSelectedItem({
-      ...item,
-      reportId: item.id, 
-     });
-    setShowModal(true);
-    setRating("");
-    setComment("");
-  };
+const handleRateClick = async (item: any) => {
+  if (!currentUser) return;
 
- const handlefeedback = () => {
-    if (!currentUser || !_selectedItem) {
-      alert("Missing information to send feedback.");
-      return;
+  const ratingsRef = collection(db, "item_ratings");
+  const q = query(
+    ratingsRef,
+    where("itemId", "==", item.id),
+    where("userId", "==", currentUser.uid)
+  );
+
+  const snapshot = await getDocs(q);
+  if (snapshot.size >= 3) {
+    return;
+  }
+
+  setSelectedItem({ ...item, reportId: item.id });
+  setShowModal(true);
+  setRating("");
+  setComment("");
+};
+
+ const handlefeedback = async () => {
+  if (!currentUser || !_selectedItem) {
+    alert("Missing information to send feedback.");
+    return;
+  }
+
+  const adminUID = "rWU1JksUQzUhGX42FueojcWo9a82";
+  const adminUserInfo = { uid: adminUID, name: "Admin" };
+
+  dispatch({ type: "CHANGE_USER", payload: adminUserInfo });
+
+  const combinedId =
+    currentUser.uid > adminUID
+      ? currentUser.uid + adminUID
+      : adminUID + currentUser.uid;
+
+  const fullMessage = `${selectedFeedback}
+  Claimed item: ${_selectedItem.itemName}
+  Comment: ${comment}`;
+
+  // Add rating record
+  await addDoc(collection(db, "item_ratings"), {
+    itemId: _selectedItem.id,
+    userId: currentUser.uid,
+    rating: rating,
+    comment: comment,
+    timestamp: Timestamp.now()
+  });
+
+  handleSend(
+    () => {},
+    () => {},
+    fullMessage,
+    { chatId: combinedId, user: adminUserInfo },
+    currentUser
+  );
+
+  setShowModal(false);
+  navigate("/inquiries");
+};
+
+useEffect(() => {
+  const fetchRatingAttempts = async () => {
+    if (!currentUser) return;
+
+    const attempts: { [itemId: string]: number } = {};
+
+    for (const item of claimedItems) {
+      const q = query(
+        collection(db, "item_ratings"),
+        where("itemId", "==", item.id),
+        where("userId", "==", currentUser.uid)
+      );
+
+      const snapshot = await getDocs(q);
+      attempts[item.id] = snapshot.size;
     }
 
-    const adminUID = "rWU1JksUQzUhGX42FueojcWo9a82";
-    const adminUserInfo = { uid: adminUID, name: "Admin" };
-
-    dispatch({ type: "CHANGE_USER", payload: adminUserInfo });
-
-    const combinedId =
-      currentUser.uid > adminUID
-        ? currentUser.uid + adminUID
-        : adminUID + currentUser.uid;
-
-    const fullMessage = `${selectedFeedback}
-    Claimed item: ${_selectedItem.itemName}
-    Comment: ${comment}`;
-
-
-    handleSend(
-      () => {},
-      () => {},
-      fullMessage,
-      { chatId: combinedId, user: adminUserInfo },
-      currentUser
-    );
-
-    setShowModal(false);
-    navigate("/inquiries");
+    setRatingAttempts(attempts);
   };
 
+  fetchRatingAttempts();
+}, [claimedItems, currentUser]);
 
 
   return (
@@ -146,7 +187,20 @@ const Claimed = () => {
                     </p>
                   </div>
                   <div className="pb-2" style={{width:'90%'}}>
-                     <button className="p-1 px-3" onClick={() => handleRateClick(item)} style={{width:'100%', borderRadius:'5px', backgroundColor:'#67d753', border:'none'}}>Rate</button>
+                      <button
+                      className="p-1 px-3 text-white"
+                      onClick={() => handleRateClick(item)}
+                      disabled={ratingAttempts[item.id] >= 3}
+                      style={{
+                        width: '100%',
+                        borderRadius: '5px',
+                        backgroundColor: ratingAttempts[item.id] >= 3 ? '#99db8d' : '#67d753',
+                        border: 'none',
+                        cursor: ratingAttempts[item.id] >= 3 ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      {ratingAttempts[item.id] >= 3 ? 'Already Rated' : 'Rate'}
+                    </button>
                   </div>
               </div>
             </div>
@@ -170,8 +224,8 @@ const Claimed = () => {
                    backgroundColor: rating === "awful" ? "#2169ac" : "transparent",
                 }}
                onClick={(e) => {
-                  setRating("awful");               // your existing rating set
-                  setSelectedFeedback(e.currentTarget.value);  // save the value from the button here
+                  setRating("awful");              
+                  setSelectedFeedback(e.currentTarget.value); 
                 }}
                 className="btn p-2 justify-content-center align-items-center d-flex flex-row"
                 value="My experience about this claim process is awful"
@@ -188,8 +242,8 @@ const Claimed = () => {
                    backgroundColor: rating === "sad" ? "#2169ac" : "transparent",
                 }}
                 onClick={(e) => {
-                  setRating("sad");               // your existing rating set
-                  setSelectedFeedback(e.currentTarget.value);  // save the value from the button here
+                  setRating("sad");              
+                  setSelectedFeedback(e.currentTarget.value);  
                 }}
                 className="btn p-2 justify-content-center align-items-center d-flex flex-row"
                 value="I feel sad about this claim process"

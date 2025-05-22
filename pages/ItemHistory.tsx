@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from "react-router-dom";
 import { db } from '../src/firebase';
-import { collection, getDocs, getDoc, doc, updateDoc, Timestamp, query, where } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, Timestamp, query, where } from 'firebase/firestore';
 import { Card } from 'react-bootstrap';
 import { faCheckCircle, faCircleCheck, faExclamationTriangle, faHeadset } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -54,52 +54,48 @@ const ItemHistory = () => {
   const { currentUser } = useContext(AuthContext);
 
   const { dispatch } = useChatContext();
-  const handleAppeal = async (claimId: string) => {
-  if (!currentUser) {
-    alert("You must be logged in to inquire.");
-    return;
-  }
-
-  try {
-    const claimRef = doc(db, "claim_items", claimId);
-    const claimSnap = await getDoc(claimRef);
-
-    if (!claimSnap.exists()) {
-      alert("Claim not found.");
+  const handleAppeal = async () => {
+    if (!currentUser) {
+      alert("You must be logged in to inquire.");
       return;
     }
-
-    const claimData = claimSnap.data();
-    const referencePostId = claimData.referencePostId;
-
-    if (!referencePostId) {
-      alert("No reference post ID found in this claim.");
+  
+    const q = query(collection(db, "claim_items"), where("status", "==", "claimed"));
+    const querySnapshot = await getDocs(q);
+  
+    if (querySnapshot.empty) {
+      alert("No pending reports found.");
       return;
     }
-
-    // Update the status of the claim to "onHold"
-    await updateDoc(claimRef, {
-      status: "onHold"
-    });
-
-    // Update the status of the related lost item to "onHold"
-    const lostItemRef = doc(db, "lost_items", referencePostId);
-    await updateDoc(lostItemRef, {
-      status: "onHold"
-    });
-
-    console.log(`Claim ${claimId} and Lost Item ${referencePostId} set to 'onHold'`);
-
-    // Initiate inquiry chat with admin
+  
+    // Use the first found claim
+    const reportDoc = querySnapshot.docs[0];
+    const claimData = reportDoc.data();
+    const claimId = reportDoc.id;
+  
+    // ✅ Step 1: Update the claim status to "onHold"
+    try {
+      const claimRef = doc(db, "claim_items", claimId);
+      await updateDoc(claimRef, {
+        status: "onHold"
+      });
+      console.log(`Claim ${claimId} status updated to 'onHold'`);
+    } catch (error) {
+      console.error("Error updating claim status:", error);
+      alert("Failed to update claim status.");
+      return;
+    }
+  
+    // Continue with initiating inquiry chat
     const adminUID = "rWU1JksUQzUhGX42FueojcWo9a82";
     const adminUserInfo = { uid: adminUID, name: "Admin" };
-
+  
     dispatch({ type: "CHANGE_USER", payload: adminUserInfo });
-
+  
     const combinedId = currentUser.uid > adminUID
       ? currentUser.uid + adminUID
       : adminUID + currentUser.uid;
-
+  
     handleSend(
       () => {},
       () => {},
@@ -109,13 +105,9 @@ const ItemHistory = () => {
       claimId,
       'Appeal'
     );
-
+  
     navigate("/inquiries");
-  } catch (error) {
-    console.error("Error processing appeal:", error);
-    alert("Failed to process the appeal.");
-  }
-};
+  };
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -129,8 +121,14 @@ const ItemHistory = () => {
         }, {} as { [key: string]: string });
         setUsers(usersData);
 
-        // Fetch claim_items filtered by status
-        const itemsQuery = query(collection(db, "claim_items"), where('status', '==', filter));
+       const statusFilter = filter === 'claimed'
+  ? ['claimed', 'isForAppeal']
+  : ['unclaimed'];
+
+const itemsQuery = query(
+  collection(db, "claim_items"),
+  where('status', 'in', statusFilter)
+);
         const querySnapshot = await getDocs(itemsQuery);
         const fetchedItems = querySnapshot.docs.map(doc => ({
           id: doc.id,
@@ -458,7 +456,7 @@ const getProofUploadDate = (fileUrl: string, items: Item[]): string => {
                 width:'22%',
                 fontFamily: "Poppins, sans-serif"
               }}>
-                <button className="btn" style={{ backgroundColor: "#67d753", width: "50px", height: "30px", color: "white", fontSize: "15.2px", borderRadius: "15px" }} onClick={() => handleAppeal(item.id)}>
+                <button className="btn" style={{ backgroundColor: "#67d753", width: "50px", height: "30px", color: "white", fontSize: "15.2px", borderRadius: "15px" }} onClick={() => handleAppeal()}>
                   <FontAwesomeIcon icon={faHeadset} />
                 </button>
 
