@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../src/firebase";
 import { getAuth } from "firebase/auth";
@@ -6,6 +6,10 @@ import categoryImages from "../../src/categoryimage";
 import { Modal } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFaceTired, faFaceFrown, faFaceGrinBeam, faFaceGrinStars, faSmileBeam } from "@fortawesome/free-regular-svg-icons";
+import { handleSend } from "../../chatcomponents/handleSend";
+import { useChatContext } from "../../components/ChatContext";
+import { AuthContext } from "../../components/Authcontext";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -14,9 +18,13 @@ const Claimed = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [rating, setRating] = useState<string>("");
+  const [selectedFeedback, setSelectedFeedback] = useState<string>("");
   const [comment, setComment] = useState<string>("");
-
+  const { currentUser } = useContext(AuthContext);
+ const navigate = useNavigate();
+  const { dispatch } = useChatContext();
   const auth = getAuth();
+  
 
   useEffect(() => {
     const fetchClaimedItems = async () => {
@@ -68,6 +76,41 @@ const Claimed = () => {
     setRating("");
     setComment("");
   };
+
+ const handlefeedback = () => {
+    if (!currentUser || !selectedItem) {
+      alert("Missing information to send feedback.");
+      return;
+    }
+
+    const adminUID = "rWU1JksUQzUhGX42FueojcWo9a82";
+    const adminUserInfo = { uid: adminUID, name: "Admin" };
+
+    dispatch({ type: "CHANGE_USER", payload: adminUserInfo });
+
+    const combinedId =
+      currentUser.uid > adminUID
+        ? currentUser.uid + adminUID
+        : adminUID + currentUser.uid;
+
+    const fullMessage = `${selectedFeedback}
+    Claimed item: ${selectedItem.itemName}
+    Comment: ${comment}`;
+
+
+    handleSend(
+      () => {},
+      () => {},
+      fullMessage,
+      { chatId: combinedId, user: adminUserInfo },
+      currentUser
+    );
+
+    setShowModal(false);
+    navigate("/inquiries");
+  };
+
+
 
   return (
     <div className="container mt-4">
@@ -126,8 +169,12 @@ const Claimed = () => {
                    color: rating === "awful" ? "white" : "#949da5",
                    backgroundColor: rating === "awful" ? "#2169ac" : "transparent",
                 }}
-                onClick={() => setRating("awful")}
+               onClick={(e) => {
+                  setRating("awful");               // your existing rating set
+                  setSelectedFeedback(e.currentTarget.value);  // save the value from the button here
+                }}
                 className="btn p-2 justify-content-center align-items-center d-flex flex-row"
+                value="My experience about this claim process is awful"
               >
                 <FontAwesomeIcon className="fw-bold" icon={faFaceTired}/>
                 <p className="ms-1 m-0">Awful</p>
@@ -140,8 +187,12 @@ const Claimed = () => {
                    color: rating === "sad" ? "white" : "#949da5",
                    backgroundColor: rating === "sad" ? "#2169ac" : "transparent",
                 }}
-                onClick={() => setRating("sad")}
-                 className="btn p-2 justify-content-center align-items-center d-flex flex-row"
+                onClick={(e) => {
+                  setRating("sad");               // your existing rating set
+                  setSelectedFeedback(e.currentTarget.value);  // save the value from the button here
+                }}
+                className="btn p-2 justify-content-center align-items-center d-flex flex-row"
+                value="I feel sad about this claim process"
               >
                 <FontAwesomeIcon className="fw-bold" icon={faFaceFrown}/>
                 <p className="ms-1 m-0">Sad</p>
@@ -156,8 +207,12 @@ const Claimed = () => {
                    color: rating === "good" ? "white" : "#949da5",
                    backgroundColor: rating === "good" ? "#2169ac" : "transparent",
                 }}
-                onClick={() => setRating("good")}
-                 className="btn p-2 justify-content-center align-items-center d-flex flex-row"
+                onClick={(e) => {
+                  setRating("good");               // your existing rating set
+                  setSelectedFeedback(e.currentTarget.value);  // save the value from the button here
+                }}
+                className="btn p-2 justify-content-center align-items-center d-flex flex-row"
+                value="I feel good about this claim process"
               >
                 <FontAwesomeIcon className="fw-bold" icon={faSmileBeam}/>
                 <p className="ms-1 m-0">Good</p>
@@ -170,8 +225,12 @@ const Claimed = () => {
                    color: rating === "awesome" ? "white" : "#949da5",
                    backgroundColor: rating === "awesome" ? "#2169ac" : "transparent",
                 }}
-                onClick={() => setRating("awesome")}
-                 className="btn p-2 justify-content-center align-items-center d-flex flex-row"
+                onClick={(e) => {
+                  setRating("awesome");               // your existing rating set
+                  setSelectedFeedback(e.currentTarget.value);  // save the value from the button here
+                }}
+                className="btn p-2 justify-content-center align-items-center d-flex flex-row"
+                value="Your claim service was awesome!"
               >
                 <FontAwesomeIcon className="fw-bold" icon={faFaceGrinBeam}/>
                 <p className="ms-1 m-0">Awesome</p>
@@ -185,9 +244,13 @@ const Claimed = () => {
                    color: rating === "excellent" ? "white" : "#949da5",
                    backgroundColor: rating === "excellent" ? "#2169ac" : "transparent",
                 }}
-              onClick={() => setRating("excellent")}
-              className="btn p-2 justify-content-center align-items-center d-flex flex-row"
-            >
+                onClick={(e) => {
+                  setRating("excellent");               // your existing rating set
+                  setSelectedFeedback(e.currentTarget.value);  // save the value from the button here
+                }}
+                className="btn p-2 justify-content-center align-items-center d-flex flex-row"
+                value="Excellent! Your services helps a lot!"
+              >
               <FontAwesomeIcon className="fw-bold" icon={faFaceGrinStars}/>
               <p className="ms-1 m-0">Excellent</p>
             </button>
@@ -206,7 +269,7 @@ const Claimed = () => {
        </Modal.Body>
         <Modal.Footer>
           <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-          <button className="btn btn-success">Send</button>
+          <button className="btn btn-success" onClick={ handlefeedback}>Send</button>
         </Modal.Footer>
       </Modal>
     </div>

@@ -253,7 +253,41 @@ useEffect(() => {
               </Button>
             )}
           </>
-        ) : message.claimFormRequest ? (
+        ) : message.text.includes('Claimed item:') && message.text.includes('Comment:') ? (
+        <>
+          <span
+            style={{
+              fontSize: '13px',
+              fontWeight: '600',
+              fontFamily: 'Poppins, sans-serif',
+              color: '#444',
+              marginBottom: '6px',
+            }}
+          >
+            Feedback Response:
+          </span>
+          <p></p>
+          <div style={{ marginTop: '4px' }}>
+            <p style={{ margin: '4px 0', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
+              <strong></strong>{' '}
+              {
+                message.text.split('\n').find((line) => !line.includes('Claimed item:') && !line.includes('Comment:'))
+                || '[No feedback]'
+              }
+            </p>
+              <p></p>
+            <p style={{ margin: '4px 0', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
+              <strong>Claimed Item:</strong>{' '}
+              {message.text.match(/Claimed item:\s*(.*)/)?.[1] || '[No item name]'}
+            </p>
+
+            <p style={{ margin: '4px 0', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
+              <strong>Comment:</strong>{' '}
+              {message.text.match(/Comment:\s*(.*)/)?.[1] || '[No comment]'}
+            </p>
+          </div>
+        </>
+      ) : message.claimFormRequest ? (
       <>
         <p style={{ fontSize: '12px', marginBottom: '5px' }}>
           ⚠️ This claim form is only valid until {formatTimestamp(message.validUntil)}.
