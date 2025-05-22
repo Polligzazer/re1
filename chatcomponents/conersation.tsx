@@ -4,10 +4,11 @@ import { AuthContext } from '../components/Authcontext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import ItemPreviewModal from '../components/ItemPreviewModal';
+import ClaimPreviewModal from '../components/ClaimPreviewModal';
 import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import { db } from '../src/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, Timestamp } from 'firebase/firestore';
 
 interface Message {
   id: string;
@@ -32,6 +33,20 @@ interface Report {
   userId: string;
 }
 
+interface ClaimItem {
+    id: string;
+    claimantName: string;
+    itemName: string;
+    claimedDate: Timestamp;
+    userId: string;
+    imageUrl?: string;
+    status: string;
+    category: string;
+    description: string;
+    location: string;
+    date: string;
+}
+
 interface ConvoProps {
   message: Message;
   previousMessage?: Message;
@@ -46,10 +61,10 @@ const Convo = ({ message, previousMessage, chatPartner }: ConvoProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showClaimModal, setShowClaimModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [selectedClaim, setSelectedClaim] = useState<ClaimItem | null>(null);
   const [isExpired, setIsExpired] = useState(false);
-
-
 
   const fetchSingleReport = async (id: string) => {
     try {
@@ -62,7 +77,19 @@ const Convo = ({ message, previousMessage, chatPartner }: ConvoProps) => {
       console.error('Error fetching report:', error);
     }
   };
-
+  const fetchSingleClaim = async (id: string) => {
+    try {
+      const claimDoc = await getDoc(doc(db, 'claim_items', id));
+      if (claimDoc.exists()) {
+        setSelectedClaim({ id: claimDoc.id, ...claimDoc.data() } as ClaimItem);
+        setShowClaimModal(true);
+      } else {
+        console.warn('Claim report not found');
+      }
+    } catch (error) {
+      console.error('Error fetching claim:', error);
+    }
+  };
 useEffect(() => {
   if (message.validUntil) {
     const validUntilDate = message.validUntil.toDate
@@ -175,95 +202,121 @@ useEffect(() => {
         transition: 'background-color 0.2s',
       }}
     >
-      {message.text.includes('Inquiry about Report ID:') ? (
-        <>
-          <span>Inquiring about</span>
-          <Button
-            className="btn btn-primary p-1 mt-2"
-            style={{ textDecoration: 'none' }}
-            onClick={() => {
-              const reportIdMatch = message.text.match(/\bInquiry about Report ID:\s*([a-zA-Z0-9]+)\b/);
-              const reportId = reportIdMatch ? reportIdMatch[1] : null;
-
-              if (reportId) {
-                console.log('Inquire Button Clicked! Report ID:', reportId);
-                handleInquireClick(reportId.trim());
-              }
-            }}
-          >
-            Report ID: {message.text.match(/\bInquiry about Report ID:\s*([a-zA-Z0-9]+)\b/)?.[1]}
-          </Button>
-        </>
-      ) : (
-        <>
-          {message.claimFormRequest ? (
-            <>
-              <p style={{ fontSize: '12px', marginBottom: '5px' }}>
-                ⚠️ This claim form is only valid until {formatTimestamp(message.validUntil)}.
-                <br /> <br />
-                Failing to comply will result in rejection of the request.
-                <br /> <br />
-                Thank you!
-              </p>
-              <Link
-                to="/report?claimForm=true"
-                className="btn"
-                style={{
-                  fontSize: '13px',
-                  textDecoration: 'none',
-                  pointerEvents: isExpired ? 'none' : 'auto',
-                  backgroundColor: isExpired ? '#d6d6d6' : 'transparent',
-                  color: isExpired ? '#6c757d' : 'blue',
-                  borderColor: isExpired ? '#d6d6d6' : 'blue',
+       {message.text.includes('Inquiry about Report ID:') ? (
+          <>
+            <span>Inquiring about</span>
+            <Button
+              className="btn btn-primary p-1 mt-2"
+              style={{ textDecoration: 'none' }}
+              onClick={() => {
+                const match = message.text.match(/Report ID:\s*([a-zA-Z0-9]+)/);
+                const reportId = match?.[1] || '';
+                if (reportId) {
+                  handleInquireClick(reportId.trim());
+                }
+              }}
+            >
+              Report ID: {message.text.match(/Report ID:\s*([a-zA-Z0-9]+)/)?.[1]}
+            </Button>
+          </>
+        ) : message.text.includes('I want to review this item') ? (
+          <>
+            <span>I want to review this item</span>
+            <Button
+              className="btn btn-warning p-1 mt-2"
+              style={{ textDecoration: 'none' }}
+              onClick={() => {
+                const match = message.text.match(/Claim ID:\s*(\S+)/);
+                const claimId = match?.[1] || '';
+                if (claimId) {
+                  fetchSingleClaim(claimId.trim());
+                }
+              }}
+            >
+              Claim ID: {message.text.match(/Claim ID:\s*(\S+)/)?.[1] || '[Not Found]'}
+            </Button>
+            {!currentUser?.isAdmin && (
+              <Button
+                variant="success-emphasis"
+                size="sm"
+                className="mt-2"
+                onClick={() => {
+                  const match = message.text.match(/Claim ID:\s*(\S+)/);
+                  const claimId = match?.[1].replace(/[^\w-]/g, '').trim();
+                  if (claimId) {
+                    alert(`You have requested to appeal Claim ID: ${claimId} again. Please wait for admin response.`);
+                    // Optionally, trigger another function here to log/send a follow-up request
+                  }
                 }}
               >
-                {isExpired ? 'Claim Form Expired' : 'Complete Claim Form'}
-              </Link>
-            </>
-          ) : (
-            <>
-            {
-              message.img ? (
-                // If it's an image or video, display it accordingly
-                <div>
-                  {message.fileType?.startsWith('video/') ? (
-                    // If it's a video, use the <video> tag
-                    <video
-                      width="300"
-                      controls
-                      onError={() => console.log('Error loading video thumbnail')}
-                      style={{maxWidth:'220px'}}
-                    >
-                      <source src={message.img} type={message.fileType} />
-                      Your browser does not support the video tag.
-                    </video>
-                  ) : (
-                    // If it's an image, display it as an image
-                    <img
-                      src={message.img}
-                      alt="Attachment"
-                      style={{ maxWidth:'220px', borderRadius:'10px', backgroundColor: 'red', cursor: 'pointer' }}
-                      onClick={() => window.open(message.img, '_blank')} // Open the image in a new tab when clicked
-                    />
-                  )}
-                  
-                  {message.text && <p style={{ margin: 0, padding: 0 }}></p>} {/* Render message.text if it exists */}
-                </div>
-              ) : message.text.includes('https://cloud.appwrite.io/v1/storage/buckets/') ? (
-                <div>
-                  <a href={message.text} target="_blank" rel="noopener noreferrer">
-                    See attached file
-                  </a>
-                </div>
-              ) : (
-                <p style={{ margin: 0, padding: 0 }}>{message.text}</p>
-              )
-            }
-            </>
-
-          )}
-        </>
-      )}
+                Appeal
+              </Button>
+            )}
+          </>
+        ) : message.claimFormRequest ? (
+      <>
+        <p style={{ fontSize: '12px', marginBottom: '5px' }}>
+          ⚠️ This claim form is only valid until {formatTimestamp(message.validUntil)}.
+          <br /> <br />
+          Failing to comply will result in rejection of the request.
+          <br /> <br />
+          Thank you!
+        </p>
+        <Link
+          to="/report?claimForm=true"
+          className="btn"
+          style={{
+            fontSize: '13px',
+            textDecoration: 'none',
+            pointerEvents: isExpired ? 'none' : 'auto',
+            backgroundColor: isExpired ? '#d6d6d6' : 'transparent',
+            color: isExpired ? '#6c757d' : 'blue',
+            borderColor: isExpired ? '#d6d6d6' : 'blue',
+          }}
+        >
+          {isExpired ? 'Claim Form Expired' : 'Complete Claim Form'}
+        </Link>
+      </>
+    ) : (
+      <>
+      {
+        message.img ? (
+          // If it's an image or video, display it accordingly
+          <div>
+            {message.fileType?.startsWith('video/') ? (
+              // If it's a video, use the <video> tag
+              <video
+                width="300"
+                controls
+                onError={() => console.log('Error loading video thumbnail')}
+                style={{maxWidth:'220px'}}
+              >
+                <source src={message.img} type={message.fileType} />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              // If it's an image, display it as an image
+              <img
+                src={message.img}
+                alt="Attachment"
+                style={{ maxWidth:'220px', borderRadius:'10px', backgroundColor: 'red', cursor: 'pointer' }}
+                onClick={() => window.open(message.img, '_blank')} // Open the image in a new tab when clicked
+              />
+            )}
+            
+            {message.text && <p style={{ margin: 0, padding: 0 }}></p>} {/* Render message.text if it exists */}
+          </div>
+        ) : message.text.includes('https://cloud.appwrite.io/v1/storage/buckets/') ? (
+          <div>
+            <a href={message.text} target="_blank" rel="noopener noreferrer">
+              See attached file
+            </a>
+          </div>
+        ) : (
+          <p style={{ margin: 0, padding: 0 }}>{message.text}</p>
+        )}
+      </>
+    )}
     </div>
 
     <div
@@ -285,6 +338,11 @@ useEffect(() => {
           userId: selectedReport.userId || "",
           type: "lost"
         } : null} 
+      />
+      <ClaimPreviewModal 
+        show={showClaimModal} 
+        onClose={() => setShowClaimModal(false)} 
+        item={selectedClaim}
       />
         </div>
       </div>
