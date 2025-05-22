@@ -102,7 +102,7 @@ const ClaimPreviewModal = ({ show, onClose, item }: ItemPreviewModalProps) => {
                 <strong>Claimed Date:</strong> {item.claimedDate?.toDate().toLocaleString()}
               </p>
 
-              {claimantProofUrl && (
+              {currentUser?.isAdmin && claimantProofUrl && (
                 <a href={claimantProofUrl} target="_blank" rel="noopener noreferrer">
                   <img
                     src={claimantProofUrl}
