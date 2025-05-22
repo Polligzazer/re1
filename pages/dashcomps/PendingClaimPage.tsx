@@ -90,7 +90,7 @@ const AdminApproval: React.FC = () => {
         const claimsQuery = query(
           collection(db, "claim_items"),
           where("userId", "==", currentUser.uid),
-          where("status", "in", ["pendingclaim"])
+          where("status", "in", ["pendingclaim", "onHold"]),
         );
         const claimsSnapshot = await getDocs(claimsQuery);
         const fetchedClaims = claimsSnapshot.docs.map(doc => ({
@@ -529,7 +529,7 @@ const AdminApproval: React.FC = () => {
             } as Report;
           });
 
-          const pendingReports = reportData.filter((report) => report.status === "pendingclaim");
+          const pendingReports = reportData.filter((report) => report.status === "pendingclaim" || report.status === "isforappeal");
           console.log("📌 Pending Reports:", pendingReports);
           setReports(pendingReports);
           setPendingClaimCount(pendingReports.length); 

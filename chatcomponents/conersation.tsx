@@ -17,6 +17,7 @@ interface Message {
   date: any;
   fileType?: string;
   claimFormRequest?: boolean;
+  appealFormRequest?: boolean;
   validUntil?: any;
   img?: string;
 }
@@ -309,6 +310,30 @@ useEffect(() => {
           }}
         >
           {isExpired ? 'Claim Form Expired' : 'Complete Claim Form'}
+        </Link>
+      </>
+    )  : message.appealFormRequest ? (
+      <>
+        <p style={{ fontSize: '12px', marginBottom: '5px' }}>
+          ⚠️ This Appeal form is only valid until {formatTimestamp(message.validUntil)}.
+          <br /> <br />
+          Failing to comply will result in rejection of the request.
+          <br /> <br />
+          Thank you!
+        </p>
+        <Link
+          to="/report?appealForm=true"
+          className="btn"
+          style={{
+            fontSize: '13px',
+            textDecoration: 'none',
+            pointerEvents: isExpired ? 'none' : 'auto',
+            backgroundColor: isExpired ? '#d6d6d6' : 'transparent',
+            color: isExpired ? '#6c757d' : 'blue',
+            borderColor: isExpired ? '#d6d6d6' : 'blue',
+          }}
+        >
+          {isExpired ? 'Appeal Form Expired' : 'Complete Appeal Form'}
         </Link>
       </>
     ) : (

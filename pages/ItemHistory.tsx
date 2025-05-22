@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from "react-router-dom";
 import { db } from '../src/firebase';
-import { collection, getDocs, doc, updateDoc, Timestamp, query, where } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, updateDoc, Timestamp, query, where } from 'firebase/firestore';
 import { Card } from 'react-bootstrap';
 import { faCheckCircle, faCircleCheck, faExclamationTriangle, faHeadset } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -55,45 +55,67 @@ const ItemHistory = () => {
 
   const { dispatch } = useChatContext();
   const handleAppeal = async (claimId: string) => {
-    if (!currentUser) {
-      alert("You must be logged in to inquire.");
+  if (!currentUser) {
+    alert("You must be logged in to inquire.");
+    return;
+  }
+
+  try {
+    const claimRef = doc(db, "claim_items", claimId);
+    const claimSnap = await getDoc(claimRef);
+
+    if (!claimSnap.exists()) {
+      alert("Claim not found.");
       return;
     }
-  
-    try {
-      // ✅ Step 1: Update the claim status to "onHold"
-      const claimRef = doc(db, "claim_items", claimId);
-      await updateDoc(claimRef, {
-        status: "onHold"
-      });
-      console.log(`Claim ${claimId} status updated to 'onHold'`);
-  
-      // Continue with initiating inquiry chat
-      const adminUID = "rWU1JksUQzUhGX42FueojcWo9a82";
-      const adminUserInfo = { uid: adminUID, name: "Admin" };
-  
-      dispatch({ type: "CHANGE_USER", payload: adminUserInfo });
-  
-      const combinedId = currentUser.uid > adminUID
-        ? currentUser.uid + adminUID
-        : adminUID + currentUser.uid;
-  
-      handleSend(
-        () => {},
-        () => {},
-        undefined,
-        { chatId: combinedId, user: adminUserInfo },
-        currentUser,
-        claimId,
-        'Appeal'
-      );
-  
-      navigate("/inquiries");
-    } catch (error) {
-      console.error("Error updating claim status:", error);
-      alert("Failed to update claim status.");
+
+    const claimData = claimSnap.data();
+    const referencePostId = claimData.referencePostId;
+
+    if (!referencePostId) {
+      alert("No reference post ID found in this claim.");
+      return;
     }
-  };
+
+    // Update the status of the claim to "onHold"
+    await updateDoc(claimRef, {
+      status: "onHold"
+    });
+
+    // Update the status of the related lost item to "onHold"
+    const lostItemRef = doc(db, "lost_items", referencePostId);
+    await updateDoc(lostItemRef, {
+      status: "onHold"
+    });
+
+    console.log(`Claim ${claimId} and Lost Item ${referencePostId} set to 'onHold'`);
+
+    // Initiate inquiry chat with admin
+    const adminUID = "rWU1JksUQzUhGX42FueojcWo9a82";
+    const adminUserInfo = { uid: adminUID, name: "Admin" };
+
+    dispatch({ type: "CHANGE_USER", payload: adminUserInfo });
+
+    const combinedId = currentUser.uid > adminUID
+      ? currentUser.uid + adminUID
+      : adminUID + currentUser.uid;
+
+    handleSend(
+      () => {},
+      () => {},
+      undefined,
+      { chatId: combinedId, user: adminUserInfo },
+      currentUser,
+      claimId,
+      'Appeal'
+    );
+
+    navigate("/inquiries");
+  } catch (error) {
+    console.error("Error processing appeal:", error);
+    alert("Failed to process the appeal.");
+  }
+};
 
   useEffect(() => {
     const fetchAllData = async () => {

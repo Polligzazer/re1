@@ -137,7 +137,7 @@ const ClaimPreviewModal = ({ show, onClose, item }: ItemPreviewModalProps) => {
             <div className="p-2">
               <p className="p-0 my-2"><strong>Category:</strong> {item.itemName} ({item.category})</p>
               <p className="p-0 my-2"><strong>Claimed from:</strong> {item.location}</p>
-              <p className="p-0 my-2"><strong>Reference ID:</strong> {item.id}</p>
+              <p className="p-0 my-2"><strong>Reference ID:</strong> {item.referencePostId}</p>
               {item.imageUrl && (
                 <a
                   href={item.imageUrl}
