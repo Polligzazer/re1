@@ -64,7 +64,7 @@ const PendingReports = () => {
         const claimsQuery = query(
           collection(db, "claim_items"),
           where("userId", "==", currentUser.uid),
-          where("status", "in", ["pendingclaim"])
+          where("status", "in", ["pendingclaim", "onHold"])
         );
         const claimsSnapshot = await getDocs(claimsQuery);
         const fetchedClaims = claimsSnapshot.docs.map(doc => ({
