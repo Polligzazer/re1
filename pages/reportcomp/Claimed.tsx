@@ -12,7 +12,7 @@ import { faFaceTired, faFaceFrown, faFaceGrinBeam, faFaceGrinStars, faSmileBeam 
 const Claimed = () => {
   const [claimedItems, setClaimedItems] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [_selectedItem, setSelectedItem] = useState<any>(null);
   const [rating, setRating] = useState<string>("");
   const [comment, setComment] = useState<string>("");
 
