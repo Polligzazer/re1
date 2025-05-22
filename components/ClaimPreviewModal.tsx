@@ -1,6 +1,7 @@
 import { Modal, Button } from "react-bootstrap";
 import { ClaimItem } from "./types";
-import { useEffect, useState } from "react";
+import { AuthContext } from "../components/Authcontext";
+import { useEffect, useState, useContext } from "react";
 import { db } from "../src/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
@@ -13,6 +14,7 @@ interface ItemPreviewModalProps {
 }
 
 const ClaimPreviewModal = ({ show, onClose, item }: ItemPreviewModalProps) => {
+  const { currentUser } = useContext(AuthContext);
   const [userName, setUserName] = useState("");
   const [linkedPostData, setLinkedPostData] = useState<any>(null);
   const [claimantProofUrl, setClaimantProofUrl] = useState<string | null>(null);
@@ -42,13 +44,14 @@ const ClaimPreviewModal = ({ show, onClose, item }: ItemPreviewModalProps) => {
           }
         }
 
-        const proofDocRef = doc(db, "claim_items", item.id, "proof", "fileUrl");
-        const proofDoc = await getDoc(proofDocRef);
-        if (proofDoc.exists()) {
-          const proofData = proofDoc.data();
-          if (proofData?.url) {
-            setClaimantProofUrl(proofData.url);
-          }
+        // Fetch proof map from claim_items doc
+        const claimDocRef = doc(db, "claim_items", item.id);
+        const claimDocSnap = await getDoc(claimDocRef);
+        if (claimDocSnap.exists()) {
+          const data = claimDocSnap.data();
+          setClaimantProofUrl(data.proof?.fileUrl || null);
+        } else {
+          setClaimantProofUrl(null);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -103,7 +106,7 @@ const ClaimPreviewModal = ({ show, onClose, item }: ItemPreviewModalProps) => {
                 <a href={claimantProofUrl} target="_blank" rel="noopener noreferrer">
                   <img
                     src={claimantProofUrl}
-                    alt="Claimant Proof"
+                    alt="Claimant's Proof"
                     style={{
                       width: "100%",
                       maxHeight: "250px",
@@ -113,12 +116,11 @@ const ClaimPreviewModal = ({ show, onClose, item }: ItemPreviewModalProps) => {
                       cursor: "pointer",
                     }}
                     onError={(e) => {
-                      console.error("Claimant image failed to load:", e.currentTarget.src);
                       e.currentTarget.style.display = "none";
                     }}
                   />
                 </a>
-              )}
+                )}
             </div>
           </div>
         )}
@@ -135,7 +137,7 @@ const ClaimPreviewModal = ({ show, onClose, item }: ItemPreviewModalProps) => {
             <div className="p-2">
               <p className="p-0 my-2"><strong>Category:</strong> {item.itemName} ({item.category})</p>
               <p className="p-0 my-2"><strong>Claimed from:</strong> {item.location}</p>
-              <p className="p-0 my-2"><strong>Reference ID:</strong> {item.id}</p>
+              <p className="p-0 my-2"><strong>Reference ID:</strong> {item.referencePostId}</p>
               {item.imageUrl && (
                 <a
                   href={item.imageUrl}
@@ -162,12 +164,12 @@ const ClaimPreviewModal = ({ show, onClose, item }: ItemPreviewModalProps) => {
               )}
             </div>
 
-            {linkedPostData && (
+            {currentUser?.isAdmin && linkedPostData && (
               <div className="p-2 border-top">
                 <p className="p-0 my-2"><strong>Found at:</strong> {linkedPostData.location}</p>
                 <p className="p-0 my-2"><strong>Description:</strong> {linkedPostData.description}</p>
                 <p className="p-0 my-2"><strong>Date Sighted:</strong> {linkedPostData.date}</p>
-                {linkedPostData.imageUrl && (
+                {linkedPostData?.imageUrl && (
                   <a
                     href={linkedPostData.imageUrl}
                     target="_blank"

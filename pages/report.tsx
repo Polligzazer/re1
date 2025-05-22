@@ -5,8 +5,9 @@ import ReportForms from "./reportcomp/ReportForms";
 import Pending from "./reportcomp/Pending";
 import Claimed from "./reportcomp/Claimed";
 import ClaimForm from "../components/claimFormRequest";
+import AppealForm from "../components/appealFormRequest";
 
-type TabType = "reportForms" | "pendingClaims" | "claimed" | "claimForm";
+type TabType = "reportForms" | "pendingClaims" | "claimed" | "claimForm" | "appealForm";
 
 const Report = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 992);
@@ -28,10 +29,14 @@ const Report = () => {
     const tabParam = params.get("tab");
 
     const showClaimForm = params.get("claimForm");
+    const showAppealForm = params.get("appealForm");
+    console.log("showAppealForm value:", showAppealForm);
     console.log("showClaimForm value:", showClaimForm);
 
     if (showClaimForm === "true") {
       setActiveTab("claimForm");
+    } else if (showAppealForm === "true") {
+      setActiveTab("appealForm");
     } else if (tabParam === "pending") {
       setActiveTab("pendingClaims");
     }
@@ -47,6 +52,8 @@ const Report = () => {
         return <Claimed />;
       case "claimForm":
         return <ClaimForm />;
+      case "appealForm":
+        return <AppealForm />;
       default:
         return <ReportForms />;
     }
@@ -58,6 +65,7 @@ const Report = () => {
       pendingClaims: "Pending",
       claimed: "Claimed",
       claimForm: "Claim Form",
+      appealForm: "Appeal Form"
     };
     return tabLabels[tab] || "Report Forms";
   };

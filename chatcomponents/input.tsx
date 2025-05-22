@@ -135,9 +135,7 @@ const Input = () => {
         },
         [`${data.chatId}.messageCount`]: increment(1)
       });
-
       
-  
       await batch.commit();
       console.log('Message committed successfully');
   
@@ -147,6 +145,51 @@ const Input = () => {
     } catch (error) {
       console.error("Message send failed:", error);
      
+    }
+  };
+  const handleSendAppealFormRequest = async () => {
+    if (!currentUser?.uid || !data.chatId || !data.user?.uid) return;
+
+    const messageId = uuid();
+    const expiryTime = new Date();
+    expiryTime.setMinutes(expiryTime.getMinutes() + 30);
+
+     const deadline = new Date(Timestamp.now().toMillis() + 30 * 60 * 1000).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    console.log("Computed deadline:", deadline);
+
+    const claimFormMessage = {
+      id: messageId,
+      text: `🔔 **Note!** This form is only valid for 30 minutes. Please submit it before **${deadline}**. Failing to comply will result in rejection of the claim request. Thank you!`,
+      senderId: currentUser.uid,
+      date: Timestamp.now(),
+      appealFormRequest: true,
+        validUntil: Timestamp.fromDate(expiryTime),
+    };
+
+    try {
+      const chatRef = doc(db, "chats", data.chatId);
+      await updateDoc(chatRef, {
+        messages: arrayUnion(claimFormMessage),
+        timestamp: serverTimestamp(),
+      });
+
+      const currentUserChatRef = doc(db, "userChats", currentUser.uid);
+      const receiverUserChatRef = doc(db, "userChats", data.user.uid);
+
+      await Promise.all([
+        updateDoc(currentUserChatRef, {
+          [`${data.chatId}.messageCount`]: increment(1), 
+        }),
+        updateDoc(receiverUserChatRef, {
+          [`${data.chatId}.messageCount`]: increment(1),
+        }),
+      ]);
+
+    } catch (error) {
+      console.error("Error sending claim form request:", error);
     }
   };
 
@@ -208,9 +251,29 @@ const Input = () => {
   return (
     <div className="input py-3 px-0 d-flex gap-lg-2 gap justify-content-center align-items-center">
       {isAdmin && (
-        <button className="btn" style={{ backgroundColor: "transparent" }} onClick={handleSendClaimFormRequest}>
-          <FontAwesomeIcon className="fs-3" style={{ color: "#e8a627" }} icon={faFileAlt} />
-        </button>
+        <div className="dropdown">
+          <button
+            className="btn dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            style={{ backgroundColor: "transparent" }}
+          >
+            <FontAwesomeIcon className="fs-3" style={{ color: "#e8a627" }} icon={faFileAlt} />
+          </button>
+          <ul className="dropdown-menu">
+            <li>
+              <button className="dropdown-item" onClick={handleSendClaimFormRequest}>
+                Claim Form
+              </button>
+            </li>
+            <li>
+              <button className="dropdown-item" onClick={handleSendAppealFormRequest}>
+                Appeal Form
+              </button>
+            </li>
+          </ul>
+        </div>
       )}
 
       <input
