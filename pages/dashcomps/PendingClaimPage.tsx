@@ -747,6 +747,10 @@ const AdminApproval: React.FC = () => {
                       ? 'Waiting for the receipt'
                       : report.emailSent === false
                       ? 'Verifying information'
+                      : report.emailSent === true && report.status === 'onHold'
+                      ? 'Waiting for the  receipt'
+                      : report.emailSent === false && report.status === 'onHold'
+                      ? 'Verifying appeal information'
                       : 'Unknown Status'}
                   </span>
                 </div>
