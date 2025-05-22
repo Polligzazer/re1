@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { db } from '../src/firebase';
 import { collection, getDocs, doc, updateDoc, Timestamp, query, where } from 'firebase/firestore';
 import { Card } from 'react-bootstrap';
-import { faCheckCircle, faCircleCheck, faExclamationTriangle, faHeadset,} from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faCircleCheck, faExclamationTriangle, faHeadset } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import categoryImages from '../src/categoryimage';
 import "../css/PendingClaimDash.css";
 import { Modal, Button } from "react-bootstrap";
 import { AuthContext } from '../components/Authcontext';
+import { useChatContext } from "../components/ChatContext";
+import { handleSend } from '../chatcomponents/handleSend';
 
 interface Item {
   id: string;
@@ -45,13 +47,67 @@ const ItemHistory = () => {
   const [selectedProof, setSelectedProof] = useState<string | null>(null);
   const [showProofModal, setShowProofModal] = useState(false);
   const [proofUploadedAt, setProofUploadedAt] = useState<any>(null);
- const [proofOfReturn, setProofOfReturn] = useState<string | null>();
- const [, setClaimItems] = useState<Item[]>([]);
- const [lostItems, setLostItems] = useState<Item[]>([]);
-   const [itemsLoaded, setItemsLoaded] = useState(false);
-   const { currentUser } = useContext(AuthContext);
+  const [proofOfReturn, setProofOfReturn] = useState<string | null>();
+  const [, setClaimItems] = useState<Item[]>([]);
+  const [lostItems, setLostItems] = useState<Item[]>([]);
+  const [itemsLoaded, setItemsLoaded] = useState(false);
+  const { currentUser } = useContext(AuthContext);
 
-
+  const { dispatch } = useChatContext();
+  const handleAppeal = async () => {
+    if (!currentUser) {
+      alert("You must be logged in to inquire.");
+      return;
+    }
+  
+    const q = query(collection(db, "claim_items"), where("status", "==", "claimed"));
+    const querySnapshot = await getDocs(q);
+  
+    if (querySnapshot.empty) {
+      alert("No pending reports found.");
+      return;
+    }
+  
+    // Use the first found claim
+    const reportDoc = querySnapshot.docs[0];
+    const claimData = reportDoc.data();
+    const claimId = reportDoc.id;
+  
+    // ✅ Step 1: Update the claim status to "onHold"
+    try {
+      const claimRef = doc(db, "claim_items", claimId);
+      await updateDoc(claimRef, {
+        status: "onHold"
+      });
+      console.log(`Claim ${claimId} status updated to 'onHold'`);
+    } catch (error) {
+      console.error("Error updating claim status:", error);
+      alert("Failed to update claim status.");
+      return;
+    }
+  
+    // Continue with initiating inquiry chat
+    const adminUID = "rWU1JksUQzUhGX42FueojcWo9a82";
+    const adminUserInfo = { uid: adminUID, name: "Admin" };
+  
+    dispatch({ type: "CHANGE_USER", payload: adminUserInfo });
+  
+    const combinedId = currentUser.uid > adminUID
+      ? currentUser.uid + adminUID
+      : adminUID + currentUser.uid;
+  
+    handleSend(
+      () => {},
+      () => {},
+      undefined,
+      { chatId: combinedId, user: adminUserInfo },
+      currentUser,
+      claimId,
+      'Appeal'
+    );
+  
+    navigate("/inquiries");
+  };
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -394,7 +450,7 @@ const getProofUploadDate = (fileUrl: string, items: Item[]): string => {
                 width:'22%',
                 fontFamily: "Poppins, sans-serif"
               }}>
-                <button className="btn" style={{ backgroundColor: "#67d753", width: "50px", height: "30px", color: "white", fontSize: "15.2px", borderRadius: "15px" }} onClick={() => navigate(`/inquiries`)}>
+                <button className="btn" style={{ backgroundColor: "#67d753", width: "50px", height: "30px", color: "white", fontSize: "15.2px", borderRadius: "15px" }} onClick={() => handleAppeal()}>
                   <FontAwesomeIcon icon={faHeadset} />
                 </button>
 

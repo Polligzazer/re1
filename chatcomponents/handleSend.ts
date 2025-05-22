@@ -5,21 +5,25 @@ import { v4 as uuid } from 'uuid';
 export const handleSend = async (
     setText: React.Dispatch<React.SetStateAction<string>>,
     setFile: React.Dispatch<React.SetStateAction<File | null>>,
-    customText: string,
+    customText: string | undefined,
     chatData: any,
     currentUser: any,
     reportId?: string | undefined,
+    type?: 'Inquiry' | 'Appeal',
 ) => {
-    if (!customText?.trim()) return;
     if (!currentUser?.uid || !chatData.chatId || !chatData.user?.uid) return;
 
     const displayName = currentUser.firstName + currentUser.lastName;
 
-    const inquiryLink = reportId
-    ? `Inquiry about Report ID: ${reportId}`
-    : '';
+    let finalText = customText?.trim() || '';
 
-    const finalText = inquiryLink || customText || 'Sent a file';
+    if (type === 'Inquiry') {
+        finalText = `Inquiry about Report ID: ${reportId}`;
+    } else if (type === 'Appeal') {
+        finalText = `I want to review this item\nClaim ID: ${reportId}`;
+    }
+
+    if (!finalText) return;
 
     const messageId = uuid();
     const messageData = {

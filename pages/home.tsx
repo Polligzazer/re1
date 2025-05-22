@@ -29,10 +29,6 @@ import FLOpss1 from "/assets/pss1.png"
 import Smartmatch from "/assets/smclose.png"
 import StatusProgressBar from '../components/statusprogressbar';
 
-
-
-
-
 interface Report {
   id: string;
   item: string;
@@ -176,10 +172,11 @@ const Home = () => {
     handleSend(
       () => {},
       () => {},
-      `Inquiring about report ID: ${reportId}`,
+      undefined,
       { chatId: combinedId, user: adminUserInfo },
       currentUser,
-      reportId
+      reportId,
+      'Inquiry'
     );
 
     navigate("/inquiries");
