@@ -228,7 +228,7 @@ useEffect(() => {
                   setSelectedFeedback(e.currentTarget.value); 
                 }}
                 className="btn p-2 justify-content-center align-items-center d-flex flex-row"
-                value="My experience about this claim process is awful"
+                value="My experience about this claim process is awful 😫"
               >
                 <FontAwesomeIcon className="fw-bold" icon={faFaceTired}/>
                 <p className="ms-1 m-0">Awful</p>
@@ -246,7 +246,7 @@ useEffect(() => {
                   setSelectedFeedback(e.currentTarget.value);  
                 }}
                 className="btn p-2 justify-content-center align-items-center d-flex flex-row"
-                value="I feel sad about this claim process"
+                value="I feel sad about this claim process 😞"
               >
                 <FontAwesomeIcon className="fw-bold" icon={faFaceFrown}/>
                 <p className="ms-1 m-0">Sad</p>
@@ -262,11 +262,11 @@ useEffect(() => {
                    backgroundColor: rating === "good" ? "#2169ac" : "transparent",
                 }}
                 onClick={(e) => {
-                  setRating("good");               // your existing rating set
-                  setSelectedFeedback(e.currentTarget.value);  // save the value from the button here
+                  setRating("good");               
+                  setSelectedFeedback(e.currentTarget.value); 
                 }}
                 className="btn p-2 justify-content-center align-items-center d-flex flex-row"
-                value="I feel good about this claim process"
+                value="I feel good about this claim process 🙂"
               >
                 <FontAwesomeIcon className="fw-bold" icon={faSmileBeam}/>
                 <p className="ms-1 m-0">Good</p>
@@ -284,7 +284,7 @@ useEffect(() => {
                   setSelectedFeedback(e.currentTarget.value);  // save the value from the button here
                 }}
                 className="btn p-2 justify-content-center align-items-center d-flex flex-row"
-                value="Your claim service was awesome!"
+                value="Your claim service was awesome! 😄"
               >
                 <FontAwesomeIcon className="fw-bold" icon={faFaceGrinBeam}/>
                 <p className="ms-1 m-0">Awesome</p>
@@ -303,7 +303,7 @@ useEffect(() => {
                   setSelectedFeedback(e.currentTarget.value);  // save the value from the button here
                 }}
                 className="btn p-2 justify-content-center align-items-center d-flex flex-row"
-                value="Excellent! Your services helps a lot!"
+                value="Excellent! Your services helps a lot! 🤩"
               >
               <FontAwesomeIcon className="fw-bold" icon={faFaceGrinStars}/>
               <p className="ms-1 m-0">Excellent</p>

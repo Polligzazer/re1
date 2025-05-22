@@ -3,7 +3,7 @@ import Chat from '../chatcomponents/chat.tsx';
 import Sidebar from '../chatcomponents/sidebar.tsx';
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../components/Authcontext.tsx';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const Inquiries = () => {
   const { currentUser } = useContext(AuthContext); 
@@ -12,6 +12,7 @@ const Inquiries = () => {
   const [autoSelected, setAutoSelected] = useState(false); 
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const { chatId } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {
@@ -39,15 +40,15 @@ const Inquiries = () => {
     }
   }, [windowWidth, autoSelected, currentUser?.isAdmin]);
 
- useEffect(() => {
-  if (chatId) {
-    if (!selectedUser || selectedUser.uid !== chatId) {
-      handleSelectChat({ uid: chatId });
+  useEffect(() => {
+    if (chatId) {
+      if (!selectedUser || selectedUser.uid !== chatId) {
+        handleSelectChat({ uid: chatId });
+      }
+    } else {
+      handleSelectChat(null);
     }
-  } else {
-    handleSelectChat(null);
-  }
-}, [chatId, selectedUser]);
+  }, [chatId, selectedUser]);
 
   const handleSelectChat = (user: any = null) => {
     console.log("handleSelectChat triggered", user);
@@ -69,6 +70,7 @@ const Inquiries = () => {
       setShowChat(false); 
       setAutoSelected(false);
       setSelectedUser(null);
+      navigate('/inquiries'); // Clear chatId from URL
       console.log("User deselected and chat window hidden.");
     }
   };
@@ -85,7 +87,11 @@ const Inquiries = () => {
         )}
 
         {(showChat || windowWidth > 768) && (
-          <Chat  key={selectedUser?.uid || 'default'} onBack={handleBack} selectedUser={selectedUser} />
+          <Chat
+            key={selectedUser?.uid || 'default'}
+            onBack={handleBack}
+            selectedUser={selectedUser}
+          />
         )}
       </div>
     </div>
