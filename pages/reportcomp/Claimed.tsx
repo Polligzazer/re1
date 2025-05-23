@@ -299,8 +299,8 @@ useEffect(() => {
                    backgroundColor: rating === "excellent" ? "#2169ac" : "transparent",
                 }}
                 onClick={(e) => {
-                  setRating("excellent");               // your existing rating set
-                  setSelectedFeedback(e.currentTarget.value);  // save the value from the button here
+                  setRating("excellent");            
+                  setSelectedFeedback(e.currentTarget.value);
                 }}
                 className="btn p-2 justify-content-center align-items-center d-flex flex-row"
                 value="Excellent! Your services helps a lot! 🤩"
