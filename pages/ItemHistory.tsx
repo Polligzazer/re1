@@ -70,7 +70,6 @@ const ItemHistory = () => {
   
     // Use the first found claim
     const reportDoc = querySnapshot.docs[0];
-    const claimData = reportDoc.data();
     const claimId = reportDoc.id;
   
     // ✅ Step 1: Update the claim status to "onHold"

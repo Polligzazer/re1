@@ -236,23 +236,6 @@ useEffect(() => {
             >
               Claim ID: {message.text.match(/Claim ID:\s*(\S+)/)?.[1] || '[Not Found]'}
             </Button>
-            {!currentUser?.isAdmin && (
-              <Button
-                variant="success-emphasis"
-                size="sm"
-                className="mt-2"
-                onClick={() => {
-                  const match = message.text.match(/Claim ID:\s*(\S+)/);
-                  const claimId = match?.[1].replace(/[^\w-]/g, '').trim();
-                  if (claimId) {
-                    alert(`You have requested to appeal Claim ID: ${claimId} again. Please wait for admin response.`);
-                    // Optionally, trigger another function here to log/send a follow-up request
-                  }
-                }}
-              >
-                Appeal
-              </Button>
-            )}
           </>
         ) : message.text.includes('Claimed item:') && message.text.includes('Comment:') ? (
         <>
